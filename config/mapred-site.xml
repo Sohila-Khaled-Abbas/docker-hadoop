@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <!-- Execution framework set to Hadoop YARN -->
+    <property>
+        <name>mapred.framework.name</name>
+        <value>yarn</value>
+        <description>The runtime framework for executing MapReduce jobs.</description>
+    </property>
+
+    <!-- MapReduce JobHistory Server IPC address -->
+    <property>
+        <name>mapreduce.jobhistory.address</name>
+        <value>0.0.0.0:10020</value>
+        <description>MapReduce JobHistory Server IPC host:port</description>
+    </property>
+
+    <!-- MapReduce JobHistory Server Web UI address -->
+    <property>
+        <name>mapreduce.jobhistory.webapp.address</name>
+        <value>0.0.0.0:19888</value>
+        <description>MapReduce JobHistory Server Web UI host:port</description>
+    </property>
+
+    <!-- MapReduce Application Master Environment Variables -->
+    <property>
+        <name>yarn.app.mapreduce.am.env</name>
+        <value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+    </property>
+    <property>
+        <name>mapreduce.map.env</name>
+        <value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+    </property>
+    <property>
+        <name>mapreduce.reduce.env</name>
+        <value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+    </property>
+</configuration>

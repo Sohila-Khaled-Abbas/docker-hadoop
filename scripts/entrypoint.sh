@@ -1,0 +1,72 @@
+#!/bin/bash
+set -e
+
+echo "=========================================================="
+echo "Starting Apache Hadoop 3.1.2 Single-Node Container"
+echo "=========================================================="
+
+# 1. Start SSH daemon
+echo "[1/6] Starting SSH daemon..."
+service ssh start
+
+# 2. Ensure hduser SSH keys exist and permissions are correct
+su - hduser -c "
+if [ ! -f ~/.ssh/id_rsa ]; then
+    echo 'Generating SSH keys for hduser...'
+    ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    chmod 0600 ~/.ssh/authorized_keys
+    chmod 0700 ~/.ssh
+fi
+"
+
+# 3. Format NameNode if not formatted yet
+if [ ! -d "/usr/local/hadoop/yarn_data/hdfs/namenode/current" ]; then
+    echo "[2/6] Formatting Hadoop NameNode..."
+    su - hduser -c "hdfs namenode -format -force"
+else
+    echo "[2/6] NameNode already formatted. Skipping format."
+fi
+
+# 4. Start HDFS daemons (NameNode, DataNode, SecondaryNameNode)
+echo "[3/6] Starting HDFS daemons (NameNode, DataNode, SecondaryNameNode)..."
+su - hduser -c "start-dfs.sh"
+
+# 5. Start YARN daemons (ResourceManager, NodeManager)
+echo "[4/6] Starting YARN daemons (ResourceManager, NodeManager)..."
+su - hduser -c "start-yarn.sh"
+
+# 6. Start MapReduce JobHistory Server
+echo "[5/6] Starting MapReduce JobHistory Server..."
+su - hduser -c "mapred --daemon start historyserver" || true
+
+# 7. Initialize HDFS directories
+echo "[6/6] Initializing default HDFS directories..."
+su - hduser -c "hdfs dfsadmin -safemode wait" || true
+su - hduser -c "
+hdfs dfs -mkdir -p /tmp /user /user/hduser /user/hadoop
+hdfs dfs -chmod -R 1777 /tmp
+hdfs dfs -chmod -R 777 /user
+" || true
+
+echo "=========================================================="
+echo "Hadoop Cluster Started Successfully!"
+echo "Running Java Processes:"
+su - hduser -c "jps"
+echo "=========================================================="
+echo "Web Interfaces Available:"
+echo "  - HDFS NameNode UI:          http://localhost:9870"
+echo "  - HDFS DataNode UI:          http://localhost:9864"
+echo "  - YARN ResourceManager UI:   http://localhost:8088"
+echo "  - YARN NodeManager UI:       http://localhost:8042"
+echo "  - MapReduce JobHistory UI:   http://localhost:19888"
+echo "=========================================================="
+
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+else
+    # Stream logs to stdout
+    mkdir -p /usr/local/hadoop/logs
+    touch /usr/local/hadoop/logs/hadoop-hduser-namenode.log
+    tail -F /usr/local/hadoop/logs/*.log
+fi

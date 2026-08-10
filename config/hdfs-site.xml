@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <!-- Block replication factor for single node development cluster -->
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+        <description>Default block replication.</description>
+    </property>
+
+    <!-- NameNode metadata storage directory -->
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:/usr/local/hadoop/yarn_data/hdfs/namenode</value>
+        <description>Path on the local filesystem where the NameNode stores the namespace and transactions logs.</description>
+    </property>
+
+    <!-- DataNode block storage directory -->
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:/usr/local/hadoop/yarn_data/hdfs/datanode</value>
+        <description>Comma-separated list of paths on the local filesystem where the DataNode stores blocks.</description>
+    </property>
+
+    <!-- NameNode Web UI Address -->
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>0.0.0.0:9870</value>
+        <description>The address and the base port where the dfs namenode web ui will listen on.</description>
+    </property>
+
+    <!-- DataNode Web UI Address -->
+    <property>
+        <name>dfs.datanode.http-address</name>
+        <value>0.0.0.0:9864</value>
+        <description>The address and the base port where the dfs datanode web ui will listen on.</description>
+    </property>
+
+    <!-- Permissions checking enabled -->
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+        <description>If true, enable permission checking in HDFS.</description>
+    </property>
+</configuration>

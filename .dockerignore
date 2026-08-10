@@ -1,0 +1,12 @@
+.git
+.github
+.gitignore
+.dockerignore
+README.md
+LICENSE
+Makefile
+*.md
+.DS_Store
+Thumbs.db
+data/
+logs/

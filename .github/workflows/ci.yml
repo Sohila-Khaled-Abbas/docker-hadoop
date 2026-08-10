@@ -1,0 +1,44 @@
+name: Docker Build & Test CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t hadoop-cluster:3.1.2 -f Dockerfile .
+
+      - name: Start Hadoop Container with Docker Compose
+        run: |
+          docker compose up -d
+
+      - name: Wait for Cluster Initialization
+        run: |
+          echo "Waiting for Hadoop cluster to start..."
+          sleep 35
+
+      - name: Check Running Containers
+        run: |
+          docker compose ps
+
+      - name: Run Integration & MapReduce Tests
+        run: |
+          docker compose exec -T hadoop /test-cluster.sh
+
+      - name: Teardown
+        if: always()
+        run: |
+          docker compose down -v

@@ -1,0 +1,19 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker / Logs / Data
+*.log
+data/
+logs/
+.env
+
+# Hadoop temp
+/yarn_data/
+/app/
