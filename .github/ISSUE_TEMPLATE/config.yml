@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Apache Hadoop Documentation
+    url: https://hadoop.apache.org/docs/r3.1.2/
+    about: Official Apache Hadoop 3.1.2 documentation and configuration guides.
+  - name: 💬 Community Discussions & Questions
+    url: https://github.com/Sohila-Khaled-Abbas/docker-hadoop/discussions
+    about: Ask questions, share big data architectures, and discuss use cases.

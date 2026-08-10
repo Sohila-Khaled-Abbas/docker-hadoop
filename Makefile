@@ -1,17 +1,30 @@
-.PHONY: help build up down restart logs ps test bash hdfs-shell clean
+.PHONY: help build up down restart logs ps test test-mr-python test-mr-java bash hdfs-shell jps safemode-leave hdfs-report clean
 
 help:
-	@echo "Available commands:"
-	@echo "  make build       - Build the Hadoop Docker image"
-	@echo "  make up          - Start the Hadoop single-node cluster"
-	@echo "  make down        - Stop and remove the Hadoop cluster"
-	@echo "  make restart     - Restart the Hadoop cluster"
-	@echo "  make logs        - Tail container logs"
-	@echo "  make ps          - List running services and status"
-	@echo "  make test        - Run MapReduce and HDFS integration tests"
-	@echo "  make bash        - Open an interactive bash terminal inside the container"
-	@echo "  make hdfs-shell  - Open HDFS CLI as hduser"
-	@echo "  make clean       - Remove containers, images, and volumes"
+	@echo "=========================================================="
+	@echo "Apache Hadoop Docker - Developer Commands"
+	@echo "=========================================================="
+	@echo "  Cluster Lifecycle:"
+	@echo "    make build           - Build the Hadoop Docker image"
+	@echo "    make up              - Start the single-node Hadoop cluster"
+	@echo "    make down            - Stop and remove the cluster container"
+	@echo "    make restart         - Restart the Hadoop cluster"
+	@echo "    make logs            - Stream container logs in real time"
+	@echo "    make ps              - Check container health and status"
+	@echo "    make clean           - Full teardown (removes images & volumes)"
+	@echo ""
+	@echo "  Testing & Validation:"
+	@echo "    make test            - Run built-in HDFS & Pi MapReduce tests"
+	@echo "    make test-mr-python  - Run Python Streaming MapReduce WordCount"
+	@echo "    make test-mr-java    - Compile & run Java MapReduce WordCount"
+	@echo ""
+	@echo "  HDFS & Daemons Management:"
+	@echo "    make jps             - List running Java Hadoop daemons"
+	@echo "    make hdfs-report     - Display HDFS storage capacity report"
+	@echo "    make safemode-leave  - Force HDFS NameNode to exit SafeMode"
+	@echo "    make bash            - Open interactive root/hduser shell"
+	@echo "    make hdfs-shell      - Open interactive shell as hduser"
+	@echo "=========================================================="
 
 build:
 	docker compose build
@@ -33,6 +46,21 @@ ps:
 
 test:
 	docker compose exec hadoop /test-cluster.sh
+
+test-mr-python:
+	bash examples/mapreduce-python/run.sh
+
+test-mr-java:
+	bash examples/mapreduce-java/compile-and-run.sh
+
+jps:
+	docker compose exec hadoop jps
+
+safemode-leave:
+	docker compose exec hadoop hdfs dfsadmin -safemode leave
+
+hdfs-report:
+	docker compose exec hadoop hdfs dfsadmin -report
 
 bash:
 	docker compose exec hadoop bash

@@ -1,0 +1,6 @@
+Apache Hadoop is an open source framework for distributed storage and processing.
+Hadoop HDFS provides scalable, fault-tolerant, and reliable distributed file storage.
+Hadoop YARN manages resources and orchestrates application execution across clusters.
+MapReduce enables large-scale parallel computation over distributed data stored in HDFS.
+Docker simplifies Hadoop deployment, testing, development, and containerization.
+Big data processing with Hadoop, Spark, and YARN powers modern data engineering pipelines.
