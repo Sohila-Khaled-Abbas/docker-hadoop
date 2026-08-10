@@ -61,11 +61,13 @@ RUN su - ${HADOOP_USER} -c "ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
     && chmod 0600 /root/.ssh/authorized_keys \
     && chmod 0700 /root/.ssh
 
-# Download and extract Apache Hadoop binary
-RUN wget -q "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" -O /tmp/hadoop.tar.gz \
+# Download and extract Apache Hadoop binary (with retries and connection resilience)
+RUN curl -fSL --retry 5 --retry-connrefused \
+    "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" \
+    -o /tmp/hadoop.tar.gz \
     && tar -xzf /tmp/hadoop.tar.gz -C /usr/local/ \
     && mv /usr/local/hadoop-${HADOOP_VERSION} ${HADOOP_HOME} \
-    && rm /tmp/hadoop.tar.gz
+    && rm -f /tmp/hadoop.tar.gz
 
 # Create directories for Hadoop metadata, data blocks, temp, and logs
 RUN mkdir -p /app/hadoop/tmp \
