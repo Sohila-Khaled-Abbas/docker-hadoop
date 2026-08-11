@@ -91,18 +91,22 @@ COPY config/hadoop-env.sh ${HADOOP_CONF_DIR}/hadoop-env.sh
 RUN chown -R ${HADOOP_USER}:${HADOOP_GROUP} ${HADOOP_CONF_DIR} \
     && chmod -R 777 ${HADOOP_CONF_DIR}
 
-# Add environment variables to hduser and root profiles
-RUN echo 'export JAVA_HOME=/usr/local/java' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_HOME=/usr/local/hadoop' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_MAPRED_HOME=/usr/local/hadoop' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_COMMON_HOME=/usr/local/hadoop' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_HDFS_HOME=/usr/local/hadoop' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export YARN_HOME=/usr/local/hadoop' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native' >> /home/${HADOOP_USER}/.bashrc \
-    && echo 'export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"' >> /home/${HADOOP_USER}/.bashrc \
-    && cat /home/${HADOOP_USER}/.bashrc >> /root/.bashrc
+# Add environment variables to system profile, hduser, and root profiles
+RUN echo 'export JAVA_HOME=/usr/local/java' > /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_HOME=/usr/local/hadoop' >> /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop' >> /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_MAPRED_HOME=/usr/local/hadoop' >> /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_COMMON_HOME=/usr/local/hadoop' >> /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_HDFS_HOME=/usr/local/hadoop' >> /etc/profile.d/hadoop.sh \
+    && echo 'export YARN_HOME=/usr/local/hadoop' >> /etc/profile.d/hadoop.sh \
+    && echo 'export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin' >> /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native' >> /etc/profile.d/hadoop.sh \
+    && echo 'export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"' >> /etc/profile.d/hadoop.sh \
+    && chmod +x /etc/profile.d/hadoop.sh \
+    && cat /etc/profile.d/hadoop.sh >> /home/${HADOOP_USER}/.bashrc \
+    && cat /etc/profile.d/hadoop.sh >> /home/${HADOOP_USER}/.profile \
+    && cat /etc/profile.d/hadoop.sh >> /root/.bashrc \
+    && cat /etc/profile.d/hadoop.sh >> /root/.profile
 
 # Copy automation scripts
 COPY scripts/entrypoint.sh /entrypoint.sh

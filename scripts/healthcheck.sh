@@ -10,6 +10,7 @@ curl -f -s http://localhost:9870 > /dev/null || exit 1
 curl -f -s http://localhost:8088 > /dev/null || exit 1
 
 # Check HDFS basic command response
-su - hduser -c "hdfs dfsadmin -report" > /dev/null || exit 1
+su - hduser -c "export JAVA_HOME=/usr/local/java; export HADOOP_HOME=/usr/local/hadoop; export PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin:\$HADOOP_HOME/sbin; hdfs dfsadmin -report" > /dev/null || exit 1
 
 exit 0
+

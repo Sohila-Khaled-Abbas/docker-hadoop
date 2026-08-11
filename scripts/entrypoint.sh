@@ -5,12 +5,39 @@ echo "=========================================================="
 echo "Starting Apache Hadoop 3.1.2 Single-Node Container"
 echo "=========================================================="
 
+export JAVA_HOME=/usr/local/java
+export HADOOP_HOME=/usr/local/hadoop
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+export HADOOP_MAPRED_HOME=/usr/local/hadoop
+export HADOOP_COMMON_HOME=/usr/local/hadoop
+export HADOOP_HDFS_HOME=/usr/local/hadoop
+export YARN_HOME=/usr/local/hadoop
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+
+run_hduser() {
+    su - hduser -c "
+        export JAVA_HOME=/usr/local/java
+        export HADOOP_HOME=/usr/local/hadoop
+        export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+        export HADOOP_MAPRED_HOME=/usr/local/hadoop
+        export HADOOP_COMMON_HOME=/usr/local/hadoop
+        export HADOOP_HDFS_HOME=/usr/local/hadoop
+        export YARN_HOME=/usr/local/hadoop
+        export PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin:\$HADOOP_HOME/sbin
+        export HADOOP_COMMON_LIB_NATIVE_DIR=\$HADOOP_HOME/lib/native
+        export HADOOP_OPTS=\"-Djava.library.path=\$HADOOP_HOME/lib\"
+        $*
+    "
+}
+
 # 1. Start SSH daemon
 echo "[1/6] Starting SSH daemon..."
 service ssh start
 
 # 2. Ensure hduser SSH keys exist and permissions are correct
-su - hduser -c "
+run_hduser "
 if [ ! -f ~/.ssh/id_rsa ]; then
     echo 'Generating SSH keys for hduser...'
     ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
@@ -23,27 +50,27 @@ fi
 # 3. Format NameNode if not formatted yet
 if [ ! -d "/usr/local/hadoop/yarn_data/hdfs/namenode/current" ]; then
     echo "[2/6] Formatting Hadoop NameNode..."
-    su - hduser -c "hdfs namenode -format -force"
+    run_hduser "hdfs namenode -format -force"
 else
     echo "[2/6] NameNode already formatted. Skipping format."
 fi
 
 # 4. Start HDFS daemons (NameNode, DataNode, SecondaryNameNode)
 echo "[3/6] Starting HDFS daemons (NameNode, DataNode, SecondaryNameNode)..."
-su - hduser -c "start-dfs.sh"
+run_hduser "start-dfs.sh"
 
 # 5. Start YARN daemons (ResourceManager, NodeManager)
 echo "[4/6] Starting YARN daemons (ResourceManager, NodeManager)..."
-su - hduser -c "start-yarn.sh"
+run_hduser "start-yarn.sh"
 
 # 6. Start MapReduce JobHistory Server
 echo "[5/6] Starting MapReduce JobHistory Server..."
-su - hduser -c "mapred --daemon start historyserver" || true
+run_hduser "mapred --daemon start historyserver" || true
 
 # 7. Initialize HDFS directories
 echo "[6/6] Initializing default HDFS directories..."
-su - hduser -c "hdfs dfsadmin -safemode wait" || true
-su - hduser -c "
+run_hduser "hdfs dfsadmin -safemode wait" || true
+run_hduser "
 hdfs dfs -mkdir -p /tmp /user /user/hduser /user/hadoop
 hdfs dfs -chmod -R 1777 /tmp
 hdfs dfs -chmod -R 777 /user
@@ -52,7 +79,7 @@ hdfs dfs -chmod -R 777 /user
 echo "=========================================================="
 echo "Hadoop Cluster Started Successfully!"
 echo "Running Java Processes:"
-su - hduser -c "jps"
+run_hduser "jps"
 echo "=========================================================="
 echo "Web Interfaces Available:"
 echo "  - HDFS NameNode UI:          http://localhost:9870"
@@ -70,3 +97,4 @@ else
     touch /usr/local/hadoop/logs/hadoop-hduser-namenode.log
     tail -F /usr/local/hadoop/logs/*.log
 fi
+
