@@ -50,7 +50,7 @@ fi
 # 3. Format NameNode if not formatted yet
 if [ ! -d "/usr/local/hadoop/yarn_data/hdfs/namenode/current" ]; then
     echo "[2/6] Formatting Hadoop NameNode..."
-    run_hduser "hdfs namenode -format -force"
+    run_hduser "hdfs namenode -format -force -nonInteractive"
 else
     echo "[2/6] NameNode already formatted. Skipping format."
 fi
