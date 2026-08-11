@@ -21,6 +21,11 @@ services:
       - hadoop_datanode:/usr/local/hadoop/yarn_data/hdfs/datanode
       - hadoop_tmp:/app/hadoop/tmp
       - hadoop_logs:/usr/local/hadoop/logs
+      - ./config/core-site.xml:/usr/local/hadoop/etc/hadoop/core-site.xml:ro
+      - ./config/hdfs-site.xml:/usr/local/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./config/mapred-site.xml:/usr/local/hadoop/etc/hadoop/mapred-site.xml:ro
+      - ./config/yarn-site.xml:/usr/local/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./config/hadoop-env.sh:/usr/local/hadoop/etc/hadoop/hadoop-env.sh:ro
       - ./scripts/entrypoint.sh:/entrypoint.sh:ro
       - ./scripts/healthcheck.sh:/healthcheck.sh:ro
       - ./scripts/test-cluster.sh:/test-cluster.sh:ro

@@ -123,6 +123,9 @@ All standard Apache Hadoop web consoles and service endpoints are mapped to host
 > [!TIP]
 > You can customize all external port numbers by editing `.env` or setting environment variables (e.g. `HADOOP_NAMENODE_PORT=19870`).
 
+> [!NOTE]
+> Web consoles operate over plain HTTP (`http://`). If your browser displays `ERR_EMPTY_RESPONSE` or auto-redirects to HTTPS, access the dashboard in an **Incognito / Private Window** using [http://127.0.0.1:9870](http://127.0.0.1:9870) or see [Troubleshooting Guide: Issue 9](docs/troubleshooting.md#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis).
+
 ---
 
 ## ⚡ Quick Start
@@ -135,7 +138,7 @@ All standard Apache Hadoop web consoles and service endpoints are mapped to host
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/docker-hadoop.git
+git clone https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
 cd docker-hadoop
 ```
 

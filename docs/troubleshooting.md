@@ -15,6 +15,8 @@ This guide contains diagnostic steps and solutions for common operational issues
 - [Issue 6: Container Exit Codes (137, 143)](#issue-6-container-exit-codes-137-143)
 - [Issue 7: Docker Build Hang / High Inode Journal Overhead on WSL2](#issue-7-docker-build-hang--high-inode-journal-overhead-on-wsl2)
 - [Issue 8: Non-Interactive Shell / Command Not Found (`hdfs: command not found`)](#issue-8-non-interactive-shell--command-not-found-hdfs-command-not-found)
+- [Issue 9: Browser `ERR_EMPTY_RESPONSE` ("localhost didn't send any data") on Web UIs](#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis)
+- [Issue 10: Docker Engine Pipe 500 Internal Server Error (`dockerDesktopLinuxEngine`)](#issue-10-docker-engine-pipe-500-internal-server-error-dockerdesktoplinuxengine)
 
 ---
 
@@ -179,4 +181,46 @@ export JAVA_HOME=/usr/local/java
 export HADOOP_HOME=/usr/local/hadoop
 export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 ```
+
+---
+
+## ⚠️ Issue 9: Browser `ERR_EMPTY_RESPONSE` ("localhost didn't send any data") on Web UIs
+
+### Symptoms
+- Opening `http://localhost:9870` or `http://localhost:8088` in Chrome/Edge displays:
+  `This page isn’t working`
+  `localhost didn’t send any data.`
+  `ERR_EMPTY_RESPONSE`
+
+### Root Cause
+1. **Browser HTTPS Auto-Upgrade**: Modern browsers (Chrome, Edge, Brave) frequently auto-upgrade typed `localhost:port` addresses to `https://...` (via HSTS policies or browser omnibox). Because Hadoop Web UIs run on plain **HTTP**, receiving an SSL/TLS handshake on an HTTP port causes Hadoop to drop the socket connection immediately.
+2. **HDFS Startup / SafeMode Window**: On initial container startup, the NameNode waits ~30 seconds in SafeMode while DataNodes register their block reports.
+
+### Solution
+1. Open an **Incognito / Private Window** (which bypasses cached HTTPS redirects) and explicitly navigate to:
+   - **HDFS NameNode**: `http://127.0.0.1:9870` *(or `http://localhost:9870`)*
+   - **YARN ResourceManager**: `http://127.0.0.1:8088` *(or `http://localhost:8088`)*
+   - **MapReduce JobHistory**: `http://127.0.0.1:19888` *(or `http://localhost:19888`)*
+2. If Chrome continues redirecting to HTTPS:
+   - Navigate to `chrome://net-internals/#hsts` in Chrome.
+   - Under **Delete domain security policies**, type `localhost` and click **Delete**.
+   - Repeat for `127.0.0.1`.
+
+---
+
+## ⚠️ Issue 10: Docker Engine Pipe 500 Internal Server Error (`dockerDesktopLinuxEngine`)
+
+### Symptoms
+- Running Docker commands fails with:
+  `request returned 500 Internal Server Error for API route and version http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/...`
+
+### Root Cause
+The Docker Desktop Linux daemon / WSL2 backend IPC named pipe encountered a deadlock or became unresponsive in Windows.
+
+### Solution
+Restart the WSL2 daemon and Docker Desktop:
+```powershell
+wsl --shutdown
+```
+Then launch Docker Desktop from the Start Menu and wait for the engine status to show green.
 
