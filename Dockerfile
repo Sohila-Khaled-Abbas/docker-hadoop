@@ -73,7 +73,8 @@ RUN set -x \
     && rm -f /tmp/hadoop.tar.gz
 
 # Create directories for Hadoop metadata, data blocks, temp, and logs
-RUN mkdir -p /app/hadoop/tmp \
+RUN rm -rf ${HADOOP_HOME}/share/doc \
+    && mkdir -p /app/hadoop/tmp \
     && mkdir -p ${HADOOP_HOME}/yarn_data/hdfs/namenode \
     && mkdir -p ${HADOOP_HOME}/yarn_data/hdfs/datanode \
     && mkdir -p ${HADOOP_HOME}/logs \
