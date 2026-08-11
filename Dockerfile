@@ -61,10 +61,13 @@ RUN su - ${HADOOP_USER} -c "ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
     && chmod 0600 /root/.ssh/authorized_keys \
     && chmod 0700 /root/.ssh
 
-# Download and extract Apache Hadoop binary (with retries and connection resilience)
-RUN curl -fSL --retry 5 --retry-connrefused \
-    "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" \
-    -o /tmp/hadoop.tar.gz \
+# Download and extract Apache Hadoop binary (with auto-resume on network interruption)
+RUN set -x \
+    && for i in $(seq 1 10); do \
+         wget -c -t 10 --timeout=45 --no-check-certificate \
+         "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" \
+         -O /tmp/hadoop.tar.gz && test -s /tmp/hadoop.tar.gz && break || sleep 3; \
+       done \
     && tar -xzf /tmp/hadoop.tar.gz -C /usr/local/ \
     && mv /usr/local/hadoop-${HADOOP_VERSION} ${HADOOP_HOME} \
     && rm -f /tmp/hadoop.tar.gz
