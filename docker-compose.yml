@@ -21,6 +21,9 @@ services:
       - hadoop_datanode:/usr/local/hadoop/yarn_data/hdfs/datanode
       - hadoop_tmp:/app/hadoop/tmp
       - hadoop_logs:/usr/local/hadoop/logs
+      - ./scripts/entrypoint.sh:/entrypoint.sh:ro
+      - ./scripts/healthcheck.sh:/healthcheck.sh:ro
+      - ./scripts/test-cluster.sh:/test-cluster.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 30s

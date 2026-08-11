@@ -36,9 +36,12 @@ Ideal for:
   - **HDFS**: NameNode, DataNode, SecondaryNameNode.
   - **YARN**: ResourceManager, NodeManager.
   - **MapReduce**: JobHistory Server.
-- **Enterprise Best Practices**:
+- **Enterprise Best Practices & Hardening**:
   - Secure non-root daemon execution under dedicated `hduser:hadoop` (UID/GID 1000).
+  - Centralized `/etc/profile.d/hadoop.sh` and multi-shell profile exports (`.bashrc`, `.profile`) for seamless environment and PATH resolution.
   - Pre-configured passwordless SSH loopback keys with strict permission masks (`0600`/`0700`).
+- **Optimized Multi-Stage Build**:
+  - Automated pruning of ~60,000 redundant Javadoc/API HTML files to bypass WSL2/ext4 inode journal bottlenecks and accelerate build times.
 - **Data Persistence**:
   - 4 named Docker volumes isolating NameNode metadata, DataNode blocks, temporary workspaces, and logs.
 - **Automated Health Monitoring**:

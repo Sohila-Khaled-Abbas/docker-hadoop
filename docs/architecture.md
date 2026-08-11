@@ -251,3 +251,7 @@ The container maps internal daemons to host network interfaces:
    - Dedicated RSA keypairs (`~/.ssh/id_rsa` and `~/.ssh/authorized_keys`) are generated with `0600` permissions.
 3. **Relaxed Permission Checking**:
    - `dfs.permissions.enabled` is disabled in `hdfs-site.xml` to allow seamless local development and multi-tool experimentation.
+4. **Environment & PATH Propagation**:
+   - Environment variables (`JAVA_HOME`, `HADOOP_HOME`, `HADOOP_CONF_DIR`, `PATH`) are centralized in `/etc/profile.d/hadoop.sh` and backed into `.bashrc` and `.profile` for both `hduser` and `root`.
+   - Automation scripts (`entrypoint.sh`, `healthcheck.sh`, `test-cluster.sh`) utilize subshell environment wrappers (`run_hduser`) ensuring uninterrupted execution across interactive and non-interactive sessions.
+

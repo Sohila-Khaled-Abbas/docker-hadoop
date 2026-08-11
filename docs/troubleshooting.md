@@ -13,6 +13,8 @@ This guide contains diagnostic steps and solutions for common operational issues
 - [Issue 4: Host Port Conflicts](#issue-4-host-port-conflicts)
 - [Issue 5: Missing Java Daemons on Startup](#issue-5-missing-java-daemons-on-startup)
 - [Issue 6: Container Exit Codes (137, 143)](#issue-6-container-exit-codes-137-143)
+- [Issue 7: Docker Build Hang / High Inode Journal Overhead on WSL2](#issue-7-docker-build-hang--high-inode-journal-overhead-on-wsl2)
+- [Issue 8: Non-Interactive Shell / Command Not Found (`hdfs: command not found`)](#issue-8-non-interactive-shell--command-not-found-hdfs-command-not-found)
 
 ---
 
@@ -138,3 +140,43 @@ docker compose exec hadoop tail -n 50 /usr/local/hadoop/logs/hadoop-hduser-datan
 | :--- | :--- | :--- |
 | **137** | **OOMKilled (Out of Memory)** | The container exceeded host RAM limits. Increase Docker memory in Docker Desktop Settings to 6GB+. |
 | **143** | **SIGTERM (Graceful Stop)** | Container was stopped intentionally via `docker compose down` or host shutdown. |
+
+---
+
+## ⚠️ Issue 7: Docker Build Hang / High Inode Journal Overhead on WSL2
+
+### Symptoms
+- `docker compose build` hangs or takes 15+ minutes on `chown -R` / `chmod -R` or `exporting layers`.
+
+### Root Cause
+The official Hadoop tarball contains ~60,000 small Javadoc/API HTML files under `share/doc`. Performing recursive metadata operations on ext4 filesystems in virtualized WSL2 environments triggers massive journaling overhead.
+
+### Solution
+Prune the documentation directory during image build (already implemented in the Dockerfile):
+```dockerfile
+RUN rm -rf ${HADOOP_HOME}/share/doc \
+    && chown -R hduser:hadoop ${HADOOP_HOME} /app/hadoop
+```
+If BuildKit layer export hangs, build with classic builder:
+```powershell
+$env:DOCKER_BUILDKIT=0; docker compose build
+```
+
+---
+
+## ⚠️ Issue 8: Non-Interactive Shell / Command Not Found (`hdfs: command not found`)
+
+### Symptoms
+- Executing commands via `su - hduser -c "hdfs ..."` or CI runners fails with `hdfs: command not found`.
+
+### Root Cause
+Non-interactive subshells in Debian/Ubuntu terminate `.bashrc` early before user exports are loaded (`case $- in *i*) ;; *) return;; esac`).
+
+### Solution
+Environment variables are now centralized in `/etc/profile.d/hadoop.sh` and explicitly wrapped in scripts (`entrypoint.sh`, `healthcheck.sh`, `test-cluster.sh`):
+```bash
+export JAVA_HOME=/usr/local/java
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+```
+
