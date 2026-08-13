@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:20.04
+FROM ubuntu:26.04
 
 LABEL maintainer="Ahmed Sami <ahmed.sami@yahoo.com>"
 LABEL org.opencontainers.image.title="Apache Hadoop Docker Cluster"
