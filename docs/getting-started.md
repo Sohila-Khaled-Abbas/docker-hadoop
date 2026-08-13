@@ -1,34 +1,57 @@
-# Getting Started with Apache Hadoop on Docker
+# 🚀 Getting Started with Apache Hadoop on Docker
 
-This guide walks you through setting up, verifying, configuring, and interacting with your single-node Apache Hadoop 3.1.2 cluster in Docker.
+This guide walks you through provisioning, verifying, configuring, and interacting with your containerized **Apache Hadoop 3.1.2** single-node cluster.
 
 ---
 
 ## 📑 Table of Contents
 
-- [System Requirements](#system-requirements)
-- [Quick Installation](#quick-installation)
-- [Verifying Cluster Health](#verifying-cluster-health)
-- [Accessing Web Consoles](#accessing-web-consoles)
-- [Essential HDFS Commands](#essential-hdfs-commands)
-- [Running MapReduce Jobs](#running-mapreduce-jobs)
-- [Stopping & Resetting the Cluster](#stopping--resetting-the-cluster)
+- [System Requirements](#-system-requirements)
+- [Quick Start Flow](#-quick-start-flow)
+- [Step-by-Step Installation](#-step-by-step-installation)
+- [Verifying Cluster Health](#-verifying-cluster-health)
+- [Web Interfaces & Port Access](#-web-interfaces--port-access)
+- [Essential HDFS Operations](#-essential-hdfs-operations)
+- [Executing MapReduce Jobs](#-executing-mapreduce-jobs)
+- [Cluster Lifecycle & Teardown](#-cluster-lifecycle--teardown)
 
 ---
 
 ## 💻 System Requirements
 
-| Resource | Minimum | Recommended |
+| Resource | Minimum Spec | Recommended |
 | :--- | :--- | :--- |
-| **Operating System** | Linux, macOS, Windows 10/11 (WSL2) | Ubuntu 22.04+ / macOS 14+ |
-| **Docker Engine** | 20.10.0+ | 24.0.0+ |
-| **Docker Compose** | 2.0.0+ | 2.20.0+ |
-| **RAM** | 4 GB | 8 GB+ |
-| **Disk Space** | 5 GB free | 10 GB+ free |
+| **Host OS** | Linux, macOS (Intel/Apple Silicon), Windows 10/11 (WSL2) | Ubuntu 22.04 LTS / macOS 14+ / Windows 11 WSL2 |
+| **Docker Engine** | `20.10.0+` | `24.0.0+` |
+| **Docker Compose** | `v2.0.0+` | `v2.20.0+` |
+| **Host RAM** | 4 GB | 8 GB+ |
+| **Free Storage** | 5 GB | 15 GB+ (SSD recommended) |
 
 ---
 
-## 🚀 Quick Installation
+## 🔄 Quick Start Flow
+
+```mermaid
+flowchart TD
+    A["1. Clone Repository<br/><code>git clone ...</code>"] --> B["2. (Optional) Configure .env<br/><code>cp .env.example .env</code>"]
+    B --> C["3. Launch Cluster<br/><code>docker compose up -d</code>"]
+    C --> D["4. Wait for Healthcheck<br/>(JVM Daemons Initializing)"]
+    D --> E{"All Daemons Healthy?"}
+    E -->|Yes| F["5. Access Web UIs & Run MapReduce Jobs"]
+    E -->|No| G["Inspect Logs & Diagnostics<br/><code>docker compose logs</code>"]
+    G --> D
+
+    classDef start fill:#0ea5e9,stroke:#0284c7,stroke-width:2px,color:#ffffff;
+    classDef success fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff;
+    classDef warn fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff;
+    class A,B,C,D start;
+    class F success;
+    class E,G warn;
+```
+
+---
+
+## 🛠️ Step-by-Step Installation
 
 ### Step 1: Clone the Repository
 
@@ -37,24 +60,25 @@ git clone https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
 cd docker-hadoop
 ```
 
-### Step 2: (Optional) Configure Environment Variables
+### Step 2: (Optional) Configure Environment Settings
 
-You can customize port allocations and container names by copying `.env.example` to `.env`:
+To customize host port mappings, Hadoop versions, or container names, create a local `.env` file from the provided template:
 
 ```bash
 cp .env.example .env
 ```
 
-### Step 3: Build and Launch
+> [!TIP]
+> On Windows systems, the default SSH host port is set to **`22222`** to avoid Hyper-V / WSL2 dynamic port reservations (`[2180-2279]`).
+
+### Step 3: Build & Start the Cluster
 
 Using **Docker Compose**:
-
 ```bash
 docker compose up -d
 ```
 
 Or using **Make**:
-
 ```bash
 make up
 ```
@@ -63,134 +87,132 @@ make up
 
 ## 🩺 Verifying Cluster Health
 
-### 1. Check Container Status
+### 1. Check Container Health Status
 
 ```bash
 docker compose ps
 ```
 
-The status should display `healthy` once the 40-second startup initialization period finishes.
+Expected output:
+```text
+NAME            IMAGE                  COMMAND            SERVICE   STATUS                    PORTS
+hadoop-master   hadoop-cluster:3.1.2   "/entrypoint.sh"   hadoop    Up 2 minutes (healthy)    0.0.0.0:8042->8042/tcp, 0.0.0.0:8088->8088/tcp, 0.0.0.0:9000->9000/tcp, 0.0.0.0:9864->9864/tcp, 0.0.0.0:9870->9870/tcp, 0.0.0.0:19888->19888/tcp, 0.0.0.0:22222->22/tcp
+```
 
-### 2. Verify Running Java Daemons
+> [!NOTE]
+> Hadoop starts 6 distinct Java daemons sequentially. The health check allows a **120-second startup period** before validating endpoints.
 
-Execute `jps` inside the container:
+### 2. Verify Running Java Processes (JPS)
+
+Execute `jps` inside the running container:
 
 ```bash
 docker compose exec hadoop jps
 ```
 
-Expected output:
-
+Expected daemons list:
 ```text
-NameNode
-DataNode
-SecondaryNameNode
-ResourceManager
-NodeManager
-JobHistoryServer
-Jps
+173 NameNode
+261 DataNode
+409 SecondaryNameNode
+801 ResourceManager
+886 NodeManager
+1028 JobHistoryServer
+1240 Jps
 ```
-
-> [!NOTE]
-> If any of the daemons are missing (e.g. `DataNode` or `ResourceManager`), check the logs with `docker compose logs hadoop --tail 100` or review the [Troubleshooting Guide](troubleshooting.md).
 
 ---
 
-## 🌐 Accessing Web Consoles
+## 🌐 Web Interfaces & Port Access
 
-Once the cluster is running, open the following endpoints in your browser:
-
-| Interface | URL | What to look for |
+| Dashboard | URL | Operational Function |
 | :--- | :--- | :--- |
-| **HDFS NameNode** | [http://localhost:9870](http://localhost:9870) | Live nodes (`1`), Cluster Capacity, Browse Directory (`Utilities > Browse the file system`) |
-| **HDFS DataNode** | [http://localhost:9864](http://localhost:9864) | Volume Information, DataNode status |
-| **YARN ResourceManager** | [http://localhost:8088](http://localhost:8088) | Active Nodes (`1`), Cluster Metrics (Memory Total: `8192 MB`, VCores: `8`), Application Queue |
-| **YARN NodeManager** | [http://localhost:8042](http://localhost:8042) | Container health, Node details |
-| **MapReduce JobHistory** | [http://localhost:19888](http://localhost:19888) | Retired / Completed jobs and task execution logs |
+| **HDFS NameNode** | [http://localhost:9870](http://localhost:9870) | Browse HDFS filesystem, inspect cluster capacity, and monitor DataNodes. |
+| **HDFS DataNode** | [http://localhost:9864](http://localhost:9864) | Inspect physical block volumes and DataNode operational metrics. |
+| **YARN ResourceManager** | [http://localhost:8088](http://localhost:8088) | Monitor active applications, scheduler queues, and memory/vcore metrics. |
+| **YARN NodeManager** | [http://localhost:8042](http://localhost:8042) | Container allocations, node health status, and node-local logs. |
+| **MapReduce JobHistory** | [http://localhost:19888](http://localhost:19888) | Historical MapReduce metrics, task counters, and execution timelines. |
+| **SSH Terminal** | `ssh -p 22222 hduser@localhost` | Direct shell access with password: `ubuntu`. |
+
+> [!IMPORTANT]
+> Web UIs operate over plain HTTP (`http://`). If Chrome/Edge auto-redirects to HTTPS, open the URL in an **Incognito Window** using `http://127.0.0.1:9870` or see [Troubleshooting: Issue 9](troubleshooting.md#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis).
 
 ---
 
-## 💻 Essential HDFS Commands
+## 💻 Essential HDFS Operations
 
-You can interact with HDFS using `docker compose exec hadoop hdfs dfs <command>` or by opening an interactive shell:
+<details>
+<summary><b>📂 Click to expand HDFS CLI cheatsheet</b></summary>
 
 ```bash
-# Open interactive shell
+# 1. Open interactive bash session
 docker compose exec -it hadoop bash
-```
 
-### Common Commands Reference
-
-```bash
-# 1. List directory contents
+# 2. List root directory
 hdfs dfs -ls /
 
-# 2. Create a new directory
-hdfs dfs -mkdir -p /user/mydata
+# 3. Create user workspaces
+hdfs dfs -mkdir -p /user/mydata /input
 
-# 3. Upload a file to HDFS
-hdfs dfs -put /usr/local/hadoop/etc/hadoop/core-site.xml /user/mydata/
+# 4. Upload local configuration files into HDFS
+hdfs dfs -put /usr/local/hadoop/etc/hadoop/*.xml /input/
 
-# 4. View file content from HDFS
-hdfs dfs -cat /user/mydata/core-site.xml | head -n 20
+# 5. Display file content from HDFS
+hdfs dfs -cat /input/core-site.xml | head -n 25
 
-# 5. Download a file from HDFS to local container filesystem
-hdfs dfs -get /user/mydata/core-site.xml /tmp/downloaded-core-site.xml
-
-# 6. Check file and directory sizes in human-readable format
-hdfs dfs -du -h /user
-
-# 7. Remove file from HDFS
-hdfs dfs -rm /user/mydata/core-site.xml
-
-# 8. Remove directory recursively
-hdfs dfs -rm -r /user/mydata
-
-# 9. Check cluster storage report and alive DataNodes
+# 6. Inspect storage capacity and alive DataNodes
 hdfs dfsadmin -report
+
+# 7. Check directory size in human-readable units
+hdfs dfs -du -h /input
+
+# 8. Download files from HDFS to local container storage
+hdfs dfs -get /input/core-site.xml /tmp/local-copy.xml
+
+# 9. Clean up test directories
+hdfs dfs -rm -r /input
 ```
+
+</details>
 
 ---
 
-## 🧪 Running MapReduce Jobs
+## 🧪 Executing MapReduce Jobs
 
 ### 1. Calculate Pi (Monte Carlo Estimation)
 
-Run the built-in MapReduce example:
-
 ```bash
-docker compose exec hadoop yarn jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.2.jar pi 4 1000
+docker compose exec hadoop yarn jar \
+  /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.2.jar \
+  pi 4 1000
 ```
 
-Output:
-
-```text
-Estimated value of Pi is 3.14150000000000000000
-```
-
-### 2. Run Automated Test Suite
+### 2. Python Hadoop Streaming WordCount
 
 ```bash
-make test
-# or
-docker compose exec hadoop /test-cluster.sh
+# Run one-click Python Streaming runner
+bash examples/mapreduce-python/run.sh
+```
+
+### 3. Java Native MapReduce WordCount
+
+```bash
+# Compile and run Java Native MapReduce
+bash examples/mapreduce-java/compile-and-run.sh
 ```
 
 ---
 
-## 🛑 Stopping & Resetting the Cluster
-
-### Stop Container (Preserve Data)
+## 🛑 Cluster Lifecycle & Teardown
 
 ```bash
-make down
-# or
+# Stop containers (Preserves all HDFS data and volumes)
 docker compose down
-```
 
-### Full Teardown & Volume Reset (Deletes HDFS Data)
+# Restart the cluster
+docker compose restart
 
-```bash
+# Full Clean Reset (Removes all images, containers, and data volumes)
 make clean
 # or
 docker compose down -v --rmi all

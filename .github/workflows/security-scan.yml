@@ -1,0 +1,49 @@
+name: 🛡️ Security & Dockerfile Linting
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * 0' # Weekly scan every Sunday at midnight
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  hadolint:
+    name: 🐳 Lint Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Hadolint Dockerfile Linter
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: error
+          ignore: DL3008,DL3013 # Allow apt without version pins & non-pinned pip
+
+  trivy-scan:
+    name: 🔒 Container Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Local Image for Scanning
+        run: |
+          docker build -t hadoop-cluster:3.1.2 -f Dockerfile .
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'hadoop-cluster:3.1.2'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'

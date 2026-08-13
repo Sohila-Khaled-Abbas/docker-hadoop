@@ -1,101 +1,127 @@
-# Big Data Ecosystem Integration Guide
+# 🔌 Big Data Ecosystem Integration Guide
 
-This guide describes how to connect external data processing frameworks, engines, and notebooks to this containerized Apache Hadoop 3.1.2 cluster.
+This guide details how to seamlessly connect external distributed compute engines, notebooks, and query frameworks to this containerized **Apache Hadoop 3.1.2** cluster.
 
 ---
 
 ## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Apache Spark & PySpark](#apache-spark--pyspark)
-- [Apache Hive](#apache-hive)
-- [Presto / Trino Query Engine](#presto--trino-query-engine)
-- [Jupyter Notebook & Python Clients](#jupyter-notebook--python-clients)
+- [Ecosystem Architecture](#-ecosystem-architecture)
+- [Apache Spark & PySpark Integration](#-apache-spark--pyspark-integration)
+- [Apache Hive Metastore & Tables](#-apache-hive-metastore--tables)
+- [Trino / Presto SQL Query Engines](#-trino--presto-sql-query-engines)
+- [Jupyter Notebooks & Python Clients](#-jupyter-notebooks--python-clients)
 
 ---
 
-## 🌐 Overview
+## 🌐 Ecosystem Architecture
 
-Because this container publishes standard Hadoop HDFS RPC (`:9000`) and Web UIs on the host, any external framework running locally or on other Docker containers can interact with HDFS and YARN.
+```mermaid
+flowchart TD
+    subgraph ComputeEngines["External Compute Engines & Clients"]
+        Spark["Apache Spark / PySpark<br/><code>hdfs://localhost:9000</code>"]
+        Hive["Apache Hive Metastore<br/><code>/user/hive/warehouse</code>"]
+        Trino["Trino / Presto SQL<br/><code>Hive Connector</code>"]
+        Jupyter["Jupyter Notebooks<br/><code>WebHDFS :9870 / pyarrow</code>"]
+    end
 
-```text
-+-------------------+       HDFS RPC (hdfs://localhost:9000)       +---------------------+
-|   Apache Spark    | -------------------------------------------> |                     |
-+-------------------+                                              |                     |
-|   Apache Hive     | ------> HDFS Warehouse (/user/hive/warehouse)  |  Hadoop Container   |
-+-------------------+                                              |    (HDFS + YARN)    |
-|   Presto / Trino  | -------------------------------------------> |                     |
-+-------------------+                                              |                     |
-|  Jupyter Notebook | ------> WebHDFS REST API (http://localhost:9870) |                 |
-+-------------------+                                              +---------------------+
+    subgraph HadoopContainer["Hadoop Docker Container (hadoop-master)"]
+        subgraph StorageLayer["HDFS Storage Subsystem"]
+            RPC["HDFS RPC Endpoint<br/>Port: 9000"]
+            WebHDFS["WebHDFS REST API<br/>Port: 9870"]
+        end
+
+        subgraph ComputeLayer["YARN Resource Management"]
+            YARN_RM["YARN ResourceManager<br/>Port: 8088"]
+        end
+    end
+
+    Spark -->|Read/Write Data Blocks| RPC
+    Spark -->|Submit YARN Applications| YARN_RM
+    Hive -->|Persist Table Data| RPC
+    Trino -->|Direct Columnar Scans| RPC
+    Jupyter -->|HTTP REST Operations| WebHDFS
+
+    classDef client fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef hadoop fill:#1e293b,stroke:#0ea5e9,stroke-width:2px,color:#ffffff;
+    class Spark,Hive,Trino,Jupyter client;
+    class RPC,WebHDFS,YARN_RM hadoop;
 ```
 
 ---
 
-## ⚡ Apache Spark & PySpark
+## ⚡ Apache Spark & PySpark Integration
 
-You can read and write datasets directly from/to HDFS using PySpark on your host machine or in separate containers.
+PySpark applications on your host machine or within separate containers can directly interact with HDFS.
 
-### PySpark Connection Example:
+### PySpark Read & Write Script
 
 ```python
 from pyspark.sql import SparkSession
 
-# Initialize Spark session with HDFS defaultFS
+# 1. Initialize Spark session pointing to HDFS DefaultFS
 spark = SparkSession.builder \
-    .appName("HadoopDockerIntegration") \
+    .appName("PySpark-HDFS-Integration") \
     .master("local[*]") \
     .config("spark.hadoop.fs.defaultFS", "hdfs://localhost:9000") \
+    .config("spark.sql.parquet.compression.codec", "snappy") \
     .getOrCreate()
 
-# Create a sample DataFrame
-data = [("Alice", 34, "Engineering"), ("Bob", 45, "Marketing"), ("Charlie", 29, "Data Science")]
-df = spark.createDataFrame(data, ["name", "age", "department"])
+# 2. Sample Data
+data = [
+    ("Alice", "Engineering", 120000),
+    ("Bob", "Marketing", 95000),
+    ("Charlie", "Data Science", 135000),
+    ("Diana", "Engineering", 125000)
+]
+df = spark.createDataFrame(data, ["name", "department", "salary"])
 
-# Write DataFrame to HDFS as Parquet
-df.write.mode("overwrite").parquet("hdfs://localhost:9000/data/employees.parquet")
+# 3. Write Partitioned Parquet to HDFS
+df.write \
+    .mode("overwrite") \
+    .partitionBy("department") \
+    .parquet("hdfs://localhost:9000/warehouse/employees.parquet")
 
-# Read Parquet from HDFS
-read_df = spark.read.parquet("hdfs://localhost:9000/data/employees.parquet")
-read_df.show()
+# 4. Query Back from HDFS
+result_df = spark.read.parquet("hdfs://localhost:9000/warehouse/employees.parquet")
+result_df.groupBy("department").avg("salary").show()
 
 spark.stop()
 ```
 
 ---
 
-## 🐝 Apache Hive
+## 🐝 Apache Hive Metastore & Tables
 
-To connect Apache Hive to this Hadoop cluster:
+### 1. Initialize HDFS Warehouse Directories
 
-1. **Create HDFS Warehouse Directories**:
-   ```bash
-   docker compose exec hadoop hdfs dfs -mkdir -p /tmp /user/hive/warehouse
-   docker compose exec hadoop hdfs dfs -chmod -R 1777 /tmp
-   docker compose exec hadoop hdfs dfs -chmod -R 777 /user/hive/warehouse
-   ```
+```bash
+docker compose exec hadoop hdfs dfs -mkdir -p /tmp /user/hive/warehouse
+docker compose exec hadoop hdfs dfs -chmod -R 1777 /tmp
+docker compose exec hadoop hdfs dfs -chmod -R 777 /user/hive/warehouse
+```
 
-2. **Configure `hive-site.xml`**:
-   ```xml
-   <configuration>
-       <property>
-           <name>fs.defaultFS</name>
-           <value>hdfs://localhost:9000</value>
-       </property>
-       <property>
-           <name>hive.metastore.warehouse.dir</name>
-           <value>/user/hive/warehouse</value>
-       </property>
-   </configuration>
-   ```
+### 2. Configure `hive-site.xml`
+
+```xml
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://localhost:9000</value>
+    </property>
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/user/hive/warehouse</value>
+    </property>
+</configuration>
+```
 
 ---
 
-## 🚀 Presto / Trino Query Engine
+## 🚀 Trino / Presto SQL Query Engines
 
-To query HDFS tables using Presto or Trino, configure the Hive connector catalog:
+Configure the Hive catalog in Trino (`etc/catalog/hdfs.properties`):
 
-`etc/catalog/hive.properties`:
 ```properties
 connector.name=hive
 hive.metastore.uri=thrift://localhost:9083
@@ -104,25 +130,32 @@ hive.config.resources=/path/to/core-site.xml,/path/to/hdfs-site.xml
 
 ---
 
-## 📓 Jupyter Notebook & Python (`hdfs` library)
+## 📓 Jupyter Notebooks & Python Clients
 
-You can interact with HDFS via WebHDFS or the Python `hdfs` library:
+### Option A: Using `pyarrow`
 
 ```python
-import hdfs
+import pyarrow.fs as fs
 
-# Connect to NameNode WebHDFS endpoint
-client = hdfs.InsecureClient('http://localhost:9870', user='hduser')
+# Connect to native HDFS C++ client
+hdfs = fs.HadoopFileSystem("localhost", port=9000, user="hduser")
 
 # List files
-print(client.list('/'))
+file_info = hdfs.get_file_info(fs.FileSelector("/", recursive=False))
+for f in file_info:
+    print(f.path, f.type)
+```
 
-# Upload a local file
-client.upload('/user/mydata/sample.csv', './sample.csv', overwrite=True)
+### Option B: Using WebHDFS REST Client (`hdfs` library)
 
-# Read file directly into Pandas
+```python
+from hdfs import InsecureClient
 import pandas as pd
-with client.read('/user/mydata/sample.csv', encoding='utf-8') as reader:
-    df = pd.read_csv(reader)
-    print(df.head())
+
+client = InsecureClient('http://localhost:9870', user='hduser')
+
+# Upload DataFrame to HDFS CSV
+df = pd.DataFrame({"id": [1, 2, 3], "val": ["A", "B", "C"]})
+with client.write('/user/hduser/data.csv', encoding='utf-8', overwrite=True) as writer:
+    df.to_csv(writer, index=False)
 ```

@@ -60,49 +60,65 @@ Ideal for:
 </p>
 
 ```mermaid
-graph TB
-    subgraph Host["Host Machine"]
-        Browser["Web Browser & Clients"]
-        subgraph Volumes["Docker Named Volumes"]
-            V_NN["hadoop_namenode_data<br/>(FSImage & Edits)"]
-            V_DN["hadoop_datanode_data<br/>(HDFS Blocks)"]
-            V_TMP["hadoop_tmp_data<br/>(/app/hadoop/tmp)"]
-            V_LOG["hadoop_logs_data<br/>(/usr/local/hadoop/logs)"]
-        end
+flowchart TD
+    subgraph Ingestion["📥 1. DATA INGESTION LAYER"]
+        Kafka["Apache Kafka / Event Streams"]
+        Logstash["Fluentd / Logstash / Ingestion"]
+        BatchSources["RDBMS CDC / Batch Files / S3"]
     end
 
-    subgraph Container["Hadoop Docker Container (hadoop-master)"]
-        subgraph StorageLayer["HDFS Storage Layer"]
-            NN["NameNode<br/>:9870 (Web) / :9000 (RPC)"]
-            DN["DataNode<br/>:9864 (Web) / :9866 (Data)"]
-            SNN["SecondaryNameNode<br/>:9868 (Web)"]
+    subgraph StorageLayer["🗄️ 2. DISTRIBUTED STORAGE LAYER (HDFS)"]
+        NN["NameNode (Metadata Master)<br/>Port: 9870 (Web) / 9000 (RPC)"]
+        SNN["SecondaryNameNode (Checkpointer)<br/>Port: 9868"]
+        subgraph DataNodeGroup["Replicated DataNodes"]
+            DN1["DataNode 1<br/>Block Storage"]
+            DN2["DataNode 2<br/>Block Storage"]
         end
-
-        subgraph ComputeLayer["YARN Compute Layer"]
-            RM["ResourceManager<br/>:8088 (Web)"]
-            NM["NodeManager<br/>:8042 (Web)"]
-            JHS["JobHistoryServer<br/>:19888 (Web)"]
-        end
-
-        SSHD["OpenSSH Daemon (:22222)"]
+        NN <-->|Heartbeats & Block Reports| DN1 & DN2
+        NN <-->|FSImage Checkpoints| SNN
     end
 
-    Browser -->|HTTP :9870| NN
-    Browser -->|HTTP :9864| DN
-    Browser -->|HTTP :8088| RM
-    Browser -->|HTTP :8042| NM
-    Browser -->|HTTP :19888| JHS
-    Browser -->|RPC :9000| NN
-    Browser -->|SSH :22222| SSHD
+    subgraph ComputeLayer["⚙️ 3. RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
+        RM["YARN ResourceManager<br/>Port: 8088 (Web) / 8032 (IPC)"]
+        subgraph NodeManagerGroup["NodeManagers & Containers"]
+            NM1["NodeManager<br/>Task Containers"]
+        end
+        JHS["JobHistoryServer<br/>Port: 19888 (Web)"]
+        RM <-->|Heartbeats & Allocations| NM1
+        NM1 -->|Completed Job Logs| JHS
+    end
 
-    NN <-->|Heartbeats & Block Reports| DN
-    NN <-->|Checkpoints| SNN
-    RM <-->|Container Allocations| NM
+    subgraph ProcessingEngines["⚡ 4. DISTRIBUTED PROCESSING ENGINES"]
+        Spark["Apache Spark / PySpark"]
+        MR["Native Java MapReduce"]
+        StreamingMR["Python Hadoop Streaming"]
+        Hive["Apache Hive / Trino SQL"]
+    end
 
-    NN -.->|Persist| V_NN
-    DN -.->|Persist| V_DN
-    StorageLayer -.->|Temp Files| V_TMP
-    ComputeLayer -.->|Logs| V_LOG
+    subgraph SWELayer["🛠️ 5. SOFTWARE ENGINEERING & DEVOPS"]
+        DockerInit["Docker Containerization (tini / init: true)"]
+        CI["GitHub Actions CI/CD (Test Automation)"]
+        HealthChecks["Health Probes & JMX Metrics"]
+    end
+
+    Ingestion -->|Batch & Streaming Ingestion| NN
+    NN -->|Block Pipelines| DataNodeGroup
+    ProcessingEngines -->|Submit Compute Tasks| RM
+    RM -->|Allocate Tasks| NodeManagerGroup
+    NodeManagerGroup -->|High-Throughput Block I/O| DataNodeGroup
+    SWELayer -.->|Supervises & Automates| StorageLayer & ComputeLayer
+
+    classDef ingestion fill:#0f766e,stroke:#14b8a6,stroke-width:2px,color:#ffffff;
+    classDef storage fill:#0369a1,stroke:#0ea5e9,stroke-width:2px,color:#ffffff;
+    classDef compute fill:#4338ca,stroke:#6366f1,stroke-width:2px,color:#ffffff;
+    classDef engines fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
+    classDef swe fill:#be185d,stroke:#f43f5e,stroke-width:2px,color:#ffffff;
+
+    class Kafka,Logstash,BatchSources ingestion;
+    class NN,SNN,DN1,DN2 storage;
+    class RM,NM1,JHS compute;
+    class Spark,MR,StreamingMR,Hive engines;
+    class DockerInit,CI,HealthChecks swe;
 ```
 
 > [!NOTE]

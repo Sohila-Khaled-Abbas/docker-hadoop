@@ -1,0 +1,45 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 Features & Enhancements'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bug'
+  - title: '🏗️ Data Engineering & Architecture'
+    labels:
+      - 'data-engineering'
+      - 'architecture'
+  - title: '📚 Documentation'
+    labels:
+      - 'documentation'
+      - 'docs'
+  - title: '🧰 Maintenance & Dependencies'
+    labels:
+      - 'dependencies'
+      - 'chore'
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+  default: patch
+template: |
+  ## What's Changed in this Release
+
+  $CHANGES
+
+  ---
+  **Full Changelog**: https://github.com/Sohila-Khaled-Abbas/docker-hadoop/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

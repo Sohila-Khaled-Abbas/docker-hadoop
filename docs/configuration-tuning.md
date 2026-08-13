@@ -1,30 +1,65 @@
-# Configuration & Performance Tuning Guide
+# ⚙️ Configuration & Performance Tuning Guide
 
-This document details the configuration files within the `config/` directory and offers optimization strategies for running Apache Hadoop workloads.
+This document details the configuration files within the `config/` directory and provides optimization formulas for sizing memory, vCores, I/O buffers, and JVM garbage collection on containerized Hadoop clusters.
 
 ---
 
 ## 📑 Table of Contents
 
-- [Configuration Files Overview](#configuration-files-overview)
-- [`core-site.xml` Parameters](#core-sitexml-parameters)
-- [`hdfs-site.xml` Parameters](#hdfs-sitexml-parameters)
-- [`yarn-site.xml` Parameters](#yarn-sitexml-parameters)
-- [`mapred-site.xml` Parameters](#mapred-sitexml-parameters)
-- [`hadoop-env.sh` JVM Sizing](#hadoop-envsh-jvm-sizing)
-- [Performance Tuning Recommendations](#performance-tuning-recommendations)
+- [Configuration Architecture](#-configuration-architecture)
+- [Memory Allocation & Sizing Model](#-memory-allocation--sizing-model)
+- [`core-site.xml` Parameters](#-core-sitexml-parameters)
+- [`hdfs-site.xml` Parameters](#-hdfs-sitexml-parameters)
+- [`yarn-site.xml` Parameters](#-yarn-sitexml-parameters)
+- [`mapred-site.xml` Parameters](#-mapred-sitexml-parameters)
+- [`hadoop-env.sh` JVM Heap Configuration](#-hadoop-envsh-jvm-heap-configuration)
+- [Production Optimization Best Practices](#-production-optimization-best-practices)
 
 ---
 
-## 📁 Configuration Files Overview
+## 📁 Configuration Architecture
 
-| File | Primary Scope | Key Managed Settings |
-| :--- | :--- | :--- |
-| `config/core-site.xml` | Global Hadoop Core | Default filesystem URI (`fs.defaultFS`), temporary storage path (`hadoop.tmp.dir`), I/O buffer sizing. |
-| `config/hdfs-site.xml` | HDFS Storage Subsystem | Block replication, NameNode/DataNode data paths, Web UI ports, permissions. |
-| `config/yarn-site.xml` | YARN Resource Management | Shuffle service, ResourceManager host/ports, NodeManager memory & vcore limits. |
-| `config/mapred-site.xml` | MapReduce Framework | Runtime framework (`yarn`), JobHistory server addresses, map/reduce container memory. |
-| `config/hadoop-env.sh` | Java & Process Environment | `JAVA_HOME`, JVM Heap options, daemon user bindings (`HDFS_NAMENODE_USER`, etc.). |
+```mermaid
+flowchart TD
+    subgraph HostEnv["Host / Docker Layer"]
+        EnvFile[".env File"] -->|Injects Env Vars| Compose["docker-compose.yml"]
+    end
+
+    subgraph ContainerMounts["Volume Mounts (/usr/local/hadoop/etc/hadoop/)"]
+        Core["core-site.xml<br/>(Global FS & Buffers)"]
+        HDFS["hdfs-site.xml<br/>(Block & Storage Rules)"]
+        YARN["yarn-site.xml<br/>(Schedulers & NodeLimits)"]
+        MapRed["mapred-site.xml<br/>(Task Containers & Framework)"]
+        EnvSh["hadoop-env.sh<br/>(JVM Heap & Native Libs)"]
+    end
+
+    Compose --> Core & HDFS & YARN & MapRed & EnvSh
+
+    classDef env fill:#0284c7,stroke:#0369a1,stroke-width:2px,color:#ffffff;
+    classDef configs fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    class EnvFile,Compose env;
+    class Core,HDFS,YARN,MapRed,EnvSh configs;
+```
+
+---
+
+## 🧠 Memory Allocation & Sizing Model
+
+```mermaid
+pie title Node Memory Sizing (8GB Total RAM Example)
+    "YARN Containers (NodeManager)" : 5120
+    "Hadoop Daemons (NameNode, DataNode, RM, NM, JHS)" : 2048
+    "OS Kernel & Buffer Cache" : 1024
+```
+
+### Sizing Formulas
+
+1. **YARN NodeManager Memory**:
+   $$\text{yarn.nodemanager.resource.memory-mb} = \text{Total Container RAM} - \text{Daemons Heap (2GB)} - \text{OS Buffer (1GB)}$$
+
+2. **Map/Reduce Container JVM Heap**:
+   $$\text{mapreduce.map.java.opts} = 0.80 \times \text{mapreduce.map.memory.mb}$$
+   *(The remaining 20% accommodates JVM Metaspace, thread stacks, and native C++ Snappy libraries).*
 
 ---
 
@@ -32,19 +67,21 @@ This document details the configuration files within the `config/` directory and
 
 ```xml
 <configuration>
-    <!-- Base directory for Hadoop temporary storage -->
-    <property>
-        <name>hadoop.tmp.dir</name>
-        <value>/app/hadoop/tmp</value>
-    </property>
-
-    <!-- Default filesystem URI -->
+    <!-- Default Filesystem URI -->
     <property>
         <name>fs.defaultFS</name>
         <value>hdfs://localhost:9000</value>
+        <description>Default filesystem URI scheme and authority for client RPC.</description>
     </property>
 
-    <!-- Stream buffer size (default 4KB, 64KB recommended for high throughput) -->
+    <!-- Base temporary directory -->
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/app/hadoop/tmp</value>
+        <description>Parent directory for temporary files, local scratch space, and PID locks.</description>
+    </property>
+
+    <!-- Stream I/O buffer size (64KB for high-throughput reads/writes) -->
     <property>
         <name>io.file.buffer.size</name>
         <value>65536</value>
@@ -58,13 +95,13 @@ This document details the configuration files within the `config/` directory and
 
 ```xml
 <configuration>
-    <!-- Replication factor (1 for single-node development, 3 for multi-node production) -->
+    <!-- Block Replication Factor (1 for local single-node cluster) -->
     <property>
         <name>dfs.replication</name>
         <value>1</value>
     </property>
 
-    <!-- HDFS Block size (default 128MB) -->
+    <!-- Default HDFS Block Size (128 MB) -->
     <property>
         <name>dfs.blocksize</name>
         <value>134217728</value>
@@ -81,6 +118,12 @@ This document details the configuration files within the `config/` directory and
         <name>dfs.datanode.data.dir</name>
         <value>file:/usr/local/hadoop/yarn_data/hdfs/datanode</value>
     </property>
+
+    <!-- Relaxed permission checking for local development -->
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+    </property>
 </configuration>
 ```
 
@@ -90,26 +133,28 @@ This document details the configuration files within the `config/` directory and
 
 ```xml
 <configuration>
-    <!-- Total physical memory (MB) available for YARN containers on this node -->
+    <!-- Total physical memory (MB) allocated for YARN containers -->
     <property>
         <name>yarn.nodemanager.resource.memory-mb</name>
         <value>4096</value>
     </property>
 
-    <!-- Minimum and maximum container allocation size -->
-    <property>
-        <name>yarn.scheduler.minimum-allocation-mb</name>
-        <value>512</value>
-    </property>
-    <property>
-        <name>yarn.scheduler.maximum-allocation-mb</name>
-        <value>4096</value>
-    </property>
-
-    <!-- Number of vcores allocated to NodeManager -->
+    <!-- CPU Virtual Cores allocated to NodeManager -->
     <property>
         <name>yarn.nodemanager.resource.cpu-vcores</name>
         <value>4</value>
+    </property>
+
+    <!-- Disable strict virtual memory check on Docker containers -->
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>false</value>
+    </property>
+
+    <!-- Auxiliary shuffle service for MapReduce on YARN -->
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
     </property>
 </configuration>
 ```
@@ -125,44 +170,47 @@ This document details the configuration files within the `config/` directory and
         <value>yarn</value>
     </property>
 
-    <!-- Container memory for Map tasks -->
+    <!-- Container RAM for Map and Reduce Tasks -->
     <property>
         <name>mapreduce.map.memory.mb</name>
         <value>1024</value>
     </property>
-
-    <!-- Container memory for Reduce tasks -->
     <property>
         <name>mapreduce.reduce.memory.mb</name>
         <value>2048</value>
+    </property>
+
+    <!-- JVM Heap Limits (80% Rule) -->
+    <property>
+        <name>mapreduce.map.java.opts</name>
+        <value>-Xmx819m</value>
+    </property>
+    <property>
+        <name>mapreduce.reduce.java.opts</name>
+        <value>-Xmx1638m</value>
     </property>
 </configuration>
 ```
 
 ---
 
-## ☕ `hadoop-env.sh` JVM Sizing
-
-You can configure daemon heap sizes directly in `config/hadoop-env.sh`:
+## ☕ `hadoop-env.sh` JVM Heap Configuration
 
 ```bash
-# NameNode Heap Size
-export HDFS_NAMENODE_OPTS="-Xms512m -Xmx1024m"
-
-# DataNode Heap Size
-export HDFS_DATANODE_OPTS="-Xms256m -Xmx512m"
-
-# ResourceManager Heap Size
-export YARN_RESOURCEMANAGER_OPTS="-Xms512m -Xmx1024m"
-
-# NodeManager Heap Size
-export YARN_NODEMANAGER_OPTS="-Xms256m -Xmx512m"
+# Centralized JVM Daemon Heap Allocations
+export HDFS_NAMENODE_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+export HDFS_DATANODE_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+export YARN_RESOURCEMANAGER_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+export YARN_NODEMANAGER_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
 ```
 
 ---
 
-## 🚀 Performance Tuning Recommendations
+## 🚀 Production Optimization Best Practices
 
-1. **Avoid Small Files**: Thousands of tiny files consume NameNode memory disproportionately (each metadata object occupies ~150 bytes in NameNode RAM). Use Hadoop Archives (HAR) or SequenceFiles for small files.
-2. **Use Combiners**: In MapReduce jobs, enable local combiners (`job.setCombinerClass(...)`) to minimize intermediate network shuffle volume.
-3. **Tune Compression**: Use Snappy or Gzip compression for intermediate Map outputs to reduce disk I/O and network transfer times.
+1. **Enable G1GC (`-XX:+UseG1GC`)**:
+   - The Garbage-First collector minimizes stop-the-world pauses for large memory heaps (>4GB) across NameNode and ResourceManager.
+2. **Intermediate Map Output Compression**:
+   - Always set `mapreduce.map.output.compress=true` and use **Snappy** codec to minimize disk spills and network transfer latency.
+3. **Small Files Mitigations**:
+   - Avoid creating files smaller than the block size (128 MB). Combine small files before ingestion or use `CombineFileInputFormat`.
