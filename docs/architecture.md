@@ -21,6 +21,10 @@ This document provides a comprehensive architectural overview of the single-node
 
 ## 🏛️ System Architecture Overview
 
+<p align="center">
+  <img src="images/hadoop-data-engineering-infographic.png" alt="Apache Hadoop Modern Big Data Engineering and Software Engineering Architecture" width="100%" />
+</p>
+
 The container orchestrates the complete Apache Hadoop 3.1.2 daemon stack inside an isolated Ubuntu 20.04 environment. It exposes all native Web UIs, RPC ports, and SSH endpoints to the host while persisting cluster state through named Docker volumes.
 
 ```mermaid
@@ -51,7 +55,7 @@ graph TB
         end
 
         subgraph OS["Container OS / Runtime"]
-            SSHD["OpenSSH Daemon<br/>Port: 22 (Mapped to 2222)"]
+            SSHD["OpenSSH Daemon<br/>Port: 22 (Mapped to 22222)"]
             JVM["OpenJDK 8 Runtime"]
             HDUSER["hduser (UID: 1000, GID: 1000)"]
         end
@@ -63,7 +67,7 @@ graph TB
     ClientUI -->|HTTP :8042| NM
     ClientUI -->|HTTP :19888| JHS
     ClientUI -->|RPC :9000| NN
-    ClientUI -->|SSH :2222| SSHD
+    ClientUI -->|SSH :22222| SSHD
 
     NN <-->|Heartbeats & Block Reports| DN
     NN <-->|Checkpoint Merging| SNN
@@ -234,7 +238,7 @@ The container maps internal daemons to host network interfaces:
 |   :8042  ------------------->  YARN NodeManager Web UI                        |
 |   :19888 ------------------->  MapReduce JobHistory Web UI                    |
 |   :9000  ------------------->  HDFS RPC Port (Client IPC)                     |
-|   :2222  ------------------->  Container SSH Daemon (Port 22)                 |
+|   :22222 ------------------->  Container SSH Daemon (Port 22)                 |
 |                                                                               |
 +-------------------------------------------------------------------------------+
 ```

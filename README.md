@@ -55,6 +55,10 @@ Ideal for:
 
 ## 🏛️ System Architecture
 
+<p align="center">
+  <img src="docs/images/hadoop-data-engineering-infographic.png" alt="Apache Hadoop Modern Big Data Engineering and Software Engineering Architecture" width="95%" />
+</p>
+
 ```mermaid
 graph TB
     subgraph Host["Host Machine"]
@@ -80,7 +84,7 @@ graph TB
             JHS["JobHistoryServer<br/>:19888 (Web)"]
         end
 
-        SSHD["OpenSSH Daemon (:2222)"]
+        SSHD["OpenSSH Daemon (:22222)"]
     end
 
     Browser -->|HTTP :9870| NN
@@ -89,7 +93,7 @@ graph TB
     Browser -->|HTTP :8042| NM
     Browser -->|HTTP :19888| JHS
     Browser -->|RPC :9000| NN
-    Browser -->|SSH :2222| SSHD
+    Browser -->|SSH :22222| SSHD
 
     NN <-->|Heartbeats & Block Reports| DN
     NN <-->|Checkpoints| SNN
@@ -102,7 +106,7 @@ graph TB
 ```
 
 > [!NOTE]
-> For detailed architectural specifications, HDFS read/write pipelines, and YARN scheduling lifecycles, see the [Architecture Documentation](docs/architecture.md).
+> For detailed architectural specifications, HDFS read/write pipelines, and YARN scheduling lifecycles, see the [Architecture Documentation](docs/architecture.md). Also check our [Big Data Engineering Patterns Guide](docs/data-engineering-patterns.md) and [Software Engineering Best Practices](docs/software-engineering-practices.md).
 
 ---
 
@@ -118,7 +122,7 @@ All standard Apache Hadoop web consoles and service endpoints are mapped to host
 | **YARN NodeManager** | `8042` | `8042` | [http://localhost:8042](http://localhost:8042) | NodeManager status and container allocations. |
 | **MapReduce JobHistory** | `19888` | `19888` | [http://localhost:19888](http://localhost:19888) | Historical MapReduce job logs, execution counters, and analytics. |
 | **HDFS RPC Endpoint** | `9000` | `9000` | `hdfs://localhost:9000` | Client IPC protocol endpoint for external tools (Spark, Flink, PySpark). |
-| **SSH Daemon** | `22` | `2222` | `ssh -p 2222 hduser@localhost` | Direct SSH access (`password: ubuntu`). |
+| **SSH Daemon** | `22` | `22222` | `ssh -p 22222 hduser@localhost` | Direct SSH access (`password: ubuntu`). |
 
 > [!TIP]
 > You can customize all external port numbers by editing `.env` or setting environment variables (e.g. `HADOOP_NAMENODE_PORT=19870`).
@@ -352,6 +356,23 @@ docker compose up -d
 </details>
 
 *For more solutions, see the [Troubleshooting Runbook](docs/troubleshooting.md).*
+
+---
+
+## 📚 In-Depth Documentation & Guides
+
+Explore specialized technical guides tailored for Data Engineers and Software Engineers:
+
+| Guide | Description | Key Focus Areas |
+| :--- | :--- | :--- |
+| [🏗️ **Data Engineering Patterns**](docs/data-engineering-patterns.md) | Architectural patterns for high-throughput distributed data pipelines. | Lakehouse / Medallion Architecture, Parquet vs ORC vs Avro, Map-Side Joins, Small Files solutions, WAP pattern, PySpark ETL. |
+| [🛠️ **Software Engineering Practices**](docs/software-engineering-practices.md) | Production engineering, containerization standards, and CI/CD. | 12-Factor Big Data, Tini init system, Zombie reaping, Signal propagation, Unit testing pipelines, JMX observability. |
+| [🏛️ **System Architecture**](docs/architecture.md) | Complete Hadoop 3.1.2 topology blueprint and interaction lifecycles. | HDFS NameNode / DataNode RPC, YARN Scheduler, SecondaryNameNode Checkpointing, Network Port Matrix. |
+| [⚡ **MapReduce Programming Guide**](docs/mapreduce-guide.md) | Comprehensive development guide for Java & Python Streaming. | Mapper/Reducer execution, Shuffle & Sort internals, Partitioner logic, In-Mapper Combiners, Streaming API. |
+| [⚙️ **Configuration & JVM Tuning**](docs/configuration-tuning.md) | Complete XML parameter guide and JVM performance tuning. | Heap sizing, GC optimization, container vCore/RAM allocations, HDFS block sizing, speculative execution. |
+| [🔌 **Ecosystem Integration**](docs/ecosystem-integration.md) | Connecting external Big Data and analytical compute engines. | Apache Spark / PySpark, Apache Hive Metastore, Presto / Trino SQL, Jupyter Notebooks. |
+| [🔍 **Troubleshooting & Diagnostics**](docs/troubleshooting.md) | Operational runbook for diagnosing and resolving cluster failures. | Port conflicts, SafeMode deadlocks, DataNode clusterID divergence, OOM errors, Healthcheck debugging. |
+| [🚀 **Getting Started Guide**](docs/getting-started.md) | Fast onboarding walkthrough for developers and researchers. | Prerequisites, step-by-step setup, cluster verification, CLI execution. |
 
 ---
 

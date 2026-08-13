@@ -8,6 +8,7 @@ services:
     image: ${IMAGE_NAME:-hadoop-cluster:3.1.2}
     container_name: ${CONTAINER_NAME:-hadoop-master}
     hostname: localhost
+    init: true
     ports:
       - "${HADOOP_NAMENODE_PORT:-9870}:9870"          # HDFS NameNode Web UI
       - "${HADOOP_DATANODE_PORT:-9864}:9864"          # HDFS DataNode Web UI
@@ -15,7 +16,7 @@ services:
       - "${HADOOP_NODEMANAGER_PORT:-8042}:8042"      # YARN NodeManager Web UI
       - "${HADOOP_JOBHISTORY_PORT:-19888}:19888"     # MapReduce JobHistory Web UI
       - "${HADOOP_HDFS_RPC_PORT:-9000}:9000"         # HDFS RPC Port
-      - "${HADOOP_SSH_PORT:-2222}:22"                # SSH Port
+      - "${HADOOP_SSH_PORT:-22222}:22"               # SSH Port
     volumes:
       - hadoop_namenode:/usr/local/hadoop/yarn_data/hdfs/namenode
       - hadoop_datanode:/usr/local/hadoop/yarn_data/hdfs/datanode
@@ -34,7 +35,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 120s
     restart: unless-stopped
 
 volumes:
