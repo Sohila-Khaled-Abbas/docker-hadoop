@@ -39,9 +39,13 @@ if ($existingVm) {
     & $VBoxManage modifyvm $VmName `
         --memory $MemoryMB `
         --cpus $CpuCount `
-        --vram 32 `
-        --graphicscontroller vmsvga `
-        --paravirtprovider hyperv `
+        --vram 128 `
+        --graphicscontroller vboxsvga `
+        --accelerate-3d off `
+        --mouse usbtablet `
+        --clipboard-mode bidirectional `
+        --drag-and-drop bidirectional `
+        --paravirtprovider default `
         --hpet on `
         --pae on `
         --ioapic on `
