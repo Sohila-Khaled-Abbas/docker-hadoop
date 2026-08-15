@@ -17,3 +17,8 @@ logs/
 # Hadoop temp
 /yarn_data/
 /app/
+
+# VirtualBox and ISO Images
+*.iso
+*.vdi
+*.viso

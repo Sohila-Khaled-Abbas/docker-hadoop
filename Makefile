@@ -24,6 +24,13 @@ help:
 	@echo "    make safemode-leave  - Force HDFS NameNode to exit SafeMode"
 	@echo "    make bash            - Open interactive root/hduser shell"
 	@echo "    make hdfs-shell      - Open interactive shell as hduser"
+	@echo ""
+	@echo "  VirtualBox VM Management:"
+	@echo "    make vm-create       - Create and configure Ubuntu Hadoop VM"
+	@echo "    make vm-start        - Start the Ubuntu Hadoop VM"
+	@echo "    make vm-stop         - Gracefully shutdown the VM"
+	@echo "    make vm-ssh          - Connect to the VM via SSH (port 2222)"
+	@echo "    make vm-status       - Check VM running status and info"
 	@echo "=========================================================="
 
 build:
@@ -70,3 +77,18 @@ hdfs-shell:
 
 clean:
 	docker compose down -v --rmi all
+
+vm-create:
+	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox-setup.ps1
+
+vm-start:
+	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm "Ubuntu-Hadoop" --type gui
+
+vm-stop:
+	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" controlvm "Ubuntu-Hadoop" acpipowerbutton
+
+vm-ssh:
+	ssh -p 2222 hadoopuser@127.0.0.1
+
+vm-status:
+	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" showvminfo "Ubuntu-Hadoop" | findstr /i "State Memory CPUs NIC"

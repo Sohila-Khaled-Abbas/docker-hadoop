@@ -190,6 +190,25 @@ make ps
 
 </details>
 
+<details>
+<summary><b>Option C: Using Oracle VirtualBox & Ubuntu VM</b></summary>
+
+```powershell
+# 1. Automatically create and start the Ubuntu VM in VirtualBox
+powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1
+
+# 2. SSH into the VM (port 2222, password: hadoopuser)
+ssh -p 2222 hadoopuser@localhost
+
+# 3. Run the automated Hadoop cluster installer
+bash /path/to/install-hadoop-ubuntu.sh
+```
+
+> [!TIP]
+> See the complete [VirtualBox & Ubuntu Setup Guide](docs/virtualbox-ubuntu-guide.md) for full configuration, networking, and troubleshooting details.
+
+</details>
+
 ### 3. Verify Daemon Status
 
 Verify that all 6 Java daemons are running:
@@ -388,6 +407,7 @@ Explore specialized technical guides tailored for Data Engineers and Software En
 | [⚙️ **Configuration & JVM Tuning**](docs/configuration-tuning.md) | Complete XML parameter guide and JVM performance tuning. | Heap sizing, GC optimization, container vCore/RAM allocations, HDFS block sizing, speculative execution. |
 | [🔌 **Ecosystem Integration**](docs/ecosystem-integration.md) | Connecting external Big Data and analytical compute engines. | Apache Spark / PySpark, Apache Hive Metastore, Presto / Trino SQL, Jupyter Notebooks. |
 | [🔍 **Troubleshooting & Diagnostics**](docs/troubleshooting.md) | Operational runbook for diagnosing and resolving cluster failures. | Port conflicts, SafeMode deadlocks, DataNode clusterID divergence, OOM errors, Healthcheck debugging. |
+| [🖥️ **VirtualBox & Ubuntu Setup Guide**](docs/virtualbox-ubuntu-guide.md) | Step-by-step guide for provisioning Ubuntu VM and running Hadoop on VirtualBox. | Hardware specs, NAT port forwarding, automation scripts, passwordless SSH, troubleshooting. |
 | [🚀 **Getting Started Guide**](docs/getting-started.md) | Fast onboarding walkthrough for developers and researchers. | Prerequisites, step-by-step setup, cluster verification, CLI execution. |
 
 ---
@@ -416,7 +436,8 @@ docker-hadoop/
 │   ├── ecosystem-integration.md # Spark, Hive, Presto, and Jupyter integration
 │   ├── getting-started.md       # Developer onboarding & operational guide
 │   ├── mapreduce-guide.md       # Comprehensive MapReduce programming guide
-│   └── troubleshooting.md       # Diagnostics & troubleshooting runbook
+│   ├── troubleshooting.md       # Diagnostics & troubleshooting runbook
+│   └── virtualbox-ubuntu-guide.md # Oracle VirtualBox & Ubuntu installation guide
 ├── examples/
 │   ├── mapreduce-java/          # Standalone Java WordCount with compile script
 │   │   ├── WordCount.java
@@ -434,7 +455,9 @@ docker-hadoop/
 ├── scripts/
 │   ├── entrypoint.sh            # Container bootstrap & daemon orchestration
 │   ├── healthcheck.sh           # Container health check script
-│   └── test-cluster.sh          # MapReduce & HDFS integration tests
+│   ├── install-hadoop-ubuntu.sh # Ubuntu native Hadoop automated installer
+│   ├── test-cluster.sh          # MapReduce & HDFS integration tests
+│   └── virtualbox-setup.ps1     # Automated PowerShell VirtualBox VM creator
 ├── .dockerignore                # Docker build exclusions
 ├── .env.example                 # Configuration template
 ├── .gitignore                   # Git exclusions
