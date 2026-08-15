@@ -15,18 +15,18 @@ docker compose cp "${SCRIPT_DIR}/mapper.py" hadoop:/tmp/mapper.py
 docker compose cp "${SCRIPT_DIR}/reducer.py" hadoop:/tmp/reducer.py
 docker compose cp "${SCRIPT_DIR}/sample.txt" hadoop:/tmp/sample.txt
 
-docker compose exec -T hadoop chmod +x /tmp/mapper.py /tmp/reducer.py
+docker compose exec -T hadoop chmod 777 /tmp/mapper.py /tmp/reducer.py /tmp/sample.txt
 docker compose exec -T hadoop hdfs dfs -put -f /tmp/sample.txt /example/python/input/
 
 echo "=== 3. Executing Hadoop Streaming MapReduce Job ==="
 docker compose exec -T hadoop hadoop jar "$STREAMING_JAR" \
     -files /tmp/mapper.py,/tmp/reducer.py \
-    -mapper "python3 /tmp/mapper.py" \
-    -reducer "python3 /tmp/reducer.py" \
+    -mapper "python3 ./mapper.py" \
+    -reducer "python3 ./reducer.py" \
     -input /example/python/input/sample.txt \
     -output /example/python/output
 
 echo "=== 4. Displaying Results from HDFS ==="
-docker compose exec -T hadoop hdfs dfs -cat /example/python/output/part-00000
+docker compose exec -T hadoop hdfs dfs -cat /example/python/output/part-00000 | head -n 25
 
 echo "=== Python MapReduce Job Finished Successfully ==="
