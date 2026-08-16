@@ -8,7 +8,7 @@ This guide provides complete, step-by-step instructions for creating, configurin
 
 1. [Hardware & Prerequisites](#hardware--prerequisites)
 2. [Automated VM Setup (PowerShell)](#automated-vm-setup-powershell)
-3. [Manual VirtualBox Configuration](#manual-virtualbox-configuration)
+3. [Display, FHD & Auto-Resize Configuration](#display-fhd--auto-resize-configuration)
 4. [Network & Port Forwarding Configuration](#network--port-forwarding-configuration)
 5. [Automated Hadoop Installation](#automated-hadoop-installation)
 6. [Manual Hadoop Installation Steps](#manual-hadoop-installation-steps)
@@ -22,60 +22,70 @@ This guide provides complete, step-by-step instructions for creating, configurin
 
 * **Host OS**: Windows 10/11, macOS, or Linux.
 * **Virtualization**: Intel VT-x / AMD-V enabled in BIOS/UEFI.
-* **RAM Allocation**: Minimum `2560 MB` (2.5 GB), Recommended `4096 MB` (4 GB) or higher.
-* **CPUs**: Minimum `2 vCPUs`.
+* **RAM Allocation**: Recommended `4096 MB` (4 GB) or higher (Minimum `2560 MB`).
+* **CPUs**: `2 vCPUs` with 100% execution cap.
 * **Storage**: `40 GB` or more dynamically allocated virtual disk.
 * **Software**:
   * [Oracle VM VirtualBox](https://www.virtualbox.org/) 7.0+
-  * [Ubuntu Desktop or Server ISO](https://ubuntu.com/download/desktop) (22.04 LTS / 24.04 LTS)
+  * [Ubuntu Desktop or Server ISO](https://ubuntu.com/download/desktop) (22.04 LTS / 24.04 LTS / 26.04)
 
 ---
 
 ## ⚡ Automated VM Setup (PowerShell)
 
-From your Windows host machine, run the provided provisioning script:
+From your Windows host machine in PowerShell, run the provided provisioning script:
 
 ```powershell
+# Standard Creation / Launch
 powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1
+
+# Clean Rebuild from Scratch
+powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1 -Rebuild
 ```
 
 This script automatically:
 * Registers the VM named `Ubuntu-Hadoop`.
-* Sets optimal RAM (`2560 MB`), CPUs (`2`), and Paravirtualization (`Hyper-V`).
-* Creates a `40 GB` VDI virtual disk.
-* Attaches the Ubuntu installation ISO.
-* Configures NAT Port Forwarding for SSH and Hadoop Web interfaces.
+* Sets optimal RAM (`4096 MB`), CPUs (`2`), and Paravirtualization (`Hyper-V`).
+* Configures **UEFI / EFI firmware** with native **Full HD (1920x1080)** GOP resolution.
+* Enables **VMSVGA** graphics with **Dynamic Window Auto-Resize**.
+* Creates a `40 GB` VDI virtual disk and attaches the Ubuntu ISO.
+* Configures NAT Port Forwarding for SSH and all Hadoop Web interfaces.
 * Boots the VM.
 
 ---
 
-## 🛠️ Manual VirtualBox Configuration
+## 🖥️ Display, FHD & Auto-Resize Configuration
 
-If configuring manually via the VirtualBox Graphical Interface:
+To ensure the virtual machine fills your window or monitor with crisp, unscaled 1:1 Full HD quality:
 
-1. Click **New**:
-   * **Name**: `Ubuntu-Hadoop`
-   * **Type**: `Linux`
-   * **Version**: `Ubuntu (64-bit)`
-   * **ISO Image**: Browse to your downloaded Ubuntu `.iso`.
-2. **Hardware**:
-   * **Base Memory**: `2560 MB` to `4096 MB`
-   * **Processors**: `2 CPUs`
-3. **Hard Disk**:
-   * Create a Virtual Hard Disk Now $\rightarrow$ `VDI` $\rightarrow$ Dynamically Allocated $\rightarrow$ `40.00 GB`.
-4. **System Acceleration Settings**:
-   * Go to **Settings** $\rightarrow$ **System** $\rightarrow$ **Acceleration**.
-   * Set **Paravirtualization Interface** to `Hyper-V` (recommended for Windows hosts) or `Default`.
-   * Enable **HPET** (High Precision Event Timer) and **IO APIC**.
+### Keyboard Shortcuts in VirtualBox Window:
+
+| Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| **`Right-Ctrl + F`** | **Full-Screen Mode** | Fills your entire monitor with native resolution. |
+| **`Right-Ctrl + G`** | **Auto-Resize Guest Display** | Dynamic auto-resize whenever the window borders are dragged. |
+| **`Right-Ctrl + L`** | **Seamless Mode** | Integrates guest windows with your Windows desktop. |
+
+### Manual Display Commands (Host PowerShell):
+
+```powershell
+$VBox = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+
+# Set Native 1920x1080 EFI Framebuffer
+& $VBox setextradata "Ubuntu-Hadoop" "VBoxInternal2/EfiGraphicsResolution" "1920x1080"
+& $VBox setextradata "Ubuntu-Hadoop" "CustomVideoMode1" "1920x1080x32"
+
+# Enable Unscaled 1:1 Display & Dynamic Auto-Resize
+& $VBox setextradata "Ubuntu-Hadoop" "GUI/ScaleFactor" "1.0"
+& $VBox setextradata "Ubuntu-Hadoop" "GUI/MaxGuestResolution" "any"
+& $VBox setextradata "Ubuntu-Hadoop" "GUI/AutoResizeGuest" "on"
+```
 
 ---
 
 ## 🌐 Network & Port Forwarding Configuration
 
-Using **NAT with Port Forwarding** allows seamless access to Hadoop Web UIs and SSH from the Windows host without needing Bridged networking:
-
-In VirtualBox:
-**Settings** $\rightarrow$ **Network** $\rightarrow$ **Adapter 1 (NAT)** $\rightarrow$ **Advanced** $\rightarrow$ **Port Forwarding**:
+Using **NAT with Port Forwarding** allows seamless access to Hadoop Web UIs and SSH directly from your Windows host browser and terminal:
 
 | Rule Name | Protocol | Host IP | Host Port | Guest IP | Guest Port | Purpose |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -89,14 +99,22 @@ In VirtualBox:
 
 ## 🚀 Automated Hadoop Installation
 
-1. Connect to the Ubuntu VM via SSH:
-   ```bash
+Once the Ubuntu OS is installed inside the VM and running:
+
+1. Copy the installer script from Windows to Ubuntu via SCP:
+   ```powershell
+   scp -P 2222 .\scripts\install-hadoop-ubuntu.sh hadoopuser@localhost:~/
+   ```
+
+2. SSH into the Ubuntu VM:
+   ```powershell
    ssh -p 2222 hadoopuser@localhost
    ```
 
-2. Download and run the automated cluster installer:
+3. Run the automated cluster installer:
    ```bash
-   bash /path/to/install-hadoop-ubuntu.sh
+   chmod +x ~/install-hadoop-ubuntu.sh
+   bash ~/install-hadoop-ubuntu.sh
    ```
 
 ---
@@ -117,7 +135,7 @@ ssh localhost # verify without password prompt
 exit
 ```
 
-### 3. Download & Install Hadoop
+### 3. Download & Install Hadoop 3.3.6
 ```bash
 wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz -P /tmp
 sudo tar -xzf /tmp/hadoop-3.3.6.tar.gz -C /usr/local/
@@ -126,7 +144,7 @@ sudo chown -R $USER:$USER /usr/local/hadoop
 ```
 
 ### 4. Configure Environment Variables (`~/.bashrc`)
-Add the following to the bottom of `~/.bashrc`:
+Add the following to `~/.bashrc`:
 ```bash
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 export HADOOP_HOME=/usr/local/hadoop
@@ -203,6 +221,10 @@ source ~/.bashrc
         <name>yarn.nodemanager.aux-services</name>
         <value>mapreduce_shuffle</value>
     </property>
+    <property>
+        <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
 </configuration>
 ```
 
@@ -214,36 +236,36 @@ hdfs namenode -format
 # Start DFS and YARN
 start-dfs.sh
 start-yarn.sh
+mapred --daemon start historyserver
 ```
 
 ---
 
 ## 🔍 Verifying the Cluster
 
-1. Check active Java processes with `jps`:
+1. Check active Java daemons with `jps`:
    ```bash
    jps
    ```
-   You should see:
+   Expected output:
    * `NameNode`
    * `DataNode`
    * `SecondaryNameNode`
    * `ResourceManager`
    * `NodeManager`
+   * `JobHistoryServer`
    * `Jps`
 
-2. Test HDFS file operations:
+2. Run the MapReduce Pi Calculation Benchmark:
    ```bash
-   hdfs dfs -mkdir -p /user/hadoopuser/input
-   echo "Hello Hadoop in VirtualBox Ubuntu" > /tmp/sample.txt
-   hdfs dfs -put /tmp/sample.txt /user/hadoopuser/input/
-   hdfs dfs -ls /user/hadoopuser/input/
-   hdfs dfs -cat /user/hadoopuser/input/sample.txt
+   yarn jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar pi 2 100
    ```
 
-3. Open Web UIs in Windows Browser:
-   * **NameNode Status**: [http://localhost:9870](http://localhost:9870)
-   * **YARN Applications**: [http://localhost:8088](http://localhost:8088)
+3. Access Web UIs from your Windows Browser:
+   * **HDFS NameNode UI**: [http://127.0.0.1:9870](http://127.0.0.1:9870)
+   * **YARN ResourceManager UI**: [http://127.0.0.1:8088](http://127.0.0.1:8088)
+   * **HDFS DataNode UI**: [http://127.0.0.1:9864](http://127.0.0.1:9864)
+   * **MapReduce JobHistory UI**: [http://127.0.0.1:19888](http://127.0.0.1:19888)
 
 ---
 
@@ -262,17 +284,25 @@ start-yarn.sh
 
 ## 🛠️ Troubleshooting Common Issues
 
-### 1. `rcu_preempt self-detected stall on CPU` during boot
-* **Cause**: Timer clocksource conflict when running multi-vCPU Linux kernels under Windows Hyper-V/WHPX.
-* **Fix**: Run `VBoxManage modifyvm "Ubuntu-Hadoop" --paravirtprovider hyperv --hpet on`.
-
-### 2. `VERR_NO_PAGE_MEMORY` Error on VM Startup
-* **Cause**: VirtualBox failed to allocate contiguous host RAM.
-* **Fix**: Lower VM RAM to `2560 MB` or close high-RAM host processes.
-
-### 3. `Permission denied (publickey)` when running `start-dfs.sh`
-* **Fix**: Ensure SSH keys are properly authorized:
-  ```bash
-  cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-  chmod 600 ~/.ssh/authorized_keys
+### 1. `watchdog: BUG: soft lockup - CPU stuck` / Timer Drift
+* **Root Cause**: Timer clocksource conflict between Linux kernel and Windows WHPX / Hyper-V.
+* **Fix**: Set paravirtualization provider to `hyperv`:
+  ```powershell
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "Ubuntu-Hadoop" --paravirtprovider hyperv --hpet on
   ```
+
+### 2. Blank / Black Screen on Live ISO Boot
+* **Root Cause**: Linux DRM framebuffer mode-switch stall on legacy BIOS.
+* **Fix**: Use EFI firmware (`--firmware efi`) with native GOP resolution:
+  ```powershell
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "Ubuntu-Hadoop" --firmware efi --graphicscontroller vmsvga --vram 128
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" setextradata "Ubuntu-Hadoop" "VBoxInternal2/EfiGraphicsResolution" "1920x1080"
+  ```
+
+### 3. Display Has Black Bars / Does Not Fit Window
+* **Fix**: Enable AutoResizeGuest and MaxGuestResolution:
+  ```powershell
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" setextradata "Ubuntu-Hadoop" "GUI/AutoResizeGuest" "on"
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" setextradata "Ubuntu-Hadoop" "GUI/MaxGuestResolution" "any"
+  ```
+  In the VM window, press **`Right-Ctrl + G`** (Auto-Resize) or **`Right-Ctrl + F`** (Fullscreen).
