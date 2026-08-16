@@ -3,9 +3,10 @@
     Automated Oracle VM VirtualBox VM Creator and Configurator for Ubuntu & Apache Hadoop.
 .DESCRIPTION
     Creates and configures a VirtualBox VM with optimal, rock-solid settings for running Apache Hadoop on Ubuntu:
-    - 4.0 GB RAM, 2 vCPUs, 40GB VDI disk
+    - 4.0 GB RAM, 2 vCPUs, 40GB VDI disk with Host I/O Cache
     - UEFI / EFI firmware with native Full HD (1920x1080) GOP framebuffer
     - Hyper-V paravirtualization for precise clock sync and zero timer stalls
+    - Audio disabled to eliminate Windows WASAPI host thread latency/crashes
     - VMSVGA graphics with dynamic window auto-resize and 100% 1:1 scaling
     - Port forwarding for SSH (2222), NameNode (9870), YARN (8088), DataNode (9864), JobHistory (19888)
     - Automatically mounts Ubuntu ISO for installation.
@@ -68,22 +69,27 @@ Write-Host "--> [2/5] Configuring Hardware, Display & Hyper-V Paravirtualization
     --accelerate3d off `
     --firmware efi `
     --paravirtprovider hyperv `
+    --audio none `
+    --audio-out off `
+    --audio-in off `
     --mouse usbtablet `
     --clipboard-mode bidirectional `
     --drag-and-drop bidirectional `
-    --audio-out off `
-    --audio-in off `
     --hpet on `
     --pae on `
     --ioapic on `
     --x2apic on `
+    --nested-paging on `
+    --large-pages on `
     --nested-hw-virt off `
     --boot1 dvd --boot2 disk --boot3 none --boot4 none `
     --natpf1 "ssh,tcp,,2222,,22" `
     --natpf1 "namenode,tcp,,9870,,9870" `
     --natpf1 "yarn,tcp,,8088,,8088" `
     --natpf1 "datanode,tcp,,9864,,9864" `
-    --natpf1 "jobhistory,tcp,,19888,,19888"
+    --natpf1 "jobhistory,tcp,,19888,,19888" `
+    --natdnshostresolver1 on `
+    --natdnsproxy1 on
 
 Write-Host "--> [3/5] Setting Native Full HD (1920x1080) & Dynamic Auto-Resize..." -ForegroundColor Green
 & $VBoxManage setextradata $VmName "VBoxInternal2/EfiGraphicsResolution" "1920x1080"
@@ -94,8 +100,8 @@ Write-Host "--> [3/5] Setting Native Full HD (1920x1080) & Dynamic Auto-Resize..
 & $VBoxManage setextradata $VmName "GUI/AutoResizeGuest" "on"
 & $VBoxManage setextradata $VmName "GUI/LastGuestSizeHint" "1920,1080"
 
-Write-Host "--> [4/5] Creating 40GB VDI Disk and Attaching Storage..." -ForegroundColor Green
-& $VBoxManage storagectl $VmName --name "SATA Controller" --add sata --controller IntelAhci --portcount 4 --bootable on
+Write-Host "--> [4/5] Creating 40GB VDI Disk and Enabling Host I/O Cache..." -ForegroundColor Green
+& $VBoxManage storagectl $VmName --name "SATA Controller" --add sata --controller IntelAhci --portcount 4 --bootable on --hostiocache on
 & $VBoxManage createmedium disk --filename $VdiPath --size $DiskSizeMB --format VDI
 & $VBoxManage storageattach $VmName --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium $VdiPath
 
@@ -112,5 +118,6 @@ Write-Host "--> [5/5] Launching VM in GUI Mode..." -ForegroundColor Green
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "  🎉 Virtual Machine '$VmName' Started Successfully!             " -ForegroundColor Green
 Write-Host "  - Fullscreen Mode: Press Right-Ctrl + F                        " -ForegroundColor Yellow
+Write-Host "  - Scaled Mode:     Press Right-Ctrl + C                        " -ForegroundColor Yellow
 Write-Host "  - Auto-Resize:     Press Right-Ctrl + G                        " -ForegroundColor Yellow
 Write-Host "=================================================================" -ForegroundColor Cyan
