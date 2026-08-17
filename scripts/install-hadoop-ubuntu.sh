@@ -2,11 +2,12 @@
 # ==============================================================================
 # Automated Apache Hadoop Single-Node Cluster Installer on Ubuntu
 # Compatible with Ubuntu 20.04 / 22.04 / 24.04 / 26.04
+# Optimized for High Performance & Low Memory Footprint
 # ==============================================================================
 set -euo pipefail
 
 echo "================================================================="
-echo "  🐘 Apache Hadoop Automated Ubuntu Installer                    "
+echo "  🐘 Apache Hadoop Automated High-Performance Installer          "
 echo "================================================================="
 
 echo "--> [1/7] Updating apt repositories and installing prerequisites..."
@@ -47,7 +48,7 @@ if [ ! -d "/usr/local/hadoop" ]; then
     sudo chown -R "$(whoami):$(whoami)" /usr/local/hadoop
 fi
 
-echo "--> [4/7] Setting up Environment Variables..."
+echo "--> [4/7] Setting up Environment Variables & JVM Memory Optimizations..."
 JAVA_DETECTED_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 
 if ! grep -q "HADOOP_HOME=/usr/local/hadoop" ~/.bashrc 2>/dev/null; then
@@ -62,15 +63,20 @@ export HADOOP_COMMON_HOME=\$HADOOP_HOME
 export HADOOP_HDFS_HOME=\$HADOOP_HOME
 export YARN_HOME=\$HADOOP_HOME
 export HADOOP_COMMON_LIB_NATIVE_DIR=\$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=\$HADOOP_HOME/lib/native"
 export PATH=\$PATH:\$HADOOP_HOME/sbin:\$HADOOP_HOME/bin:\$JAVA_HOME/bin
+export PDSH_RCMD_TYPE=ssh
 EOT
 fi
 
-# Configure hadoop-env.sh
+# Configure hadoop-env.sh for optimal heap limits
 sed -i "s|# export JAVA_HOME=.*|export JAVA_HOME=${JAVA_DETECTED_HOME}|g" /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 if ! grep -q "export JAVA_HOME=${JAVA_DETECTED_HOME}" /usr/local/hadoop/etc/hadoop/hadoop-env.sh; then
     echo "export JAVA_HOME=${JAVA_DETECTED_HOME}" >> /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 fi
+echo "export HADOOP_HEAPSIZE_MAX=1024m" >> /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+echo "export HADOOP_NAMENODE_OPTS=\"-Xms512m -Xmx1024m\"" >> /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+echo "export HADOOP_DATANODE_OPTS=\"-Xms256m -Xmx512m\"" >> /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 
 echo "--> [5/7] Creating HDFS Directories and Cluster Config XMLs..."
 mkdir -p "/home/$(whoami)/hadoopdata/hdfs/namenode"
@@ -145,6 +151,14 @@ cat <<EOT > /usr/local/hadoop/etc/hadoop/yarn-site.xml
         <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
         <value>org.apache.hadoop.mapred.ShuffleHandler</value>
     </property>
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.pmem-check-enabled</name>
+        <value>false</value>
+    </property>
 </configuration>
 EOT
 
@@ -154,9 +168,10 @@ export HADOOP_HOME=/usr/local/hadoop
 export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$JAVA_HOME/bin
 hdfs namenode -format -force
 
-echo "--> [7/7] Launching HDFS (DFS) and YARN Daemons..."
+echo "--> [7/7] Launching HDFS (DFS), YARN & JobHistory Server..."
 start-dfs.sh
 start-yarn.sh
+mapred --daemon start historyserver
 
 echo "================================================================="
 echo "  🎉 Hadoop Single-Node Cluster Started Successfully!            "
@@ -169,4 +184,5 @@ echo "Web Interfaces Available at:"
 echo "  - HDFS NameNode UI:        http://localhost:9870"
 echo "  - YARN ResourceManager UI: http://localhost:8088"
 echo "  - HDFS DataNode UI:        http://localhost:9864"
+echo "  - MapReduce JobHistory UI: http://localhost:19888"
 echo "================================================================="
