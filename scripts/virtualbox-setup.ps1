@@ -17,7 +17,7 @@ param(
     [string]$IsoPath = "D:\courses\AraBigData\docker-hadoop\ubuntu-26.04-desktop-amd64.iso",
     [string]$BaseFolder = "D:\VirtualBoxVMs",
     [int]$MemoryMB = 4096,
-    [int]$CpuCount = 2,
+    [int]$CpuCount = 4,
     [int]$DiskSizeMB = 40960,
     [switch]$Rebuild
 )
@@ -73,14 +73,13 @@ Write-Host "--> [2/5] Configuring Hardware, Display & Hyper-V Paravirtualization
     --audio-out off `
     --audio-in off `
     --mouse usbtablet `
-    --clipboard-mode bidirectional `
-    --drag-and-drop bidirectional `
+    --keyboard usb `
     --hpet on `
     --pae on `
     --ioapic on `
     --x2apic on `
     --nested-paging on `
-    --large-pages on `
+    --large-pages off `
     --nested-hw-virt off `
     --boot1 dvd --boot2 disk --boot3 none --boot4 none `
     --natpf1 "ssh,tcp,,2222,,22" `
