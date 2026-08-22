@@ -23,8 +23,9 @@ This guide provides complete, step-by-step instructions for creating, configurin
 * **Host OS**: Windows 10/11, macOS, or Linux.
 * **Virtualization**: Intel VT-x / AMD-V enabled in BIOS/UEFI.
 * **RAM Allocation**: Recommended `4096 MB` (4 GB) or higher (Minimum `2560 MB`).
-* **CPUs**: `2 vCPUs` with 100% execution cap.
-* **Storage**: `40 GB` or more dynamically allocated virtual disk.
+* **CPUs**: `4 vCPUs` (recommended to eliminate 1080p software compositing bottlenecks) with 100% execution cap.
+* **Storage**: `40 GB` or more dynamically allocated virtual disk with **Host I/O Cache**.
+* **Input Controller**: USB Keyboard & USB Tablet Mouse for zero-latency keystroke polling.
 * **Software**:
   * [Oracle VM VirtualBox](https://www.virtualbox.org/) 7.0+
   * [Ubuntu Desktop or Server ISO](https://ubuntu.com/download/desktop) (22.04 LTS / 24.04 LTS / 26.04)
@@ -36,7 +37,7 @@ This guide provides complete, step-by-step instructions for creating, configurin
 From your Windows host machine in PowerShell, run the provided provisioning script:
 
 ```powershell
-# Standard Creation / Launch
+# Standard Creation / Launch (4 vCPUs, 4GB RAM, USB Input, UEFI)
 powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1
 
 # Clean Rebuild from Scratch
@@ -45,11 +46,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1 -Rebuild
 
 This script automatically:
 * Registers the VM named `Ubuntu-Hadoop`.
-* Sets optimal RAM (`4096 MB`), CPUs (`2`), and Paravirtualization (`Hyper-V`).
+* Sets optimal RAM (`4096 MB`), CPUs (`4 vCPUs`), USB keyboard/mouse, and Paravirtualization (`Hyper-V`).
 * Configures **UEFI / EFI firmware** with native **Full HD (1920x1080)** GOP resolution.
+* Configures **`--large-pages off`** preventing Windows standard user `VERR_UNRESOLVED_ERROR` allocation failures.
 * Enables **VMSVGA** graphics with **Dynamic Window Auto-Resize**.
-* Creates a `40 GB` VDI virtual disk and attaches the Ubuntu ISO.
-* Configures NAT Port Forwarding for SSH and all Hadoop Web interfaces.
+* Creates a `40 GB` VDI virtual disk with **Host I/O Caching** and attaches the Ubuntu ISO.
+* Configures NAT Port Forwarding for SSH (2222) and all Hadoop Web interfaces (9870, 8088, 9864, 19888).
 * Boots the VM.
 
 ---
@@ -306,3 +308,25 @@ mapred --daemon start historyserver
   & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" setextradata "Ubuntu-Hadoop" "GUI/MaxGuestResolution" "any"
   ```
   In the VM window, press **`Right-Ctrl + G`** (Auto-Resize) or **`Right-Ctrl + F`** (Fullscreen).
+
+### 4. `VERR_UNRESOLVED_ERROR` / `0x80004005` on VM Launch
+* **Root Cause**: VirtualBox requesting `MEM_LARGE_PAGES` on Windows when the user account lacks the `SeLockMemoryPrivilege` security policy.
+* **Fix**: Disable large-pages:
+  ```powershell
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "Ubuntu-Hadoop" --large-pages off --nested-paging on
+  ```
+
+### 5. VM Terminal Typing Lag or Compositor Sluggishness
+* **Root Cause**: GNOME Mutter desktop compositor using LLVMpipe software rendering on 1080p when allocated fewer than 4 cores, plus PS/2 keyboard polling overhead.
+* **Fix**: Assign 4 vCPUs and USB input controller:
+  ```powershell
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" modifyvm "Ubuntu-Hadoop" --cpus 4 --keyboard usb --mouse usbtablet
+  ```
+
+### 6. Installing Hadoop in User Space (Zero Sudo / Passwordless)
+* If you do not wish to use `sudo` or provide root passwords during Hadoop cluster setup, run the standalone user-space installer:
+  ```bash
+  bash ~/docker-hadoop/scripts/install-hadoop-user.sh
+  ```
+  This installs Apache Hadoop directly into `~/hadoop` and manages all data in `~/hadoopdata`.
+

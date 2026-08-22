@@ -455,9 +455,10 @@ docker-hadoop/
 ├── scripts/
 │   ├── entrypoint.sh            # Container bootstrap & daemon orchestration
 │   ├── healthcheck.sh           # Container health check script
-│   ├── install-hadoop-ubuntu.sh # Ubuntu native Hadoop automated installer
+│   ├── install-hadoop-ubuntu.sh # Ubuntu native Hadoop automated installer (system-wide)
+│   ├── install-hadoop-user.sh   # Rootless / user-space zero-sudo Hadoop installer
 │   ├── test-cluster.sh          # MapReduce & HDFS integration tests
-│   └── virtualbox-setup.ps1     # Automated PowerShell VirtualBox VM creator
+│   └── virtualbox-setup.ps1     # Automated PowerShell VirtualBox VM creator (4 vCPUs, UEFI)
 ├── .dockerignore                # Docker build exclusions
 ├── .env.example                 # Configuration template
 ├── .gitignore                   # Git exclusions

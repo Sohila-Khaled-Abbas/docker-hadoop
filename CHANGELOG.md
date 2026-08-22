@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Oracle VirtualBox Provisioner (`scripts/virtualbox-setup.ps1`)**: Automated provisioning script featuring UEFI/EFI 64-bit firmware, native Full HD (`1920x1080`) GOP graphics resolution, Hyper-V paravirtualization clock sync, dynamic window auto-resize, and 5-port NAT forwarding.
-- **Ubuntu & VirtualBox Deployment Guide (`docs/virtualbox-ubuntu-guide.md`)**: Comprehensive documentation covering hardware requirements, automated/manual VM creation, unscaled 1:1 display tuning, dynamic window resizing shortcuts, cluster verification, and troubleshooting.
-- **Automated Ubuntu Bare-Metal/VM Installer (`scripts/install-hadoop-ubuntu.sh`)**: End-to-end automated script installing OpenJDK 11, passwordless SSH, Apache Hadoop 3.3.6, cluster XMLs, environment profiles, formatting NameNode, and launching all daemons.
+- **Oracle VirtualBox Provisioner (`scripts/virtualbox-setup.ps1`)**: Automated provisioning script featuring 4 vCPUs, UEFI/EFI 64-bit firmware, native Full HD (`1920x1080`) GOP graphics resolution, Hyper-V paravirtualization clock sync, USB low-latency input controller, dynamic window auto-resize, and 5-port NAT forwarding.
+- **Rootless User-Space Installer (`scripts/install-hadoop-user.sh`)**: Zero-sudo automated installer deploying Apache Hadoop 3.3.6 directly into `~/hadoop` and `~/hadoopdata` with passwordless SSH, memory heap tuning, and automated daemon startup.
+- **Ubuntu & VirtualBox Deployment Guide (`docs/virtualbox-ubuntu-guide.md`)**: Comprehensive documentation covering hardware requirements, automated/manual VM creation, unscaled 1:1 display tuning, dynamic window resizing shortcuts, cluster verification, and troubleshooting runbooks.
+- **Automated Ubuntu Bare-Metal/VM Installer (`scripts/install-hadoop-ubuntu.sh`)**: End-to-end automated script installing OpenJDK 11, passwordless SSH, Apache Hadoop 3.3.6, cluster XMLs, environment profiles, formatting NameNode, and launching all daemons including MapReduce JobHistory server.
 - Comprehensive architecture documentation with Mermaid component and sequence diagrams in `docs/architecture.md`.
 - In-depth MapReduce programming and tuning guide in `docs/mapreduce-guide.md`.
 - Troubleshooting runbook and diagnostic matrix in `docs/troubleshooting.md`.
@@ -26,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expanded Makefile targets for MapReduce testing, SafeMode management, and HDFS reporting.
 
 ### Changed
+- **VirtualBox 4-vCPU & USB Input Latency Optimization**: Upgraded default VM processor allocation from 2 to 4 vCPUs and switched to `--keyboard usb --mouse usbtablet`, eliminating GNOME Mutter LLVMpipe software rendering overhead and input polling lag.
+- **Resolved `VERR_UNRESOLVED_ERROR` (0x80004005)**: Configured `--large-pages off` on Windows hosts to avoid missing `SeLockMemoryPrivilege` (`MEM_LARGE_PAGES`) security policy failures during VM memory allocation.
 - **VirtualBox Stability & Timer Synchronization**: Switched VM clock paravirtualization to `hyperv`, eliminating Windows WHPX/Hyper-V timer drift and watchdog soft lockup kernel panics during live ISO boots.
 - **VirtualBox Display Optimization**: Configured EFI GOP resolution (`VBoxInternal2/EfiGraphicsResolution = 1920x1080`), VMSVGA graphics controller with 128 MB VRAM, 1.0 scale factor, and `AutoResizeGuest` to dynamically fill the window without pixel distortion or black borders.
 - **Dockerfile Build Optimization**: Added automated pruning of `/usr/local/hadoop/share/doc` (~60,000 redundant documentation and Javadoc files) before recursive `chown`/`chmod` operations, resolving WSL2/ext4 inode journal overhead and speeding up image builds.
