@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Apache Hadoop Single-Node Cluster User-Space Installer (Zero sudo required)
-# Installs directly to ~/hadoop with high performance JVM tuning
+# Installs directly to ~/hadoop with high performance JVM tuning & G1GC
 # ==============================================================================
 set -euo pipefail
 
 echo "================================================================="
 echo "  🐘 Apache Hadoop Automated User-Space Installer               "
+echo "  ⚡ High-Performance G1GC & Optimized Memory Limits             "
 echo "================================================================="
 
 cd ~
@@ -70,9 +71,16 @@ sed -i "s|# export JAVA_HOME=.*|export JAVA_HOME=${JAVA_DETECTED_HOME}|g" "$HADO
 if ! grep -q "export JAVA_HOME=${JAVA_DETECTED_HOME}" "$HADOOP_DIR/etc/hadoop/hadoop-env.sh"; then
     echo "export JAVA_HOME=${JAVA_DETECTED_HOME}" >> "$HADOOP_DIR/etc/hadoop/hadoop-env.sh"
 fi
-echo "export HADOOP_HEAPSIZE_MAX=1024m" >> "$HADOOP_DIR/etc/hadoop/hadoop-env.sh"
-echo "export HADOOP_NAMENODE_OPTS=\"-Xms512m -Xmx1024m\"" >> "$HADOOP_DIR/etc/hadoop/hadoop-env.sh"
-echo "export HADOOP_DATANODE_OPTS=\"-Xms256m -Xmx512m\"" >> "$HADOOP_DIR/etc/hadoop/hadoop-env.sh"
+
+cat <<'EOT' >> "$HADOOP_DIR/etc/hadoop/hadoop-env.sh"
+
+# High-Performance JVM Heap & G1GC Sizing
+export HADOOP_HEAPSIZE_MAX=1024m
+export HADOOP_NAMENODE_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+export HADOOP_DATANODE_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+export YARN_RESOURCEMANAGER_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+export YARN_NODEMANAGER_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+EOT
 
 echo "--> [4/5] Generating Cluster Configuration XMLs..."
 mkdir -p "$HOME/hadoopdata/hdfs/namenode"
@@ -86,6 +94,10 @@ cat <<EOT > "$HADOOP_DIR/etc/hadoop/core-site.xml"
         <name>fs.defaultFS</name>
         <value>hdfs://localhost:9000</value>
     </property>
+    <property>
+        <name>io.file.buffer.size</name>
+        <value>65536</value>
+    </property>
 </configuration>
 EOT
 
@@ -98,12 +110,20 @@ cat <<EOT > "$HADOOP_DIR/etc/hadoop/hdfs-site.xml"
         <value>1</value>
     </property>
     <property>
+        <name>dfs.blocksize</name>
+        <value>134217728</value>
+    </property>
+    <property>
         <name>dfs.namenode.name.dir</name>
         <value>file://${HOME}/hadoopdata/hdfs/namenode</value>
     </property>
     <property>
         <name>dfs.datanode.data.dir</name>
         <value>file://${HOME}/hadoopdata/hdfs/datanode</value>
+    </property>
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
     </property>
 </configuration>
 EOT
@@ -128,6 +148,22 @@ cat <<EOT > "$HADOOP_DIR/etc/hadoop/mapred-site.xml"
         <name>mapreduce.reduce.env</name>
         <value>HADOOP_MAPRED_HOME=${HOME}/hadoop</value>
     </property>
+    <property>
+        <name>mapreduce.map.memory.mb</name>
+        <value>1024</value>
+    </property>
+    <property>
+        <name>mapreduce.reduce.memory.mb</name>
+        <value>2048</value>
+    </property>
+    <property>
+        <name>mapreduce.map.java.opts</name>
+        <value>-Xmx819m -XX:+UseG1GC</value>
+    </property>
+    <property>
+        <name>mapreduce.reduce.java.opts</name>
+        <value>-Xmx1638m -XX:+UseG1GC</value>
+    </property>
 </configuration>
 EOT
 
@@ -135,6 +171,14 @@ cat <<EOT > "$HADOOP_DIR/etc/hadoop/yarn-site.xml"
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
+    <property>
+        <name>yarn.nodemanager.resource.memory-mb</name>
+        <value>3584</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.resource.cpu-vcores</name>
+        <value>4</value>
+    </property>
     <property>
         <name>yarn.nodemanager.aux-services</name>
         <value>mapreduce_shuffle</value>
@@ -162,6 +206,7 @@ export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$JAVA_HOME/bin
 hdfs namenode -format -force
 start-dfs.sh
 start-yarn.sh
+mapred --daemon start historyserver
 
 echo "================================================================="
 echo "  🎉 Hadoop Single-Node Cluster Started Successfully!            "
@@ -173,5 +218,7 @@ echo ""
 echo "Web Interfaces:"
 echo "  - HDFS NameNode UI:        http://localhost:9870"
 echo "  - YARN ResourceManager UI: http://localhost:8088"
+echo "  - YARN NodeManager UI:     http://localhost:8042"
 echo "  - HDFS DataNode UI:        http://localhost:9864"
+echo "  - MapReduce JobHistory UI: http://localhost:19888"
 echo "================================================================="

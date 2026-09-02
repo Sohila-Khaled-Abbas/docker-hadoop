@@ -20,11 +20,11 @@ This guide provides complete, step-by-step instructions for creating, configurin
 
 ## ⚙️ Hardware & Prerequisites
 
-* **Host OS**: Windows 10/11, macOS, or Linux.
-* **Virtualization**: Intel VT-x / AMD-V enabled in BIOS/UEFI.
-* **RAM Allocation**: Recommended `4096 MB` (4 GB) or higher (Minimum `2560 MB`).
-* **CPUs**: `4 vCPUs` (recommended to eliminate 1080p software compositing bottlenecks) with 100% execution cap.
-* **Storage**: `40 GB` or more dynamically allocated virtual disk with **Host I/O Cache**.
+* **Host OS**: Windows 11 / 10 Pro (64-bit) with Hyper-V / WSL2 support.
+* **CPU Sizing**: `4 vCPUs` (50% of an 8-thread CPU like Intel Core i5-10300H) with 100% execution cap for smooth parallel MapReduce & Spark execution.
+* **RAM Allocation**: `5120 MB` (5 GB). For a 16 GB host machine, 5 GB VM RAM gives ample headroom for Hadoop daemons (2 GB) and YARN compute containers (3.5 GB) while leaving 11 GB for Windows, IDEs, and browser UIs.
+* **Storage**: `40 GB` or more dynamically allocated virtual disk located on your high-capacity drive (e.g., `D:\VirtualBoxVMs`) with **Host I/O Cache** enabled.
+* **Paravirtualization**: `Hyper-V` paravirtualization provider for precise clock synchronization and zero timer drift under Windows WHPX.
 * **Input Controller**: USB Keyboard & USB Tablet Mouse for zero-latency keystroke polling.
 * **Software**:
   * [Oracle VM VirtualBox](https://www.virtualbox.org/) 7.0+
@@ -34,24 +34,37 @@ This guide provides complete, step-by-step instructions for creating, configurin
 
 ## ⚡ Automated VM Setup (PowerShell)
 
-From your Windows host machine in PowerShell, run the provided provisioning script:
+From your Windows host machine in PowerShell or via `make`, run the provided provisioning script:
 
 ```powershell
-# Standard Creation / Launch (4 vCPUs, 4GB RAM, USB Input, UEFI)
+# Standard Creation / Launch with GUI Window (4 vCPUs, 5GB RAM, UEFI, FHD)
 powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1
 
-# Clean Rebuild from Scratch
+# High-Performance Headless Launch (Runs quietly in background, saves CPU/RAM)
+powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1 -Headless
+
+# Clean Rebuild from Scratch (tears down previous VM and recreates clean VDI)
 powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1 -Rebuild
+```
+
+Or using the repository `Makefile`:
+```bash
+make vm-create            # Create and configure VM
+make vm-start             # Start with GUI window
+make vm-start-headless    # Start headless (recommended for terminal/SSH work)
+make vm-ssh               # Open SSH session to Ubuntu
+make vm-status            # Check running state and memory
+make vm-stop              # Graceful ACPI shutdown
 ```
 
 This script automatically:
 * Registers the VM named `Ubuntu-Hadoop`.
-* Sets optimal RAM (`4096 MB`), CPUs (`4 vCPUs`), USB keyboard/mouse, and Paravirtualization (`Hyper-V`).
+* Sets optimal RAM (`5120 MB`), CPUs (`4 vCPUs`), USB keyboard/mouse, and Paravirtualization (`Hyper-V`).
 * Configures **UEFI / EFI firmware** with native **Full HD (1920x1080)** GOP resolution.
 * Configures **`--large-pages off`** preventing Windows standard user `VERR_UNRESOLVED_ERROR` allocation failures.
 * Enables **VMSVGA** graphics with **Dynamic Window Auto-Resize**.
 * Creates a `40 GB` VDI virtual disk with **Host I/O Caching** and attaches the Ubuntu ISO.
-* Configures NAT Port Forwarding for SSH (2222) and all Hadoop Web interfaces (9870, 8088, 9864, 19888).
+* Configures NAT Port Forwarding for SSH, HDFS, YARN, MapReduce, Spark, and Hive.
 * Boots the VM.
 
 ---
@@ -87,15 +100,21 @@ $VBox = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 
 ## 🌐 Network & Port Forwarding Configuration
 
-Using **NAT with Port Forwarding** allows seamless access to Hadoop Web UIs and SSH directly from your Windows host browser and terminal:
+Using **NAT with Port Forwarding** allows seamless access to all Hadoop & Big Data Web UIs and SSH directly from your Windows host browser and terminal:
 
-| Rule Name | Protocol | Host IP | Host Port | Guest IP | Guest Port | Purpose |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `ssh` | TCP | `127.0.0.1` | **2222** | *(blank)* | **22** | SSH Terminal Access |
-| `namenode` | TCP | `127.0.0.1` | **9870** | *(blank)* | **9870** | HDFS NameNode Web UI |
-| `yarn` | TCP | `127.0.0.1` | **8088** | *(blank)* | **8088** | YARN ResourceManager Web UI |
-| `datanode` | TCP | `127.0.0.1` | **9864** | *(blank)* | **9864** | HDFS DataNode Web UI |
-| `jobhistory` | TCP | `127.0.0.1` | **19888** | *(blank)* | **19888** | MapReduce JobHistory UI |
+| Service / Component | Protocol | Host IP | Host Port | Guest Port | Web UI / Direct Link |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **SSH Terminal** | TCP | `127.0.0.1` | **2222** | **22** | `ssh -p 2222 hadoopuser@localhost` |
+| **HDFS NameNode** | TCP | `127.0.0.1` | **9870** | **9870** | [http://127.0.0.1:9870](http://127.0.0.1:9870) |
+| **YARN ResourceManager** | TCP | `127.0.0.1` | **8088** | **8088** | [http://127.0.0.1:8088](http://127.0.0.1:8088) |
+| **YARN NodeManager** | TCP | `127.0.0.1` | **8042** | **8042** | [http://127.0.0.1:8042](http://127.0.0.1:8042) |
+| **HDFS DataNode** | TCP | `127.0.0.1` | **9864** | **9864** | [http://127.0.0.1:9864](http://127.0.0.1:9864) |
+| **MapReduce JobHistory** | TCP | `127.0.0.1` | **19888** | **19888** | [http://127.0.0.1:19888](http://127.0.0.1:19888) |
+| **HDFS RPC Port** | TCP | `127.0.0.1` | **9000** | **9000** | `hdfs://127.0.0.1:9000` |
+| **Apache Spark UI** | TCP | `127.0.0.1` | **4040** | **4040** | [http://127.0.0.1:4040](http://127.0.0.1:4040) |
+| **Spark History Server** | TCP | `127.0.0.1` | **18080** | **18080** | [http://127.0.0.1:18080](http://127.0.0.1:18080) |
+| **HiveServer2 JDBC/Thrift** | TCP | `127.0.0.1` | **10000** | **10000** | `jdbc:hive2://127.0.0.1:10000` |
+| **HiveServer2 Web UI** | TCP | `127.0.0.1` | **10002** | **10002** | [http://127.0.0.1:10002](http://127.0.0.1:10002) |
 
 ---
 
@@ -329,4 +348,47 @@ mapred --daemon start historyserver
   bash ~/docker-hadoop/scripts/install-hadoop-user.sh
   ```
   This installs Apache Hadoop directly into `~/hadoop` and manages all data in `~/hadoopdata`.
+
+---
+
+## ⚡ High-Performance Headless Workflow & VS Code Remote SSH
+
+For the highest possible speed, lowest RAM consumption, and zero UI lag:
+
+1. **Start the VM Headless** (no GUI window rendered, saving ~1GB RAM and CPU rendering):
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1 -Headless
+   # OR using make
+   make vm-start-headless
+   ```
+
+2. **Connect via VS Code / Antigravity Remote-SSH**:
+   - Install the **Remote - SSH** extension.
+   - Add to your `~/.ssh/config`:
+     ```ssh
+     Host hadoop-vm
+         HostName 127.0.0.1
+         Port 2222
+         User hadoopuser
+         StrictHostKeyChecking no
+         UserKnownHostsFile /dev/null
+     ```
+   - Click **Connect to Host -> hadoop-vm**. You get a full Linux terminal, native file tree, and code editor directly inside the VM!
+
+3. **Access Web UIs in Windows Browser**:
+   Open [http://127.0.0.1:9870](http://127.0.0.1:9870) (NameNode) or [http://127.0.0.1:8088](http://127.0.0.1:8088) (YARN).
+
+---
+
+## 📊 Comparison: VirtualBox VM vs Docker Compose vs WSL2
+
+| Dimension | 🖥️ VirtualBox VM (Tuned) | 🐳 Docker Compose (Current Repo) | 🐧 WSL2 Native |
+| :--- | :--- | :--- | :--- |
+| **Primary Learning Goal** | Full Linux cluster administration, systemd, SSH nodes, authentic production VM feel | Fast MapReduce / Spark algorithm testing, containerized pipelines, rapid teardown | Direct Windows-Linux integration, lowest resource usage |
+| **RAM Consumption** | ~5 GB (Fixed allocation) | ~1.5 GB - 3 GB (Dynamic container memory) | ~2 GB - 4 GB (Dynamic WSL memory) |
+| **CPU Overhead** | Medium (Hardware virtualization layer) | Low (Shares host kernel) | Low (Direct Hyper-V microVM) |
+| **Startup Time** | ~15 - 25 seconds | ~3 - 5 seconds (`make up`) | ~2 seconds |
+| **Isolation** | Complete (Isolated guest OS & virtual disk) | Process-level (Isolated container filesystem) | User-space isolation |
+| **Recommended For** | Deep-dive Big Data infrastructure & multi-node practice | Daily ETL, PySpark, MapReduce scripting & Git CI/CD | Hybrid Windows/Linux scripting |
+
 

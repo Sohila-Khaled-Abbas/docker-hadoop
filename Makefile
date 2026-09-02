@@ -26,11 +26,14 @@ help:
 	@echo "    make hdfs-shell      - Open interactive shell as hduser"
 	@echo ""
 	@echo "  VirtualBox VM Management:"
-	@echo "    make vm-create       - Create and configure Ubuntu Hadoop VM"
-	@echo "    make vm-start        - Start the Ubuntu Hadoop VM"
-	@echo "    make vm-stop         - Gracefully shutdown the VM"
+	@echo "    make vm-create       - Create and configure Ubuntu Hadoop VM (5GB RAM, 4 CPUs)"
+	@echo "    make vm-start        - Start the Ubuntu Hadoop VM (GUI Window)"
+	@echo "    make vm-start-headless - Start the VM in Background (Headless, saves CPU/RAM)"
+	@echo "    make vm-stop         - Gracefully shutdown the VM (ACPI power button)"
 	@echo "    make vm-ssh          - Connect to the VM via SSH (port 2222)"
-	@echo "    make vm-status       - Check VM running status and info"
+	@echo "    make vm-status       - Check VM running status, memory, and vCPUs"
+	@echo "    make vm-ports        - List active NAT port forwardings"
+	@echo "    make vm-rebuild      - Teardown and cleanly recreate VM from ISO"
 	@echo "=========================================================="
 
 build:
@@ -84,6 +87,9 @@ vm-create:
 vm-start:
 	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm "Ubuntu-Hadoop" --type gui
 
+vm-start-headless:
+	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm "Ubuntu-Hadoop" --type headless
+
 vm-stop:
 	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" controlvm "Ubuntu-Hadoop" acpipowerbutton
 
@@ -91,4 +97,10 @@ vm-ssh:
 	ssh -p 2222 hadoopuser@127.0.0.1
 
 vm-status:
-	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" showvminfo "Ubuntu-Hadoop" | findstr /i "State Memory CPUs NIC"
+	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" showvminfo "Ubuntu-Hadoop" | findstr /i "State Memory CPUs"
+
+vm-ports:
+	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" showvminfo "Ubuntu-Hadoop" | findstr /i "NIC.1.Rule"
+
+vm-rebuild:
+	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox-setup.ps1 -Rebuild

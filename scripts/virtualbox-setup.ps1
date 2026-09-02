@@ -16,9 +16,10 @@ param(
     [string]$VmName = "Ubuntu-Hadoop",
     [string]$IsoPath = "D:\courses\AraBigData\docker-hadoop\ubuntu-26.04-desktop-amd64.iso",
     [string]$BaseFolder = "D:\VirtualBoxVMs",
-    [int]$MemoryMB = 4096,
+    [int]$MemoryMB = 5120,
     [int]$CpuCount = 4,
     [int]$DiskSizeMB = 40960,
+    [switch]$Headless,
     [switch]$Rebuild
 )
 
@@ -28,7 +29,7 @@ if (-not (Test-Path $VBoxManage)) {
 }
 
 if (-not $VBoxManage) {
-    Write-Error "VBoxManage.exe not found! Please install VirtualBox."
+    Write-Error "VBoxManage.exe not found! Please install Oracle VirtualBox."
     exit 1
 }
 
@@ -37,6 +38,7 @@ $VdiPath = Join-Path $VdiFolder "$VmName.vdi"
 
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "  🐘 Oracle VM VirtualBox & Ubuntu Hadoop Provisioner            " -ForegroundColor Cyan
+Write-Host "  ⚡ High-Performance & Reliable Big Data Engineering Profile    " -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 
 $existingVm = & $VBoxManage list vms | Select-String "`"$VmName`""
@@ -51,8 +53,20 @@ if ($existingVm) {
             Remove-Item -Path $VdiFolder -Recurse -Force -ErrorAction SilentlyContinue
         }
     } else {
-        Write-Warning "VM '$VmName' already exists. Launching existing instance..."
-        & $VBoxManage startvm $VmName --type gui
+        Write-Warning "VM '$VmName' already exists. Updating settings and launching..."
+        & $VBoxManage modifyvm $VmName `
+            --memory $MemoryMB `
+            --cpus $CpuCount `
+            --paravirtprovider hyperv `
+            --hpet on `
+            --ioapic on `
+            --x2apic on `
+            --large-pages off `
+            --nested-paging on
+
+        $startType = if ($Headless) { "headless" } else { "gui" }
+        Write-Host "--> Starting VM in $startType mode..." -ForegroundColor Green
+        & $VBoxManage startvm $VmName --type $startType
         exit 0
     }
 }
@@ -86,7 +100,13 @@ Write-Host "--> [2/5] Configuring Hardware, Display & Hyper-V Paravirtualization
     --natpf1 "namenode,tcp,,9870,,9870" `
     --natpf1 "yarn,tcp,,8088,,8088" `
     --natpf1 "datanode,tcp,,9864,,9864" `
+    --natpf1 "nodemanager,tcp,,8042,,8042" `
     --natpf1 "jobhistory,tcp,,19888,,19888" `
+    --natpf1 "hdfs-rpc,tcp,,9000,,9000" `
+    --natpf1 "sparkui,tcp,,4040,,4040" `
+    --natpf1 "sparkhistory,tcp,,18080,,18080" `
+    --natpf1 "hive,tcp,,10000,,10000" `
+    --natpf1 "hiveweb,tcp,,10002,,10002" `
     --natdnshostresolver1 on `
     --natdnsproxy1 on
 
@@ -108,15 +128,18 @@ if (Test-Path $IsoPath) {
     & $VBoxManage storageattach $VmName --storagectl "SATA Controller" --port 1 --device 0 --type dvddrive --medium $IsoPath
     Write-Host "Attached installation ISO: $IsoPath" -ForegroundColor Gray
 } else {
-    Write-Warning "ISO path '$IsoPath' not found. Please attach manually."
+    Write-Warning "ISO path '$IsoPath' not found. Please attach manually if installing OS."
 }
 
-Write-Host "--> [5/5] Launching VM in GUI Mode..." -ForegroundColor Green
-& $VBoxManage startvm $VmName --type gui
+$startType = if ($Headless) { "headless" } else { "gui" }
+Write-Host "--> [5/5] Launching VM in $startType Mode..." -ForegroundColor Green
+& $VBoxManage startvm $VmName --type $startType
 
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "  🎉 Virtual Machine '$VmName' Started Successfully!             " -ForegroundColor Green
-Write-Host "  - Fullscreen Mode: Press Right-Ctrl + F                        " -ForegroundColor Yellow
-Write-Host "  - Scaled Mode:     Press Right-Ctrl + C                        " -ForegroundColor Yellow
-Write-Host "  - Auto-Resize:     Press Right-Ctrl + G                        " -ForegroundColor Yellow
+Write-Host "  - Connect via SSH:  ssh -p 2222 hadoopuser@127.0.0.1           " -ForegroundColor Yellow
+Write-Host "  - HDFS NameNode:    http://127.0.0.1:9870                      " -ForegroundColor Yellow
+Write-Host "  - YARN UI:          http://127.0.0.1:8088                      " -ForegroundColor Yellow
+Write-Host "  - MapReduce UI:     http://127.0.0.1:19888                     " -ForegroundColor Yellow
+Write-Host "  - Spark UI:         http://127.0.0.1:4040                      " -ForegroundColor Yellow
 Write-Host "=================================================================" -ForegroundColor Cyan
