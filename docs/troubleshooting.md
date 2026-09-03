@@ -22,6 +22,7 @@ This runbook provides diagnostic decision trees, root cause analyses, and verifi
 - [Issue 12: Hyper-V VM Fails to Start (`0x800705AA` / `0x8007000E` - Insufficient System Resources)](#-issue-12-hyper-v-vm-fails-to-start-0x800705aa--0x8007000e---insufficient-system-resources)
 - [Issue 13: Mouse Pointer Offset & Clicks Not Registering in Hyper-V Ubuntu Installer](#-issue-13-mouse-pointer-offset--clicks-not-registering-in-hyper-v-ubuntu-installer)
 - [Issue 14: Hyper-V 1-vCPU Bottleneck & Input Stuttering](#-issue-14-hyper-v-1-vcpu-bottleneck--input-stuttering)
+- [Issue 15: Hyper-V Linux VM Has No Internet on Wi-Fi Host (External Switch Trap)](#-issue-15-hyper-v-linux-vm-has-no-internet-on-wi-fi-host-external-switch-trap)
 
 ---
 
@@ -275,3 +276,24 @@ Hyper-V defaults new virtual machines to only **1 virtual processor (1 vCPU)**. 
    Fix-Lag-And-Start-VM.bat
    ```
    *Or* in Hyper-V Manager: Right-click VM $\rightarrow$ **Settings** $\rightarrow$ **Processor** $\rightarrow$ increase from `1` to **`4` vCPUs**.
+
+---
+
+## ⚠️ Issue 15: Hyper-V Linux VM Has No Internet on Wi-Fi Host (External Switch Trap)
+
+### Symptoms
+Inside the Ubuntu VM, `curl` fails with `Could not resolve host` or `Network is unreachable`, `apt update` fails, and `ping 8.8.8.8` receives no response.
+
+### Root Cause
+An **External Virtual Switch** was created and bound to a Wi-Fi adapter (e.g. `Intel Wireless-AC`). Standard Wi-Fi (802.11) access points drop frames from any MAC address other than the authenticated host laptop, leaving the VM without a valid DHCP IP address or internet route.
+
+### Solution
+1. **Connect to Default Switch (NAT)**:
+   - Double click `Fix-VM-Internet.bat` in the repository root.
+   - *Or* in Hyper-V Manager: Right-click VM $\rightarrow$ **Settings** $\rightarrow$ **Network Adapter** $\rightarrow$ change Virtual switch to **"Default Switch"** $\rightarrow$ click **Apply**.
+2. **Refresh DHCP inside Ubuntu**:
+   In the Ubuntu terminal, run:
+   ```bash
+   sudo dhclient -r && sudo dhclient
+   ping -c 2 8.8.8.8
+   ```
