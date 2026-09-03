@@ -119,6 +119,34 @@ Once Ubuntu is installed, configure native 1920x1080 resolution inside GRUB:
 
 ---
 
+## 📋 Post-Installation: Ejecting ISO & Enabling Enhanced Session (Clipboard & Smooth Mouse)
+
+### 1. Ejecting the Installation Medium
+When Ubuntu finishes installing, it prompts:
+> *"Please remove the installation medium, then press ENTER:"*
+
+To eject the ISO:
+* **Option A (1-Click Automated)**: Double-click `Eject-ISO-And-Enable-Clipboard.bat` in your repository root!
+* **Option B (vmconnect Menu)**: Click **Media** menu $\rightarrow$ **DVD Drive** $\rightarrow$ **Eject**.
+* **Option C (Hyper-V Manager)**: Right-click VM $\rightarrow$ **Settings** $\rightarrow$ **DVD Drive** $\rightarrow$ select **"None"**.
+* Then click inside the VM window and press **`Enter`**. Ubuntu will boot cleanly from the virtual hard disk!
+
+### 2. Enabling Enhanced Session Mode (Bidirectional Clipboard & Zero-Lag Mouse)
+Hyper-V supports **Enhanced Session Mode** for Ubuntu over native Hyper-V sockets (`HvSocket`), delivering:
+* ✅ **Seamless Mouse Integration**: Cursor moves freely between Windows and Ubuntu with zero click-lag.
+* ✅ **Bidirectional Clipboard**: Copy text/code on Windows $\rightarrow$ Paste into Ubuntu (`Ctrl + V`), and vice versa.
+* ✅ **Dynamic Display Sizing**: Window automatically resizes to any resolution.
+
+#### Inside Ubuntu VM (Run in Terminal):
+```bash
+curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/enable-hyperv-enhanced-session.sh | bash
+```
+
+#### On Windows Host:
+Double-click `Eject-ISO-And-Enable-Clipboard.bat` (or run in elevated PowerShell: `Set-VMHost -EnableEnhancedSessionMode $true; Set-VM -VMName "Ubuntu-Hadoop" -EnhancedSessionTransportType HvSocket`).
+
+---
+
 ## ⌨️ Ubuntu Installation & Navigation Shortcuts
 
 The Ubuntu 24.04/26.04 installer uses Flutter running on Wayland. Under basic Hyper-V synthetic mouse emulation, mouse click releases can be misinterpreted as drag gestures.

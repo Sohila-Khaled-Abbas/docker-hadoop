@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Hyper-V Clipboard, Smooth Mouse & ISO Ejector (`Eject-ISO-And-Enable-Clipboard.bat` & `scripts/configure-hyperv-host-enhanced-session.ps1`)**: Automated Windows administrative tool to eject the installation ISO and enable Hyper-V Enhanced Session Mode on the host.
+- **Ubuntu Enhanced Session Provisioner (`scripts/enable-hyperv-enhanced-session.sh`)**: In-guest automation script that configures `linux-tools-virtual`, `linux-cloud-tools-virtual`, and `xrdp` over native VMBus Hyper-V sockets (`HvSocket`), unlocking bidirectional clipboard (`Ctrl+C`/`Ctrl+V`), seamless mouse integration, and dynamic Full HD display scaling.
 - **Native Type-1 Hyper-V VM & Hadoop Guide (`docs/hyperv-ubuntu-guide.md`)**: Complete manual for deploying Ubuntu 24.04/26.04 on Windows 11 Hyper-V, featuring 4-vCPU acceleration, Dynamic Memory, Full Screen scaling (`video=hyperv_fb:1920x1080`), and automated cluster installation.
 - **1-Click Hyper-V Performance Optimizer (`Fix-Lag-And-Start-VM.bat` & `scripts/optimize-hyperv-vm.ps1`)**: Automated administrative script that stops the VM, scales CPU to 4 vCPUs, configures Dynamic Memory (3072 MB startup / 4096 MB max), sets Secure Boot to Microsoft UEFI Certificate Authority, prioritizes DVD boot, and launches `vmconnect.exe`.
 - **systemd Daemon Service (`scripts/setup-hadoop-systemd.sh`)**: Background systemd unit (`hadoop.service`) managing all 6 Hadoop daemons continuously without terminal hangup signals (`SIGHUP`).
