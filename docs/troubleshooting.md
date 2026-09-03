@@ -19,6 +19,9 @@ This runbook provides diagnostic decision trees, root cause analyses, and verifi
 - [Issue 9: Non-Interactive Shell / Command Not Found](#-issue-9-non-interactive-shell--command-not-found)
 - [Issue 10: Browser `ERR_EMPTY_RESPONSE` ("localhost didn't send any data")](#-issue-10-browser-err_empty_response-localhost-didnt-send-any-data)
 - [Issue 11: Docker Engine Named Pipe 500 Error (`dockerDesktopLinuxEngine`)](#-issue-11-docker-engine-named-pipe-500-error-dockerdesktoplinuxengine)
+- [Issue 12: Hyper-V VM Fails to Start (`0x800705AA` / `0x8007000E` - Insufficient System Resources)](#-issue-12-hyper-v-vm-fails-to-start-0x800705aa--0x8007000e---insufficient-system-resources)
+- [Issue 13: Mouse Pointer Offset & Clicks Not Registering in Hyper-V Ubuntu Installer](#-issue-13-mouse-pointer-offset--clicks-not-registering-in-hyper-v-ubuntu-installer)
+- [Issue 14: Hyper-V 1-vCPU Bottleneck & Input Stuttering](#-issue-14-hyper-v-1-vcpu-bottleneck--input-stuttering)
 
 ---
 
@@ -213,3 +216,62 @@ Restart the WSL2 backend:
 wsl --shutdown
 ```
 Then relaunch Docker Desktop.
+
+---
+
+## ⚠️ Issue 12: Hyper-V VM Fails to Start (`0x800705AA` / `0x8007000E` - Insufficient System Resources)
+
+### Symptoms
+`Unable to allocate 4096 MB of RAM: Insufficient system resources exist to complete the requested service. (0x800705AA)` or `Not enough memory resources are available to complete this operation. (0x8007000E)`.
+
+### Root Cause
+Hyper-V was configured with a static contiguous block of 4096 MB RAM, but the host operating system had less than 4 GB of unreserved memory available due to background processes (e.g., WSL holding memory).
+
+### Solution
+1. **Enable Dynamic Memory**:
+   - In Hyper-V Manager, right-click the VM $\rightarrow$ **Settings** $\rightarrow$ **Memory**.
+   - Change **Startup RAM** to `2048 MB`.
+   - Check **"Enable Dynamic Memory"** (Minimum: `1024 MB`, Maximum: `4096 MB`).
+2. **Reclaim Host Memory**:
+   Run in PowerShell:
+   ```powershell
+   wsl --shutdown
+   ```
+
+---
+
+## ⚠️ Issue 13: Mouse Pointer Offset & Clicks Not Registering in Hyper-V Ubuntu Installer
+
+### Symptoms
+When clicking buttons (e.g., "Install Ubuntu", "Next", "Continue") inside `vmconnect.exe`, the clicks do not trigger the button, or the mouse cursor seems offset.
+
+### Root Cause
+Before Ubuntu Guest Integration Services (`linux-vm-tools`) are installed, Hyper-V operates in **Basic Session** mode using a synthetic PS/2 mouse. High-DPI Windows display scaling creates a coordinate offset between the host cursor and the guest cursor.
+
+### Solution
+1. **Use Keyboard Navigation (Fastest & 100% Reliable)**:
+   - Click inside the VM window to give it focus.
+   - Press **`Tab`** (or `Shift + Tab`) to cycle through buttons. The active button will be outlined in orange/blue.
+   - Press **`Spacebar`** to select checkboxes / radio buttons.
+   - Press **`Enter`** to activate the button ("Next", "Install", "Continue").
+2. **Switch to Full Screen Mode**:
+   - In `vmconnect.exe`, click **View** $\rightarrow$ **Full Screen** (or press the Full Screen icon).
+   - In Full Screen, the mouse coordinates synchronize 1:1 with the guest cursor.
+
+---
+
+## ⚠️ Issue 14: Hyper-V 1-vCPU Bottleneck & Input Stuttering
+
+### Symptoms
+Ubuntu Desktop runs extremely slowly, mouse movement stutters, and typing in terminal is delayed.
+
+### Root Cause
+Hyper-V defaults new virtual machines to only **1 virtual processor (1 vCPU)**. Running GNOME Mutter software rendering on a single core saturates 100% CPU.
+
+### Solution
+1. Turn off the VM.
+2. Run our automated optimizer script:
+   ```cmd
+   Fix-Lag-And-Start-VM.bat
+   ```
+   *Or* in Hyper-V Manager: Right-click VM $\rightarrow$ **Settings** $\rightarrow$ **Processor** $\rightarrow$ increase from `1` to **`4` vCPUs**.

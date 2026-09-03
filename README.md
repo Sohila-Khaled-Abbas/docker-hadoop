@@ -347,6 +347,9 @@ Cluster state is preserved across container lifecycles via named Docker volumes:
 | 🔌 [Ecosystem Integration Guide](docs/ecosystem-integration.md) | Connecting Apache Spark, Hive, Presto/Trino, and Jupyter to HDFS. |
 | 🛠️ [Troubleshooting Runbook](docs/troubleshooting.md) | Solutions for SafeMode, ClusterID mismatch, memory limits, and port conflicts. |
 | 🚀 [Configuration & Performance Tuning](docs/configuration-tuning.md) | XML configuration parameters, JVM heap sizing, and optimization. |
+| ⚡ [Hyper-V Ubuntu & Hadoop Guide](docs/hyperv-ubuntu-guide.md) | Native Type-1 Hyper-V VM deployment, 4-vCPU tuning, Full Screen scaling, and Hadoop. |
+| 🐧 [WSL 2 Ubuntu & GUI Guide](docs/wsl2-ubuntu-hadoop-guide.md) | Bare-metal performance WSL 2 Ubuntu 24.04 with XFCE4 visual GUI (RDP 3390) & Hadoop. |
+| 📦 [VirtualBox Ubuntu Guide](docs/virtualbox-ubuntu-guide.md) | Oracle VirtualBox automated setup, 4-vCPU tuning, and troubleshooting runbooks. |
 
 ---
 

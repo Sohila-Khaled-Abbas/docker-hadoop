@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Native Type-1 Hyper-V VM & Hadoop Guide (`docs/hyperv-ubuntu-guide.md`)**: Complete manual for deploying Ubuntu 24.04/26.04 on Windows 11 Hyper-V, featuring 4-vCPU acceleration, Dynamic Memory, Full Screen scaling (`video=hyperv_fb:1920x1080`), and automated cluster installation.
+- **1-Click Hyper-V Performance Optimizer (`Fix-Lag-And-Start-VM.bat` & `scripts/optimize-hyperv-vm.ps1`)**: Automated administrative script that stops the VM, scales CPU to 4 vCPUs, configures Dynamic Memory (3072 MB startup / 4096 MB max), sets Secure Boot to Microsoft UEFI Certificate Authority, prioritizes DVD boot, and launches `vmconnect.exe`.
+- **systemd Daemon Service (`scripts/setup-hadoop-systemd.sh`)**: Background systemd unit (`hadoop.service`) managing all 6 Hadoop daemons continuously without terminal hangup signals (`SIGHUP`).
+- **Zero-SSH Hadoop Cluster Starter (`scripts/start-daemons-direct.sh`)**: Direct process launcher using `hdfs --daemon` and `yarn --daemon`, completely bypassing OpenSSH keys and network port dependencies.
 - **WSL 2 Ubuntu 24.04 LTS High-Performance GUI & Hadoop Cluster (`docs/wsl2-ubuntu-hadoop-guide.md`)**: Full native Type-1 Hyper-V deployment delivering near bare-metal performance, sub-second boot times, and Direct3D 12 vGPU hardware acceleration.
 - **1-Click Remote Desktop GUI Integration (`Ubuntu-WSL-GUI.rdp`)**: Pre-configured xRDP connection listening on port `3390` with XFCE4 desktop session, enabling interactive graphical desktop usage without host port collisions.
 - **Automated WSL 2 Hadoop Installer (`scripts/install-hadoop-wsl.sh`)**: Automated provisioner for OpenJDK 11 LTS, Apache Hadoop 3.3.6, passwordless loopback SSH, and optimized memory profiles.
