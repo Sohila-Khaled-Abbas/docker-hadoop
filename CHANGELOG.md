@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **5GB RAM & 11-Port High-Performance VM Profile (`scripts/virtualbox-setup.ps1`)**: Upgraded VirtualBox VM memory to 5120 MB (5GB) and added port forwardings for YARN NodeManager (`8042`), HDFS RPC (`9000`), Apache Spark UI (`4040`), Spark History Server (`18080`), HiveServer2 (`10000`), and Hive Web UI (`10002`).
+- **WSL 2 Ubuntu 24.04 LTS High-Performance GUI & Hadoop Cluster (`docs/wsl2-ubuntu-hadoop-guide.md`)**: Full native Type-1 Hyper-V deployment delivering near bare-metal performance, sub-second boot times, and Direct3D 12 vGPU hardware acceleration.
+- **1-Click Remote Desktop GUI Integration (`Ubuntu-WSL-GUI.rdp`)**: Pre-configured xRDP connection listening on port `3390` with XFCE4 desktop session, enabling interactive graphical desktop usage without host port collisions.
+- **Automated WSL 2 Hadoop Installer (`scripts/install-hadoop-wsl.sh`)**: Automated provisioner for OpenJDK 11 LTS, Apache Hadoop 3.3.6, passwordless loopback SSH, and optimized memory profiles.
 - **Headless VM Mode & VS Code Remote SSH (`make vm-start-headless`)**: Added background headless launch switch to `virtualbox-setup.ps1` and `Makefile`, saving ~1GB RAM and CPU rendering overhead for terminal-centric Big Data development.
 - **Linux Kernel & JVM Sizing Optimizations (`scripts/install-hadoop-ubuntu.sh`)**: Added automated OS kernel tuning (`vm.swappiness=1`, ulimits `65536`, THP disabling) and G1GC low-latency garbage collection flags (`-XX:+UseG1GC`) across all daemon JVM heaps.
 - **Oracle VirtualBox Provisioner (`scripts/virtualbox-setup.ps1`)**: Automated provisioning script featuring 4 vCPUs, UEFI/EFI 64-bit firmware, native Full HD (`1920x1080`) GOP graphics resolution, Hyper-V paravirtualization clock sync, USB low-latency input controller, dynamic window auto-resize, and complete Big Data NAT forwarding.

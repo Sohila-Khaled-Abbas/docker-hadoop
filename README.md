@@ -437,7 +437,8 @@ docker-hadoop/
 │   ├── getting-started.md       # Developer onboarding & operational guide
 │   ├── mapreduce-guide.md       # Comprehensive MapReduce programming guide
 │   ├── troubleshooting.md       # Diagnostics & troubleshooting runbook
-│   └── virtualbox-ubuntu-guide.md # Oracle VirtualBox & Ubuntu installation guide
+│   ├── virtualbox-ubuntu-guide.md # Oracle VirtualBox & Ubuntu installation guide
+│   └── wsl2-ubuntu-hadoop-guide.md# WSL 2 Ubuntu 24.04 LTS High-Performance GUI & Hadoop guide
 ├── examples/
 │   ├── mapreduce-java/          # Standalone Java WordCount with compile script
 │   │   ├── WordCount.java
@@ -457,8 +458,12 @@ docker-hadoop/
 │   ├── healthcheck.sh           # Container health check script
 │   ├── install-hadoop-ubuntu.sh # Ubuntu native Hadoop automated installer (system-wide)
 │   ├── install-hadoop-user.sh   # Rootless / user-space zero-sudo Hadoop installer
+│   ├── install-hadoop-wsl.sh    # WSL 2 Ubuntu 24.04 automated Hadoop & GUI installer
+│   ├── start-hadoop-cluster.sh  # WSL 2 Hadoop cluster daemon startup script
+│   ├── sync-wsl-configs.sh      # WSL 2 Hadoop XML configuration synchronizer
 │   ├── test-cluster.sh          # MapReduce & HDFS integration tests
 │   └── virtualbox-setup.ps1     # Automated PowerShell VirtualBox VM creator (4 vCPUs, UEFI)
+├── Ubuntu-WSL-GUI.rdp           # 1-Click Remote Desktop connection profile (Port 3390)
 ├── .dockerignore                # Docker build exclusions
 ├── .env.example                 # Configuration template
 ├── .gitignore                   # Git exclusions
