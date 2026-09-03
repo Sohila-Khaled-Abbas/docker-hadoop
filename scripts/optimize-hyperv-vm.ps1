@@ -45,13 +45,17 @@ Write-Host "--> [3/4] Setting Secure Boot Template to 'MicrosoftUEFICertificateA
 Set-VMFirmware -VMName $VMName -EnableSecureBoot On -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
 
 # 5. Set DVD (ISO) as First Boot Device
-Write-Host "--> [4/4] Setting DVD Drive as Primary Boot Device..."
+Write-Host "--> [4/5] Setting DVD Drive as Primary Boot Device..."
 $dvd = Get-VMDvdDrive -VMName $VMName -ErrorAction SilentlyContinue
 if ($null -ne $dvd) {
     Set-VMFirmware -VMName $VMName -FirstBootDevice $dvd
 }
 
-# 6. Start the VM and open Connection window
+# 6. Configure Native 1920x1080 Full Screen Display Resolution
+Write-Host "--> [5/5] Configuring Native 1920x1080 Full HD Resolution (edge-to-edge)..."
+Set-VMVideo -VMName $VMName -HorizontalResolution 1920 -VerticalResolution 1080 -ResolutionType Single -ErrorAction SilentlyContinue
+
+# 7. Start the VM and open Connection window
 Write-Host "--> Starting VM '$VMName'..."
 Start-VM -Name $VMName
 Start-Process "vmconnect.exe" -ArgumentList "localhost", $VMName

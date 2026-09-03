@@ -79,13 +79,27 @@ Fix-Lag-And-Start-VM.bat
 
 To make the Ubuntu VM **fill your entire monitor** without black borders:
 
-### Method 1: Fit to Window (Instant, During Installation)
-1. In `vmconnect.exe` (Virtual Machine Connection window), click the **View** menu at the top.
-2. Select **Zoom** $\rightarrow$ **Fit to Window** (or check **Auto-resize guest**).
-3. Press **`Ctrl + Alt + Break`** (or click the **Full Screen** icon in the toolbar).
-4. The virtual display will scale dynamically to fill the physical screen.
+### Method 1: Inside Ubuntu Live Session Right Now (Instant 1080p, 5 Seconds)
+If you are currently on the Ubuntu desktop or installer:
+1. Click the top-right system status area (where the Battery / Volume icons are).
+2. Click **Settings** (gear icon) $\rightarrow$ select **Displays** on the left navigation bar.
+3. Under **Resolution**, change `1024x768` to **`1920x1080 (16:9)`**.
+4. Click the green **Apply** button at the top right, then click **Keep Changes**.
+5. Press **`Ctrl + Alt + Break`** (or click **View $\rightarrow$ Full Screen** in `vmconnect.exe`).
+👉 Ubuntu now fills 100% of your 1080p screen edge-to-edge with zero black borders!
 
-### Method 2: Native 1080p Resolution (Post-Installation)
+### Method 2: Fit to Window Scaling in vmconnect.exe (Instant Stretch)
+1. In `vmconnect.exe`, click **View** $\rightarrow$ **Zoom** $\rightarrow$ **Fit to Window**.
+2. Click the **Full Screen** icon in the toolbar (or press `Ctrl + Alt + Break`).
+3. Hyper-V stretches the guest display dynamically to fill your entire physical monitor.
+
+### Method 3: Hyper-V Hardware Video Resolution (PowerShell)
+To permanently lock the virtual synthetic video hardware to 1920x1080:
+```powershell
+Set-VMVideo -VMName "Ubuntu-Hadoop" -HorizontalResolution 1920 -VerticalResolution 1080 -ResolutionType Single
+```
+
+### Method 4: Native 1080p Resolution via GRUB (Post-Installation)
 Once Ubuntu is installed, configure native 1920x1080 resolution inside GRUB:
 1. Open Terminal in Ubuntu (`Ctrl + Alt + T`).
 2. Edit `/etc/default/grub`:
