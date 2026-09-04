@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-09-05
+
+### Added
+- **Modernized Ultra-HD Architecture Diagram Suite**:
+  - Authored [`scripts/render-modern-diagrams.py`](scripts/render-modern-diagrams.py) generating two distinct, high-definition (2800x1920) architectural assets in both scalable vector format (SVG) and high-resolution raster format (PNG):
+    - [`docs/images/hadoop-data-engineering-infographic.svg`](docs/images/hadoop-data-engineering-infographic.svg) & `.png`: Executive multi-platform deployment ecosystem map covering Docker, VMware (Kali), GCP Dataproc, Hyper-V, WSL 2, and VirtualBox alongside end-to-end dataflow pipelines and benchmarks.
+    - [`docs/images/hadoop-data-engineering-system-architecture.svg`](docs/images/hadoop-data-engineering-system-architecture.svg) & `.png`: Deep-dive architectural blueprint detailing low-level wire protocols (Protobuf RPC `:9000`, Streaming `:9866`, IPC Scheduler `:8030`), in-memory inode namespace graphs, write-ahead edits journaling, 2-way HTTP checkpointing, DataNode 128MB CRC32C block layouts, YARN Capacity Scheduler pools (3072MB), and MapReduce 7-stage shuffle-sort mechanics.
+  - Rendered crisp ultra-HD PNGs (1.24 MB and 1.04 MB) via headless Microsoft Edge screenshot automation.
+
+### Changed
+- **Zero-Overflow Responsive Diagram Typography & Box Sizing**:
+  - Re-architected all diagram card dimensions and text bounds with mathematical padding ensuring zero text collisions or boundary overflows across all cards, pills, badges, and mono code paths.
+  - Modernized Mermaid diagrams in [`README.md`](README.md), [`docs/architecture.md`](docs/architecture.md), [`docs/kali-vmware-hadoop-guide.md`](docs/kali-vmware-hadoop-guide.md), and [`docs/google-cloud-dataproc-hadoop-guide.md`](docs/google-cloud-dataproc-hadoop-guide.md) with balanced multi-line labels (`<br/>`), dark-mode color themes, and complete coverage of Kali Linux VMware, GCP Dataproc, and 512MB YARN container tuning.
+- **Documentation Cleanup**:
+  - Removed duplicate architectural sections from [`docs/architecture.md`](docs/architecture.md) and incorporated the dedicated VMware Kali Linux deployment architecture section.
+
 ## [2.4.0] - 2026-09-04
 
 ### Added

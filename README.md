@@ -121,75 +121,85 @@ Unlike conventional single-purpose repositories, this project delivers a **cross
 flowchart TB
     subgraph Host["💻 DEVELOPER HOST & CLIENT ACCESS LAYER"]
         direction LR
-        DevUI["🌐 Web Consoles<br/>(:9870, :8088, :19888)"]
-        DevCLI["💻 Terminal CLI<br/>(make / docker compose)"]
-        DevLaunch["🚀 1-Click Launchers<br/>(launchers/windows/*.bat)"]
-        DevSSH["🔑 SSH Client<br/>(:22222 hduser:ubuntu)"]
+        DevUI["🌐 Web Consoles<br/><b>(:9870, :8088, :19888)</b><br/>Browser Management UIs"]
+        DevCLI["💻 Terminal CLI<br/><b>make / gcloud / bash</b><br/>Multi-Platform Automation"]
+        DevLaunch["🚀 1-Click Launchers<br/><b>launchers/windows/*.bat</b><br/>GCP, Kali, Docker, WSL"]
+        DevSSH["🔑 SSH Bastions<br/><b>:22222 (Docker)</b><br/>192.168.13.128 (Kali)"]
     end
 
-    subgraph Container["🐳 DOCKER RUNTIME: hadoop-master (Ubuntu 20.04 / OpenJDK 8 / hduser:1000)"]
+    subgraph Deployments["🖥️ MULTI-PLATFORM CLUSTER RUNTIMES"]
+        direction LR
+        PlatDocker["🐳 Docker Compose<br/><b>Single-Node</b><br/>Hadoop 3.1.2<br/>Named Volumes"]
+        PlatVMware["🐉 VMware Workstation<br/><b>Kali Linux 2026.2</b><br/>Hadoop 3.3.6 LTS<br/>6GB RAM / 4 vCPUs"]
+        PlatGCP["☁️ Google Cloud<br/><b>Dataproc &amp; GCE</b><br/>Decoupled gs://<br/>Auto-Idle Teardown"]
+        PlatHyperV["🪟 Microsoft Hyper-V<br/><b>Ubuntu 24.04 Gen 2</b><br/>4 vCPUs / Dynamic RAM<br/>HvSocket Clipboard"]
+        PlatWSL["🐧 WSL 2 Ubuntu<br/><b>Windows 11 Native</b><br/>XFCE GUI Desktop<br/>Port 3390 (RDP)"]
+    end
+
+    subgraph CoreEngine["🐘 APACHE HADOOP DISTRIBUTED CORE (6 JVM DAEMONS)"]
         direction TB
 
-        subgraph HDFS["🗄️ DISTRIBUTED STORAGE LAYER (HDFS)"]
+        subgraph HDFS["🗄️ HDFS DISTRIBUTED STORAGE LAYER"]
             direction TB
-            NN["👑 NameNode (Master)<br/>Port: 9870 (Web) / 9000 (RPC)<br/>• Inodes Tree • FSImage • EditLog"]
-            SNN["🔄 SecondaryNameNode (Checkpointer)<br/>Port: 9868 (HTTP)<br/>• Periodically Merges FSImage + Edits"]
-            DN["📦 DataNode (Worker)<br/>Port: 9864 (Web) / 9866 (Data)<br/>• 128MB Blocks • CRC32C Checksums"]
-            NN <-->|"Heartbeats (3s) & Block Reports"| DN
-            NN <-->|"Checkpoint Sync"| SNN
+            NN["👑 NameNode (Master)<br/><b>Port: 9870 (Web) | 9000 (RPC)</b><br/>Inodes Namespace Graph<br/>FSImage Snapshot &amp; EditLog WAL"]
+            SNN["🔄 SecondaryNameNode<br/><b>Port: 9868 (HTTP)</b><br/>State Consolidation Engine<br/>Merges Checkpoints to fsimage.ckpt"]
+            DN["📦 DataNode (Worker)<br/><b>Port: 9864 (Web) | 9866 (Data)</b><br/>128MB Checksummed Chunks<br/>CRC32C Integrity &amp; Heartbeats"]
+            NN <-->|"Heartbeat (3s) &amp; Block Reports (6h)"| DN
+            NN <-->|"2-Way HTTP Checkpoint Sync"| SNN
         end
 
-        subgraph YARN["⚙️ RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
+        subgraph YARN["⚙️ YARN RESOURCE &amp; SCHEDULING ORCHESTRATION"]
             direction TB
-            RM["🧠 ResourceManager (Master)<br/>Port: 8088 (Web) / 8032 (IPC)<br/>• Pluggable Scheduler • AppManager"]
-            NM["👷 NodeManager (Worker)<br/>Port: 8042 (Web) / 8040 (IPC)<br/>• Container Lifecycle & Monitoring"]
-            AM["🎯 ApplicationMaster<br/>(Container #001)<br/>• Per-Job Coordinator"]
-            Tasks["⚡ Map / Reduce Tasks<br/>(Containers #002, #003)<br/>• In-Container Execution"]
-            JHS["📜 JobHistoryServer<br/>Port: 19888 (Web)<br/>• Historical Logs & Counters"]
-            RM <-->|"Heartbeats & Allocations"| NM
+            RM["🧠 ResourceManager (Master)<br/><b>Port: 8088 (Web) | 8032 (IPC)</b><br/>Capacity / Fair Scheduler<br/>3072MB Dynamic Memory Pool"]
+            NM["👷 NodeManager (Worker)<br/><b>Port: 8042 (Web) | 8040 (IPC)</b><br/>cgroups Slot Isolation<br/>vmem-check-enabled=false"]
+            AM["🎯 ApplicationMaster<br/><b>Container #001 (512 MB)</b><br/>Per-Job Lifecycle Master<br/>Negotiates Task Slots"]
+            Tasks["⚡ Map / Reduce Tasks<br/><b>Containers #002, #003 (512 MB)</b><br/>512MB Allocation • Low-Pause G1GC<br/>Deadlock-Free Concurrent Execution"]
+            JHS["📜 JobHistoryServer<br/><b>Port: 19888 (Web) | 10020 (IPC)</b><br/>Post-Mortem Execution Metrics<br/>Aggregated Container Logs"]
+            RM <-->|"Resource Tracker &amp; Allocations"| NM
             NM -->|"Launch"| AM
-            AM -->|"Directs"| Tasks
+            AM -->|"Directs Tasks"| Tasks
             NM -->|"Aggregated Logs"| JHS
         end
 
         Tasks -.->|"Data Locality Read (128MB)"| DN
-        Tasks -.->|"Write Results (part-r-00000)"| DN
+        Tasks -.->|"Write Result (part-r-00000)"| DN
     end
 
-    subgraph Engines["⚡ ANALYTICS & PROCESSING ENGINES"]
+    subgraph Engines["⚡ ANALYTICS &amp; PROCESSING FRAMEWORKS"]
         direction TB
-        Spark["🔥 Apache Spark / PySpark<br/>(DataFrames & RDDs)"]
-        MR["☕ Native Java MapReduce<br/>(Compiled JAR)"]
-        StreamMR["🐍 Python Streaming<br/>(mapper.py | reducer.py)"]
-        HDFSCLI["📁 Interactive HDFS CLI<br/>(hdfs dfs -put / -ls)"]
+        Spark["🔥 Apache Spark / PySpark<br/>In-Memory DataFrames &amp; Parquet"]
+        MR["☕ Native Java MapReduce<br/>Compiled JAR (WordCount / Pi)"]
+        StreamMR["🐍 Python Streaming<br/>mapper.py | sort | reducer.py"]
+        HDFSCLI["📁 Interactive HDFS CLI<br/>hdfs dfs -put / -ls / -cat"]
     end
 
-    subgraph Volumes["💾 DOCKER NAMED VOLUMES (Persistent Host Storage)"]
+    subgraph Storage["💾 DURABLE PERSISTENT STORAGE TIER (ZERO DATA LOSS)"]
         direction LR
-        V_NN["📁 hadoop_namenode_data<br/>/usr/local/hadoop/hdfs/namenode"]
-        V_DN["🧱 hadoop_datanode_data<br/>/usr/local/hadoop/hdfs/datanode"]
-        V_TMP["📦 hadoop_tmp_data<br/>/app/hadoop/tmp"]
-        V_LOG["📜 hadoop_logs_data<br/>/usr/local/hadoop/logs"]
+        V_Docker["📁 Docker Named Volumes<br/>hadoop_namenode_data<br/>hadoop_datanode_data"]
+        V_VM["🐉 VMware Virtual Disk<br/>/usr/local/hadoop/hdfs/<br/>ext4 High-Speed SSD"]
+        V_GCS["☁️ Google Cloud Storage<br/>gs://bucket/data &amp; staging<br/>11 9s Durability"]
+        V_Scratch["📦 Scratch &amp; Logs<br/>hadoop_tmp_data (/app/hadoop/tmp)<br/>hadoop_logs_data (/usr/local/hadoop/logs)"]
     end
 
-    Host ==>|"① Submit Job & Ingest Data"| RM & NN
-    Engines ==>|"Submit Applications"| RM
-    NN ==>|"Persist Inode Metadata"| V_NN
-    DN ==>|"Persist 128MB Blocks"| V_DN
-    YARN -.->|"Temp Spills & Tokens"| V_TMP
-    Container -.->|"Daemon Event Logs"| V_LOG
+    Host ==>|"① Submit Applications &amp; Ingest Data"| Deployments
+    Deployments ==>|"Dispatch to Engine"| CoreEngine
+    Engines ==>|"Execute Analytical Jobs"| RM
+    NN ==>|"Persist Inodes"| Storage
+    DN ==>|"Store 128MB Blocks"| Storage
 
-    classDef hostStyle fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#ffffff;
-    classDef hdfsStyle fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
-    classDef yarnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
-    classDef engineStyle fill:#581c87,stroke:#a855f7,stroke-width:2px,color:#ffffff;
-    classDef volStyle fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff;
+    classDef hostStyle fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef platStyle fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+    classDef hdfsStyle fill:#0c2d48,stroke:#00a8e8,stroke-width:2px,color:#f8fafc;
+    classDef yarnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#f8fafc;
+    classDef engineStyle fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+    classDef storageStyle fill:#450a0a,stroke:#f87171,stroke-width:2px,color:#f8fafc;
 
     class DevUI,DevCLI,DevLaunch,DevSSH hostStyle;
+    class PlatDocker,PlatVMware,PlatGCP,PlatHyperV,PlatWSL platStyle;
     class NN,SNN,DN hdfsStyle;
     class RM,NM,AM,Tasks,JHS yarnStyle;
     class Spark,MR,StreamMR,HDFSCLI engineStyle;
-    class V_NN,V_DN,V_TMP,V_LOG volStyle;
+    class V_Docker,V_VM,V_GCS,V_Scratch storageStyle;
 ```
 
 ---

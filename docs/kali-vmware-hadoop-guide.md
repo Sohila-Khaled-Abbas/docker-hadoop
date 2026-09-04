@@ -44,16 +44,17 @@ flowchart TB
             SNN["SecondaryNameNode<br/>512 MB Max"]
             RM["ResourceManager<br/>1024 MB Max (G1GC)"]
             NM["NodeManager<br/>512 MB Max (G1GC)"]
-            JHS["JobHistoryServer"]
+            JHS["JobHistoryServer<br/>Port: 19888 (Web)"]
         end
-        subgraph YARNPool["⚡ YARN Container Pool (3072 MB)"]
-            Container1["Map Task Container"]
-            Container2["Reduce Task Container"]
+        subgraph YARNPool["⚡ YARN Container Pool (3072 MB Pool)"]
+            Container0["ApplicationMaster<br/>512 MB (G1GC)"]
+            Container1["Map Task Container<br/>512 MB (Split 0)"]
+            Container2["Reduce Task Container<br/>512 MB (Part 0)"]
         end
     end
 
     VMwareWorkstation --> Guest
-    Host <-->|HTTP Web UIs (9870, 8088)| Guest
+    Host <-->|HTTP Web UIs (9870, 8088, 19888)| Guest
 
     classDef host fill:#0284c7,stroke:#0369a1,stroke-width:2px,color:#ffffff;
     classDef guest fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#ffffff;
@@ -62,7 +63,7 @@ flowchart TB
     class Host,WindowsOS,VMwareWorkstation host;
     class Guest,KaliDesktop guest;
     class HadoopStack,NN,DN,SNN,RM,NM,JHS hadoop;
-    class YARNPool,Container1,Container2 yarn;
+    class YARNPool,Container0,Container1,Container2 yarn;
 ```
 
 ### ⚖️ Resource Allocation Breakdown
@@ -94,8 +95,8 @@ sequenceDiagram
     Dev->>Script: Run bash /path/to/install-hadoop-kali.sh
     Script->>Script: Install OpenJDK 11, SSH, tune kernel (swappiness=1)
     Script->>Script: Deploy Hadoop 3.3.6 & configure XMLs with G1GC
-    Script->>Script: Format NameNode & launch 5 daemons
-    Script->>Dev: Return active JPS daemons & Web UI URLs (9870, 8088)
+    Script->>Script: Format NameNode & launch 6 daemons (HDFS, YARN, JHS)
+    Script->>Dev: Return active JPS daemons & Web UI URLs (9870, 8088, 19888)
 ```
 
 ---

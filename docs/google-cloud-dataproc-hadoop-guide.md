@@ -73,7 +73,7 @@ flowchart TD
             Worker3["⚡ Spot Worker (Preemptible)"]
         end
         subgraph DurableStorage["💾 Google Cloud Storage (Persistence Layer)"]
-            GCS["📦 gs://your-bucket-name\n• 11 9s Durability (99.999999999%)\n• Highly Available & Globally Accessible\n• Pay Only for Stored Bytes"]
+            GCS["📦 gs://your-bucket-name<br/>• 11 9s Durability (99.999999999%)<br/>• Highly Available &amp; Globally Accessible<br/>• Pay Only for Stored Bytes"]
         end
         EphemeralCompute ==>|"Streaming RPC Reads/Writes (100 Gbps Network Fabric)"| DurableStorage
     end
@@ -113,7 +113,7 @@ flowchart TB
 
         subgraph Dataproc["🐘 MANAGED CLUSTER: Google Cloud Dataproc"]
             direction TB
-            Master["👑 Master Node (e2-standard-4)\n• YARN ResourceManager\n• HDFS NameNode\n• JobHistory Server\n• Component Gateway Proxy"]
+            Master["👑 Master Node (e2-standard-4)<br/>• YARN ResourceManager<br/>• HDFS NameNode<br/>• JobHistory Server<br/>• Component Gateway Proxy"]
             
             subgraph Workers["👷 Worker Fleet (Autoscaling)"]
                 W1["Primary Worker 1 (e2-standard-4)"]
@@ -125,12 +125,12 @@ flowchart TB
         end
 
         subgraph StorageLayer["💾 DECOUPLED CLOUD STORAGE"]
-            GCS_Bucket["📦 gs://${BUCKET_NAME}\n├── /mapreduce/code/ (mapper.py, reducer.py)\n├── /mapreduce/input/ (wordcount-sample.txt)\n└── /mapreduce/output/ (part-00000)"]
+            GCS_Bucket["📦 gs://${BUCKET_NAME}<br/>├── /mapreduce/code/ (mapper.py, reducer.py)<br/>├── /mapreduce/input/ (wordcount-sample.txt)<br/>└── /mapreduce/output/ (part-00000)"]
         end
 
-        subgraph Gateways["🛡️ SECURITY & NETWORKING LAYER"]
-            CG["🌐 Component Gateway (OAuth 2.0 Web Proxy)\n• ResourceManager UI (:8088)\n• NameNode UI (:9870)\n• JobHistory UI (:19888)"]
-            IAM["🔑 Cloud IAM Roles\n• roles/dataproc.editor\n• roles/storage.objectAdmin"]
+        subgraph Gateways["🛡️ SECURITY &amp; NETWORKING LAYER"]
+            CG["🌐 Component Gateway (OAuth 2.0 Web Proxy)<br/>• ResourceManager UI (:8088)<br/>• NameNode UI (:9870)<br/>• JobHistory UI (:19888)"]
+            IAM["🔑 Cloud IAM Roles<br/>• roles/dataproc.editor<br/>• roles/storage.objectAdmin"]
         end
 
         Dataproc <==>|"Hadoop GCS Connector (CloudStorageFileSystem)"| StorageLayer
