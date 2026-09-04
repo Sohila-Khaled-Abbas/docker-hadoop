@@ -83,14 +83,22 @@ $Config["vcpu.hotadd"] = "TRUE"
 $Config["vhv.enable"] = "FALSE"
 $Config["vpmc.enable"] = "FALSE"
 
+# Hardware Compatibility Upgrade (from legacy v8 to modern v21)
+$Config["virtualHW.version"] = "21"
+
+# Fix Mouse Pointer & Input Synchronization
+$Config["vmmouse.present"] = "FALSE"        # Forces USB tablet absolute pointer; eliminates invisible cursor bug
+$Config["mouse.vusb.enable"] = "TRUE"       # Enables virtual USB mouse bus
+$Config["usb.generic.allowHID"] = "TRUE"
+
 # Enable Clipboard & Drag-Drop
 $Config["isolation.tools.copy.disable"] = "FALSE"
 $Config["isolation.tools.paste.disable"] = "FALSE"
 $Config["isolation.tools.dnd.disable"] = "FALSE"
 $Config["isolation.tools.hgfs.disable"] = "FALSE"
 
-# Graphics & Performance
-$Config["mks.enable3d"] = "TRUE"
+# Graphics & Performance (Disable 3D to prevent invisible cursor in XFCE/Xorg)
+$Config["mks.enable3d"] = "FALSE"
 $Config["tools.syncTime"] = "TRUE"
 $Config["prefvmx.useSharedProcessorsInSingleLargePageVM"] = "TRUE"
 
