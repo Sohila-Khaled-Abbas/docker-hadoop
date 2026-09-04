@@ -21,12 +21,12 @@ docker compose exec -T hadoop hdfs dfs -put -f /tmp/sample.txt /example/python/i
 echo "=== 3. Executing Hadoop Streaming MapReduce Job ==="
 docker compose exec -T hadoop hadoop jar "$STREAMING_JAR" \
     -files /tmp/mapper.py,/tmp/reducer.py \
-    -mapper "python3 ./mapper.py" \
-    -reducer "python3 ./reducer.py" \
+    -mapper "python3 mapper.py" \
+    -reducer "python3 reducer.py" \
     -input /example/python/input/sample.txt \
     -output /example/python/output
 
 echo "=== 4. Displaying Results from HDFS ==="
-docker compose exec -T hadoop hdfs dfs -cat /example/python/output/part-00000 | head -n 25
+docker compose exec -T hadoop hdfs dfs -cat /example/python/output/part* | head -n 25
 
 echo "=== Python MapReduce Job Finished Successfully ==="

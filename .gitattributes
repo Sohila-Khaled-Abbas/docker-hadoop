@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Enforce LF for scripts, Dockerfiles and python files
+*.sh text eol=lf
+*.py text eol=lf
+Dockerfile text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
