@@ -30,6 +30,7 @@ This guide provides a comprehensive theoretical reference for Apache Hadoop, its
   - [High Availability (HA) Architecture](#high-availability-ha-architecture)
 - [HDFS Write Operation](#-hdfs-write-operation)
 - [Linux Commands for Data Engineers](#-linux-commands-for-data-engineers)
+- [Cloud-Native Hadoop — Google Cloud Dataproc](#️-cloud-native-hadoop--google-cloud-dataproc)
 - [External Learning Resources](#-external-learning-resources)
 
 ---
@@ -687,12 +688,43 @@ If a failure occurs during the write pipeline:
 
 ---
 
+## ☁️ Cloud-Native Hadoop — Google Cloud Dataproc
+
+In modern enterprise architectures, Hadoop has evolved from permanent on-premise clusters to **Cloud-Native Distributed Computing**:
+
+```mermaid
+flowchart LR
+    subgraph OnPrem["🏢 On-Premise (Coupled)"]
+        H1["Permanent Cluster\n(HDFS + YARN)"] --> D1["Local Hard Drives\n($3\\times$ Replication)"]
+    end
+
+    subgraph CloudGCP["☁️ Google Cloud (Decoupled)"]
+        DP["⚡ Ephemeral Dataproc\n(Spins up in 90s, runs job, deletes)"] <==> GCS["💾 Google Cloud Storage\n(gs://bucket - 11 9s Durability)"]
+    end
+
+    style OnPrem fill:#1e293b,stroke:#475569,color:#fff
+    style CloudGCP fill:#0f172a,stroke:#0284c7,color:#fff
+    style DP fill:#064e3b,stroke:#10b981,color:#fff
+    style GCS fill:#1e3a8a,stroke:#3b82f6,color:#fff
+```
+
+### Key Advantages of Google Cloud Dataproc:
+1. **Decoupled Storage & Compute**: Dataproc uses the open-source GCS connector (`gs://`), meaning you can store petabytes in Cloud Storage at cold storage prices and only spin up compute when running analytics.
+2. **Ephemeral Clusters**: Clusters spin up in ~90 seconds, execute MapReduce or Spark jobs, write results back to `gs://`, and automatically shut down (`--max-idle=30m`).
+3. **Spot / Preemptible VMs**: Secondary worker nodes can use Spot instances for 60–80% cost savings.
+4. **Component Gateway**: Access HDFS NameNode, YARN ResourceManager, and JobHistory Web UIs securely through Google Cloud IAM without SSH tunnels.
+
+> 📖 **Complete Guide**: Read our dedicated [Google Cloud Dataproc & GCE Guide](google-cloud-dataproc-hadoop-guide.md) for automated scripts, CLI commands, and cost-optimization walkthroughs.
+
+---
+
 ## 📚 External Learning Resources
 
 These resources are recommended in the course lectures:
 
 | Resource | Link | Topic |
 |:---|:---|:---|
+| **Google Cloud Dataproc Guide (This Repo)** | [docs/google-cloud-dataproc-hadoop-guide.md](google-cloud-dataproc-hadoop-guide.md) | Managed Hadoop on GCP |
 | **Essential Linux Commands for Data Engineers** | [allthingdata.substack.com](https://allthingdata.substack.com/p/essential-linux-commands-for-data) | Linux CLI fundamentals |
 | **Essential HDFS Commands for Data Engineers** | [allthingdata.substack.com](https://allthingdata.substack.com/p/essential-hdfs-commands-for-data) | HDFS CLI operations |
 | **HDFS CLI Lab (This Repo)** | [examples/hdfs-cli/](../examples/hdfs-cli/) | Hands-on HDFS commands in Docker |

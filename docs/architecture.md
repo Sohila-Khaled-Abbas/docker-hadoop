@@ -748,3 +748,22 @@ The container maps internal daemons to host network interfaces:
    - Environment variables (`JAVA_HOME`, `HADOOP_HOME`, `HADOOP_CONF_DIR`, `PATH`) are centralized in `/etc/profile.d/hadoop.sh` and backed into `.bashrc` and `.profile` for both `hduser` and `root`.
    - Automation scripts (`entrypoint.sh`, `healthcheck.sh`, `test-cluster.sh`) utilize subshell environment wrappers (`run_hduser`) ensuring uninterrupted execution across interactive and non-interactive sessions.
 
+---
+
+## ☁️ Cloud-Native Architecture — Google Cloud Platform
+
+Beyond single-node containerization, this repository supports enterprise **Google Cloud Platform (GCP)** architectures:
+
+1. **Decoupled Storage & Compute via Cloud Storage (`gs://`)**:
+   - The Hadoop `CloudStorageFileSystem` connector substitutes local DataNode storage with Google Cloud Storage.
+   - Eliminates NameNode memory limits, provides **11 9s durability**, and reduces persistent storage costs by up to 90%.
+2. **Managed Lifecycle via Google Cloud Dataproc**:
+   - Master and worker nodes are provisioned on-demand within 90 seconds.
+   - Web consoles (YARN `:8088`, HDFS `:9870`, JobHistory `:19888`) are proxied securely through Google Cloud IAM **Component Gateway**.
+   - Workers leverage **Spot / Preemptible VMs** for high-throughput, fault-tolerant batch processing.
+3. **Containerized Compute Engine (GCE) Deployment**:
+   - For hybrid and custom cloud requirements, this repository deploys the exact container stack onto Ubuntu Compute Engine VMs with automated VPC ingress firewall rules.
+
+> 📖 **Deep Dive**: Refer to [Google Cloud Dataproc & GCE Guide](google-cloud-dataproc-hadoop-guide.md) for architecture diagrams, scripts, and cost management policies.
+
+

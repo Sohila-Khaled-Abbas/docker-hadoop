@@ -9,6 +9,7 @@ This directory houses modular automation scripts organized by runtime environmen
 ```text
 scripts/
 ├── docker/          # Docker container initialization & health monitoring
+├── gcp/             # Google Cloud Dataproc & Compute Engine deployment automation
 ├── hyperv/          # Microsoft Hyper-V host & guest optimization scripts
 ├── linux/           # Ubuntu / Debian bare-metal Hadoop installation & systemd setup
 ├── virtualbox/      # Oracle VirtualBox automated provisioning scripts
@@ -70,3 +71,13 @@ scripts/
 | [`install-hadoop-wsl.sh`](wsl/install-hadoop-wsl.sh) | Bash | Configures Hadoop inside Ubuntu WSL 2 distribution. |
 | [`start-hadoop-cluster.sh`](wsl/start-hadoop-cluster.sh) | Bash | Starts NameNode, DataNode, ResourceManager, and NodeManager inside WSL 2. |
 | [`sync-wsl-configs.sh`](wsl/sync-wsl-configs.sh) | Bash | Synchronizes Hadoop XML configuration files from repository `config/` directory into WSL `/usr/local/hadoop/etc/hadoop/`. |
+
+### 7. Google Cloud Platform (`scripts/gcp/`)
+
+| Script | Language | Purpose |
+|:---|:---|:---|
+| [`create-dataproc-cluster.sh`](gcp/create-dataproc-cluster.sh) | Bash | Provisions an auto-terminating Google Cloud Dataproc cluster with Component Gateway, Spot workers, and GCS integration. |
+| [`submit-mapreduce-job.sh`](gcp/submit-mapreduce-job.sh) | Bash | Uploads datasets to `gs://` and submits Python Hadoop Streaming or Java MapReduce jobs to Dataproc. |
+| [`teardown-dataproc-cluster.sh`](gcp/teardown-dataproc-cluster.sh) | Bash | Gracefully deletes an ephemeral Dataproc cluster to stop cloud compute billing. |
+| [`deploy-hadoop-gce.sh`](gcp/deploy-hadoop-gce.sh) | Bash | Deploys containerized Docker Hadoop on an Ubuntu Google Compute Engine (GCE) VM with automated VPC firewall configuration. |
+

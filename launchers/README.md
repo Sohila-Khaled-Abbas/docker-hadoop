@@ -13,6 +13,7 @@ launchers/
 └── windows/
     ├── Start-Hadoop-Docker.bat          # Starts Hadoop Docker container cluster
     ├── Stop-Hadoop-Docker.bat           # Gracefully stops Docker cluster
+    ├── Deploy-Hadoop-GCP.bat            # Google Cloud Dataproc & GCE interactive launcher
     ├── Launch-Kali-VMware.bat           # Optimizes VMX hardware & boots Kali Linux
     ├── Fix-Lag-And-Start-VM.bat         # Allocates 4 vCPUs & launches Hyper-V VM
     ├── Fix-VM-Internet.bat              # Repairs Hyper-V DNS & NAT connectivity
@@ -31,7 +32,13 @@ launchers/
 | [`Start-Hadoop-Docker.bat`](windows/Start-Hadoop-Docker.bat) | Docker Desktop | Checks Docker engine daemon status, boots `hadoop-master` container in detached mode (`docker compose up -d`), verifies health, and displays web UI URLs (`:9870`, `:8088`, `:19888`). |
 | [`Stop-Hadoop-Docker.bat`](windows/Stop-Hadoop-Docker.bat) | Docker Desktop | Gracefully stops containerized daemons and halts container (`docker compose down`) while safely retaining all persistent HDFS named volumes. |
 
-### 2. VMware Workstation (Kali Linux)
+### 2. Google Cloud Platform (Dataproc & GCE)
+
+| Launcher | Target Platform | Description |
+|:---|:---|:---|
+| [`Deploy-Hadoop-GCP.bat`](windows/Deploy-Hadoop-GCP.bat) | Google Cloud | Interactive Windows menu to provision Dataproc clusters, submit Python Streaming or Java MapReduce jobs to `gs://`, deploy Docker Hadoop to Compute Engine (GCE), or teardown clusters. |
+
+### 3. VMware Workstation (Kali Linux)
 
 | Launcher | Target Platform | Description |
 |:---|:---|:---|

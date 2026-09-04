@@ -2,7 +2,7 @@
 
 # 🐘 Apache Hadoop Enterprise Multi-Platform Lab
 
-### *Unified Big Data Engineering Ecosystem for Docker, VMware (Kali Linux), Hyper-V, WSL 2, Oracle VirtualBox & Bare-Metal Linux*
+### *Unified Big Data Engineering Ecosystem for Docker, Google Cloud (Dataproc & GCE), VMware (Kali Linux), Hyper-V, WSL 2, Oracle VirtualBox & Bare-Metal Linux*
 
 <p align="center">
   <a href="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/ci.yml">
@@ -28,6 +28,9 @@
 <p align="center">
   <a href="https://www.docker.com/">
     <img src="https://img.shields.io/badge/Platform-Docker%20%26%20Compose-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  </a>
+  <a href="https://cloud.google.com/dataproc/">
+    <img src="https://img.shields.io/badge/Cloud-Google%20Cloud%20Dataproc%20%26%20GCE-4285F4?logo=googlecloud&logoColor=white" alt="Google Cloud" />
   </a>
   <a href="https://www.vmware.com/">
     <img src="https://img.shields.io/badge/Platform-VMware%20Workstation-607078?logo=vmware&logoColor=white" alt="VMware" />
@@ -68,11 +71,12 @@ Welcome to the **Apache Hadoop Enterprise Multi-Platform Lab** — a unified, pr
 
 Unlike conventional single-purpose repositories, this project delivers a **cross-platform deployment suite** supporting:
 1. **Containerized Cluster (Docker & Docker Compose)**: Single-node Hadoop 3.1.2 with automated daemon supervisors, named persistent storage, and built-in health probes.
-2. **Virtual Machine Workstations (VMware Workstation Pro & Kali Linux)**: Automated VMX hardware tuning (6GB RAM, 4 vCPUs, G1GC optimization, swappiness tuning, full-screen 1080p, programmatic mouse fix, and Hadoop 3.3.6 installer).
-3. **Enterprise Type-1 Hypervisor (Microsoft Hyper-V Generation 2)**: 4 vCPUs, dynamic memory allocation, enhanced session mode (`HvSocket` bidirectional clipboard), and automated NAT virtual switch recovery.
-4. **Near-Bare-Metal Windows Subsystem (WSL 2 Ubuntu)**: Ultra-fast I/O with XFCE4 visual desktop over RDP (port 3390) and zero-friction cluster startup.
-5. **Open Source Virtualization (Oracle VirtualBox)**: Automated PowerShell VM orchestrator (`virtualbox-setup.ps1`) with NAT port forwarding rules.
-6. **Native Linux & Bare Metal**: Non-root systemd service unit configurations and user-space zero-sudo installers.
+2. **Google Cloud Platform (Dataproc & Compute Engine)**: Managed Apache Hadoop 3 + Spark clusters with decoupled Cloud Storage (`gs://`), Component Gateway web consoles, Spot workers, and 1-click Compute Engine VM deployment.
+3. **Virtual Machine Workstations (VMware Workstation Pro & Kali Linux)**: Automated VMX hardware tuning (6GB RAM, 4 vCPUs, G1GC optimization, swappiness tuning, full-screen 1080p, programmatic mouse fix, and Hadoop 3.3.6 installer).
+4. **Enterprise Type-1 Hypervisor (Microsoft Hyper-V Generation 2)**: 4 vCPUs, dynamic memory allocation, enhanced session mode (`HvSocket` bidirectional clipboard), and automated NAT virtual switch recovery.
+5. **Near-Bare-Metal Windows Subsystem (WSL 2 Ubuntu)**: Ultra-fast I/O with XFCE4 visual desktop over RDP (port 3390) and zero-friction cluster startup.
+6. **Open Source Virtualization (Oracle VirtualBox)**: Automated PowerShell VM orchestrator (`virtualbox-setup.ps1`) with NAT port forwarding rules.
+7. **Native Linux & Bare Metal**: Non-root systemd service unit configurations and user-space zero-sudo installers.
 
 ---
 
@@ -85,6 +89,7 @@ Unlike conventional single-purpose repositories, this project delivers a **cross
   - **MapReduce**: JobHistory Server.
 - **1-Click Windows Launchers ([`launchers/windows/`](launchers/windows/))**:
   - [`Start-Hadoop-Docker.bat`](launchers/windows/Start-Hadoop-Docker.bat) & [`Stop-Hadoop-Docker.bat`](launchers/windows/Stop-Hadoop-Docker.bat) for instant Docker cluster control.
+  - [`Deploy-Hadoop-GCP.bat`](launchers/windows/Deploy-Hadoop-GCP.bat) & [`Deploy-Hadoop-GCP.ps1`](launchers/windows/Deploy-Hadoop-GCP.ps1) for Google Cloud Dataproc & GCE orchestration.
   - [`Launch-Kali-VMware.bat`](launchers/windows/Launch-Kali-VMware.bat) for automated VMX tuning & Kali boot.
   - [`Fix-Lag-And-Start-VM.bat`](launchers/windows/Fix-Lag-And-Start-VM.bat) & [`Fix-VM-Internet.bat`](launchers/windows/Fix-VM-Internet.bat) for Hyper-V management.
   - [`Ubuntu-WSL-GUI.rdp`](launchers/windows/Ubuntu-WSL-GUI.rdp) for instant Remote Desktop GUI access.
@@ -288,6 +293,31 @@ docker compose down
 
 </details>
 
+<details>
+<summary><b>Option 6: Google Cloud Platform (Dataproc & Compute Engine)</b></summary>
+
+1. **Via 1-Click Windows Launcher**: Double-click **[`launchers/windows/Deploy-Hadoop-GCP.bat`](launchers/windows/Deploy-Hadoop-GCP.bat)** to interactively create Dataproc clusters, submit jobs to `gs://`, deploy to Compute Engine, or teardown clusters.
+2. **Via Terminal CLI**:
+   - Create an auto-terminating Dataproc cluster with Component Gateway:
+     ```bash
+     bash scripts/gcp/create-dataproc-cluster.sh
+     ```
+   - Submit a Python Hadoop Streaming WordCount job reading/writing from Cloud Storage:
+     ```bash
+     bash scripts/gcp/submit-mapreduce-job.sh streaming
+     ```
+   - Or deploy the Docker containerized Hadoop stack to a Google Compute Engine VM:
+     ```bash
+     bash scripts/gcp/deploy-hadoop-gce.sh
+     ```
+   - Teardown Dataproc cluster to prevent cloud charges:
+     ```bash
+     bash scripts/gcp/teardown-dataproc-cluster.sh
+     ```
+3. Read the complete [Google Cloud Dataproc & GCE Guide](docs/google-cloud-dataproc-hadoop-guide.md).
+
+</details>
+
 ---
 
 ## 🔬 Data Engineering Tutorials
@@ -374,6 +404,7 @@ docker-hadoop/
 │   ├── data-engineering-patterns.md # Lakehouse, Medallion, & join patterns
 │   ├── ecosystem-integration.md # Spark, Hive, Presto, & Jupyter guides
 │   ├── getting-started.md       # Fast onboarding guide
+│   ├── google-cloud-dataproc-hadoop-guide.md # Google Cloud Dataproc & GCE deployment
 │   ├── hadoop-ecosystem-guide.md# Complete ecosystem, HDFS & fault-tolerance guide
 │   ├── hyperv-ubuntu-guide.md   # Microsoft Hyper-V setup & optimization
 │   ├── kali-vmware-hadoop-guide.md # VMware Workstation & Kali Linux guide
@@ -404,6 +435,7 @@ docker-hadoop/
 │   └── windows/                 # Windows 1-click desktop batch launchers
 │       ├── Start-Hadoop-Docker.bat # 1-Click Docker cluster startup
 │       ├── Stop-Hadoop-Docker.bat  # 1-Click Docker cluster shutdown
+│       ├── Deploy-Hadoop-GCP.bat   # Google Cloud Dataproc & GCE launcher
 │       ├── Launch-Kali-VMware.bat  # VMware Workstation Kali launcher
 │       ├── Fix-Lag-And-Start-VM.bat# Hyper-V 4-vCPU & performance launcher
 │       ├── Fix-VM-Internet.bat     # Hyper-V virtual switch network repair
@@ -415,6 +447,11 @@ docker-hadoop/
 │   │   ├── entrypoint.sh
 │   │   ├── healthcheck.sh
 │   │   └── test-cluster.sh
+│   ├── gcp/                     # Google Cloud Dataproc & GCE automation
+│   │   ├── create-dataproc-cluster.sh
+│   │   ├── submit-mapreduce-job.sh
+│   │   ├── teardown-dataproc-cluster.sh
+│   │   └── deploy-hadoop-gce.sh
 │   ├── vmware/                  # VMware & Kali Linux automation
 │   │   ├── install-hadoop-kali.sh
 │   │   ├── optimize-kali-vmx.ps1
@@ -480,6 +517,11 @@ docker-hadoop/
 | `make vm-ssh` | Connect to VirtualBox VM via SSH (`port 2222`) |
 | `make vm-kali-optimize` | Tune Kali VMX hardware specs (6GB RAM, 4 vCPUs) |
 | `make vm-kali-start` | Launch Kali Linux in VMware Workstation |
+| `make gcp-dataproc-create` | Provision auto-terminating Dataproc cluster |
+| `make gcp-dataproc-stream` | Submit Python Streaming WordCount to Dataproc |
+| `make gcp-dataproc-java` | Submit Native Java MapReduce Pi to Dataproc |
+| `make gcp-dataproc-delete` | Teardown Dataproc cluster (stop charges) |
+| `make gcp-gce-deploy` | Deploy Docker Hadoop to Google Compute Engine |
 
 ---
 
@@ -489,6 +531,7 @@ Explore our comprehensive technical documentation and deep-dive guides:
 
 | Document | Topic & Focus | Key Highlights |
 | :--- | :--- | :--- |
+| **[Google Cloud Dataproc Guide](docs/google-cloud-dataproc-hadoop-guide.md)** | Google Cloud (Dataproc & GCE) | Managed Hadoop 3 + Spark clusters, decoupled Cloud Storage (`gs://`), Component Gateway web consoles, Spot workers, and GCE deployment. |
 | **[Hadoop Ecosystem Guide](docs/hadoop-ecosystem-guide.md)** | Ecosystem & HDFS Architecture | Core Hadoop principles, component classification, HDFS block sizes, replication topology, fault tolerance, NameNode HA, and write pipelines. |
 | **[System Architecture](docs/architecture.md)** | Architecture & Daemon Internals | Comprehensive system breakdown, NameNode vs DataNode table, block management, heartbeat mechanisms, Secondary vs Standby NameNode, and network topology. |
 | **[Getting Started](docs/getting-started.md)** | Fast Onboarding | Prerequisites, 3-minute quickstart, cluster verification, and basic data ingest. |

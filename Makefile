@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs ps test test-mr-python test-mr-java bash hdfs-shell jps safemode-leave hdfs-report clean vm-create vm-start vm-start-headless vm-stop vm-ssh vm-status vm-ports vm-rebuild vm-kali-optimize vm-kali-start
+.PHONY: help build up down restart logs ps test test-mr-python test-mr-java bash hdfs-shell jps safemode-leave hdfs-report clean vm-create vm-start vm-start-headless vm-stop vm-ssh vm-status vm-ports vm-rebuild vm-kali-optimize vm-kali-start gcp-dataproc-create gcp-dataproc-stream gcp-dataproc-java gcp-dataproc-delete gcp-gce-deploy
 
 
 help:
@@ -39,6 +39,13 @@ help:
 	@echo "  VMware Workstation Kali VM Management:"
 	@echo "    make vm-kali-optimize - Tune Kali VMX (6GB RAM, 4 vCPUs, disable VT-x popup)"
 	@echo "    make vm-kali-start   - Launch Kali Linux in VMware Workstation"
+	@echo ""
+	@echo "  Google Cloud Platform (Dataproc & GCE):"
+	@echo "    make gcp-dataproc-create - Provision auto-terminating Dataproc cluster"
+	@echo "    make gcp-dataproc-stream - Submit Python Streaming WordCount to Dataproc"
+	@echo "    make gcp-dataproc-java   - Submit Native Java MapReduce Pi to Dataproc"
+	@echo "    make gcp-dataproc-delete - Teardown Dataproc cluster (stop charges)"
+	@echo "    make gcp-gce-deploy      - Deploy Docker Hadoop to Google Compute Engine"
 	@echo "=========================================================="
 
 build:
@@ -124,4 +131,20 @@ vm-kali-optimize:
 
 vm-kali-start:
 	cmd /c launchers\windows\Launch-Kali-VMware.bat
+
+gcp-dataproc-create:
+	bash scripts/gcp/create-dataproc-cluster.sh
+
+gcp-dataproc-stream:
+	bash scripts/gcp/submit-mapreduce-job.sh streaming
+
+gcp-dataproc-java:
+	bash scripts/gcp/submit-mapreduce-job.sh java
+
+gcp-dataproc-delete:
+	bash scripts/gcp/teardown-dataproc-cluster.sh
+
+gcp-gce-deploy:
+	bash scripts/gcp/deploy-hadoop-gce.sh
+
 

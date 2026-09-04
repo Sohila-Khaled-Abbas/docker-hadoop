@@ -105,6 +105,15 @@ ssh-keyscan -H localhost >> "${USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
 ssh-keyscan -H 0.0.0.0 >> "${USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
 ssh-keyscan -H 127.0.0.1 >> "${USER_HOME}/.ssh/known_hosts" 2>/dev/null || true
 
+# StrictHostKeyChecking bypass for automated daemon scripts
+cat << 'EOF' > "${USER_HOME}/.ssh/config"
+Host localhost 0.0.0.0 127.0.0.1
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    LogLevel ERROR
+EOF
+chmod 600 "${USER_HOME}/.ssh/config"
+
 # Set PDSH RCMD type to ssh
 if ! grep -q "PDSH_RCMD_TYPE=ssh" "${USER_HOME}/.bashrc" 2>/dev/null; then
     echo "export PDSH_RCMD_TYPE=ssh" >> "${USER_HOME}/.bashrc"
@@ -118,7 +127,8 @@ HADOOP_DIR="/usr/local/hadoop"
 
 if [ ! -d "${HADOOP_DIR}" ]; then
     if [ ! -f "/tmp/${HADOOP_TAR}" ]; then
-        echo "Downloading Apache Hadoop ${HADOOP_VERSION} from Apache Archive..."
+        echo "Downloading Apache Hadoop ${HADOOP_VERSION} from Apache Mirror/Archive..."
+        wget -q --show-progress -c "https://dlcdn.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/${HADOOP_TAR}" -O "/tmp/${HADOOP_TAR}" || \
         wget -q --show-progress -c "https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/${HADOOP_TAR}" -O "/tmp/${HADOOP_TAR}" || \
         wget -q --show-progress -c "https://downloads.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/${HADOOP_TAR}" -O "/tmp/${HADOOP_TAR}"
     fi
@@ -132,9 +142,11 @@ else
 fi
 
 echo -e "${GREEN}--> [5/8] Configuring Environment Variables & Low-Pause G1GC Tuning...${NC}"
-JAVA_DETECTED_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
-if [ -z "${JAVA_DETECTED_HOME}" ]; then
+if [ -d "/usr/lib/jvm/java-11-openjdk-amd64" ]; then
+    sudo update-java-alternatives -s java-1.11.0-openjdk-amd64 2>/dev/null || true
     JAVA_DETECTED_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+else
+    JAVA_DETECTED_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 fi
 echo "--> Detected JAVA_HOME: ${JAVA_DETECTED_HOME}"
 
@@ -152,7 +164,7 @@ export HADOOP_HDFS_HOME=\$HADOOP_HOME
 export YARN_HOME=\$HADOOP_HOME
 export HADOOP_CONF_DIR=\$HADOOP_HOME/etc/hadoop
 export HADOOP_COMMON_LIB_NATIVE_DIR=\$HADOOP_HOME/lib/native
-export HADOOP_OPTS="-Djava.library.path=\$HADOOP_HOME/lib/native"
+export HADOOP_OPTS="-Djava.library.path=\$HADOOP_HOME/lib/native -Djava.net.preferIPv4Stack=true"
 export PATH=\$PATH:\$HADOOP_HOME/sbin:\$HADOOP_HOME/bin:\$JAVA_HOME/bin
 export PDSH_RCMD_TYPE=ssh
 EOT
@@ -168,7 +180,7 @@ export HADOOP_HDFS_HOME=$HADOOP_HOME
 export YARN_HOME=$HADOOP_HOME
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
-export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/native"
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/native -Djava.net.preferIPv4Stack=true"
 export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$JAVA_HOME/bin
 
 # Configure hadoop-env.sh
@@ -186,6 +198,8 @@ export HADOOP_NAMENODE_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
 export HADOOP_DATANODE_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
 export YARN_RESOURCEMANAGER_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
 export YARN_NODEMANAGER_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true"
+export HADOOP_HOME_WARN_SUPPRESS="TRUE"
 EOT
 fi
 
@@ -193,6 +207,7 @@ echo -e "${GREEN}--> [6/8] Generating Production-Aligned Cluster XML Configurati
 HDFS_DATA_DIR="${USER_HOME}/hadoopdata/hdfs"
 mkdir -p "${HDFS_DATA_DIR}/namenode"
 mkdir -p "${HDFS_DATA_DIR}/datanode"
+mkdir -p "${USER_HOME}/hadoopdata/tmp"
 
 # core-site.xml
 cat <<EOT > "${HADOOP_DIR}/etc/hadoop/core-site.xml"
@@ -203,6 +218,11 @@ cat <<EOT > "${HADOOP_DIR}/etc/hadoop/core-site.xml"
         <name>fs.defaultFS</name>
         <value>hdfs://localhost:9000</value>
         <description>Default filesystem URI for HDFS clients</description>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>${USER_HOME}/hadoopdata/tmp</value>
+        <description>Base directory for temporary HDFS files</description>
     </property>
     <property>
         <name>io.file.buffer.size</name>
@@ -238,6 +258,14 @@ cat <<EOT > "${HADOOP_DIR}/etc/hadoop/hdfs-site.xml"
         <name>dfs.permissions.enabled</name>
         <value>false</value>
     </property>
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>0.0.0.0:9870</value>
+    </property>
+    <property>
+        <name>dfs.datanode.http.address</name>
+        <value>0.0.0.0:9864</value>
+    </property>
 </configuration>
 EOT
 
@@ -249,6 +277,22 @@ cat <<EOT > "${HADOOP_DIR}/etc/hadoop/mapred-site.xml"
     <property>
         <name>mapreduce.framework.name</name>
         <value>yarn</value>
+    </property>
+    <property>
+        <name>mapreduce.jobhistory.address</name>
+        <value>localhost:10020</value>
+    </property>
+    <property>
+        <name>mapreduce.jobhistory.webapp.address</name>
+        <value>0.0.0.0:19888</value>
+    </property>
+    <property>
+        <name>yarn.app.mapreduce.am.resource.mb</name>
+        <value>512</value>
+    </property>
+    <property>
+        <name>yarn.app.mapreduce.am.command-opts</name>
+        <value>-Xmx400m -XX:+UseG1GC</value>
     </property>
     <property>
         <name>yarn.app.mapreduce.am.env</name>
@@ -264,19 +308,23 @@ cat <<EOT > "${HADOOP_DIR}/etc/hadoop/mapred-site.xml"
     </property>
     <property>
         <name>mapreduce.map.memory.mb</name>
-        <value>1024</value>
+        <value>512</value>
     </property>
     <property>
         <name>mapreduce.reduce.memory.mb</name>
-        <value>2048</value>
+        <value>512</value>
     </property>
     <property>
         <name>mapreduce.map.java.opts</name>
-        <value>-Xmx819m -XX:+UseG1GC</value>
+        <value>-Xmx400m -XX:+UseG1GC</value>
     </property>
     <property>
         <name>mapreduce.reduce.java.opts</name>
-        <value>-Xmx1638m -XX:+UseG1GC</value>
+        <value>-Xmx400m -XX:+UseG1GC</value>
+    </property>
+    <property>
+        <name>mapreduce.application.classpath</name>
+        <value>\$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:\$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*:\$HADOOP_MAPRED_HOME/share/hadoop/common/*:\$HADOOP_MAPRED_HOME/share/hadoop/common/lib/*:\$HADOOP_MAPRED_HOME/share/hadoop/yarn/*:\$HADOOP_MAPRED_HOME/share/hadoop/yarn/lib/*:\$HADOOP_MAPRED_HOME/share/hadoop/hdfs/*:\$HADOOP_MAPRED_HOME/share/hadoop/hdfs/lib/*</value>
     </property>
 </configuration>
 EOT
@@ -286,6 +334,22 @@ cat <<EOT > "${HADOOP_DIR}/etc/hadoop/yarn-site.xml"
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>localhost</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.webapp.address</name>
+        <value>0.0.0.0:8088</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.minimum-allocation-mb</name>
+        <value>256</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.maximum-allocation-mb</name>
+        <value>3072</value>
+    </property>
     <property>
         <name>yarn.nodemanager.resource.memory-mb</name>
         <value>3072</value>
@@ -311,6 +375,10 @@ cat <<EOT > "${HADOOP_DIR}/etc/hadoop/yarn-site.xml"
         <name>yarn.nodemanager.pmem-check-enabled</name>
         <value>false</value>
     </property>
+    <property>
+        <name>yarn.application.classpath</name>
+        <value>\$HADOOP_CONF_DIR,\$HADOOP_COMMON_HOME/share/hadoop/common/*,\$HADOOP_COMMON_HOME/share/hadoop/common/lib/*,\$HADOOP_HDFS_HOME/share/hadoop/hdfs/*,\$HADOOP_HDFS_HOME/share/hadoop/hdfs/lib/*,\$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*,\$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*,\$YARN_HOME/share/hadoop/yarn/*,\$YARN_HOME/share/hadoop/yarn/lib/*</value>
+    </property>
 </configuration>
 EOT
 
@@ -323,11 +391,12 @@ else
 fi
 
 echo -e "${GREEN}--> [8/8] Starting Hadoop Daemons (HDFS, YARN & JobHistory)...${NC}"
-"${HADOOP_DIR}/sbin/stop-all.sh" 2>/dev/null || true
-
 "${HADOOP_DIR}/sbin/start-dfs.sh"
 "${HADOOP_DIR}/sbin/start-yarn.sh"
 "${HADOOP_DIR}/bin/mapred" --daemon start historyserver
+
+echo -e "${GREEN}--> Waiting 8s for JVM daemons to initialize...${NC}"
+sleep 8
 
 echo -e "${CYAN}=================================================================${NC}"
 echo -e "${GREEN}  🎉 Apache Hadoop Cluster Initialized Successfully!             ${NC}"
@@ -335,6 +404,11 @@ echo -e "${CYAN}================================================================
 
 echo -e "${YELLOW}Active JVM Daemons (jps):${NC}"
 jps
+
+echo -e "${GREEN}--> Verifying HDFS Filesystem Health...${NC}"
+"${HADOOP_DIR}/bin/hdfs" dfsadmin -report | head -n 12 || true
+"${HADOOP_DIR}/bin/hdfs" dfs -mkdir -p /test || true
+"${HADOOP_DIR}/bin/hdfs" dfs -ls / || true
 
 echo ""
 echo -e "${CYAN}Cluster Web UIs Available at:${NC}"

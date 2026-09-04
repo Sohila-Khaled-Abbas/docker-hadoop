@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-09-04
+
+### Added
+- **Kali Linux VMware Workstation Hadoop Deployment & Verification**:
+  - Automated deployment of Apache Hadoop 3.3.6 LTS on Kali Linux inside VMware Workstation with OpenJDK 11 LTS and low-pause G1GC garbage collection.
+  - Verified active operation of all 6 JVM cluster daemons (`NameNode`, `DataNode`, `SecondaryNameNode`, `ResourceManager`, `NodeManager`, `JobHistoryServer`).
+  - Executed and validated MapReduce Quasi-Monte Carlo Pi benchmark across YARN compute containers.
+  - Added native PowerShell automation tooling: [`scripts/run-in-kali.ps1`](scripts/run-in-kali.ps1) and [`scripts/vmware/run-install-hadoop.ps1`](scripts/vmware/run-install-hadoop.ps1).
+  - Added PowerShell Google Cloud interactive launcher: [`launchers/windows/Deploy-Hadoop-GCP.ps1`](launchers/windows/Deploy-Hadoop-GCP.ps1).
+- **Architectural & Security Comparison in Documentation**:
+  - Added Section 11 to [`docs/kali-vmware-hadoop-guide.md`](docs/kali-vmware-hadoop-guide.md) dissecting the flaws in legacy 2018 course tutorials (untrusted third-party JDK downloads, dead Apache EU mirrors, `net.ipb6` typo, `dfs.namemode` typo causing reboot data wipe, deprecated XML tags, YARN memory deadlock, and `chmod 777` permission vulnerabilities) and contrasting them with modern Big Data Engineering best practices.
+
+### Fixed
+- **YARN Single-Node Compute Deadlock**:
+  - Tuned ApplicationMaster, Map, and Reduce container allocations to 512 MB each with 256 MB minimum allocation, preventing reduce container starvation in 3GB YARN pools.
+- **VMware X11 Invisible Mouse Cursor**:
+  - Fixed hardware cursor rendering incompatibility under modern Linux kernels by configuring software cursor fallback (`HWCursor "off"`).
+- **VMware Nested VT-x Modal**:
+  - Suppressed nested virtualization prompt conflict under Windows 11 Hyper-V/WHPX platform by tuning VMX hypervisor flags.
+
+## [2.3.0] - 2026-09-04
+
+### Added
+- **Google Cloud Platform (Dataproc & GCE) Integration**:
+  - Authored comprehensive enterprise guide: [`docs/google-cloud-dataproc-hadoop-guide.md`](docs/google-cloud-dataproc-hadoop-guide.md) detailing cloud-native decoupled compute/storage, GCS connector (`gs://`), ephemeral clusters, Component Gateway, Spot instances, and Compute Engine (GCE) deployment.
+  - Added modular automation scripts in [`scripts/gcp/`](scripts/gcp/):
+    - [`create-dataproc-cluster.sh`](scripts/gcp/create-dataproc-cluster.sh): Automated cluster provisioner with Component Gateway, Spot workers, and 30-minute idle auto-deletion.
+    - [`submit-mapreduce-job.sh`](scripts/gcp/submit-mapreduce-job.sh): Uploads datasets/code to Cloud Storage and submits Python Streaming WordCount or Java MapReduce jobs to Dataproc.
+    - [`teardown-dataproc-cluster.sh`](scripts/gcp/teardown-dataproc-cluster.sh): Gracefully terminates ephemeral clusters to stop cloud compute charges.
+    - [`deploy-hadoop-gce.sh`](scripts/gcp/deploy-hadoop-gce.sh): Deploys the containerized Docker Hadoop stack to a Google Compute Engine Ubuntu VM with automated VPC firewall configuration.
+  - Added 1-Click Windows desktop launcher: [`launchers/windows/Deploy-Hadoop-GCP.bat`](launchers/windows/Deploy-Hadoop-GCP.bat).
+  - Added Makefile CLI targets: `gcp-dataproc-create`, `gcp-dataproc-stream`, `gcp-dataproc-java`, `gcp-dataproc-delete`, and `gcp-gce-deploy`.
+  - Updated `README.md`, `scripts/README.md`, `launchers/README.md`, `docs/architecture.md`, and `docs/hadoop-ecosystem-guide.md` to incorporate Google Cloud as a first-class supported deployment paradigm.
+
 ## [2.2.0] - 2026-09-04
 
 ### Added

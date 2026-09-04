@@ -308,16 +308,52 @@ EOT
         <value>yarn</value>
     </property>
     <property>
+        <name>mapreduce.jobhistory.address</name>
+        <value>localhost:10020</value>
+    </property>
+    <property>
+        <name>mapreduce.jobhistory.webapp.address</name>
+        <value>0.0.0.0:19888</value>
+    </property>
+    <property>
+        <name>yarn.app.mapreduce.am.resource.mb</name>
+        <value>512</value>
+    </property>
+    <property>
+        <name>yarn.app.mapreduce.am.command-opts</name>
+        <value>-Xmx400m -XX:+UseG1GC</value>
+    </property>
+    <property>
         <name>yarn.app.mapreduce.am.env</name>
         <value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
     </property>
     <property>
+        <name>mapreduce.map.env</name>
+        <value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+    </property>
+    <property>
+        <name>mapreduce.reduce.env</name>
+        <value>HADOOP_MAPRED_HOME=/usr/local/hadoop</value>
+    </property>
+    <property>
         <name>mapreduce.map.memory.mb</name>
-        <value>1024</value>
+        <value>512</value>
     </property>
     <property>
         <name>mapreduce.reduce.memory.mb</name>
-        <value>2048</value>
+        <value>512</value>
+    </property>
+    <property>
+        <name>mapreduce.map.java.opts</name>
+        <value>-Xmx400m -XX:+UseG1GC</value>
+    </property>
+    <property>
+        <name>mapreduce.reduce.java.opts</name>
+        <value>-Xmx400m -XX:+UseG1GC</value>
+    </property>
+    <property>
+        <name>mapreduce.application.classpath</name>
+        <value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_MAPRED_HOME/share/hadoop/common/*:$HADOOP_MAPRED_HOME/share/hadoop/common/lib/*:$HADOOP_MAPRED_HOME/share/hadoop/yarn/*:$HADOOP_MAPRED_HOME/share/hadoop/yarn/lib/*:$HADOOP_MAPRED_HOME/share/hadoop/hdfs/*:$HADOOP_MAPRED_HOME/share/hadoop/hdfs/lib/*</value>
     </property>
 </configuration>
 ```
@@ -326,8 +362,25 @@ EOT
 ```xml
 <configuration>
     <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>localhost</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.webapp.address</name>
+        <value>0.0.0.0:8088</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.minimum-allocation-mb</name>
+        <value>256</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.maximum-allocation-mb</name>
+        <value>3072</value>
+    </property>
+    <property>
         <name>yarn.nodemanager.resource.memory-mb</name>
         <value>3072</value>
+        <description>Total memory (MB) allocated for YARN compute tasks</description>
     </property>
     <property>
         <name>yarn.nodemanager.resource.cpu-vcores</name>
@@ -348,6 +401,10 @@ EOT
     <property>
         <name>yarn.nodemanager.pmem-check-enabled</name>
         <value>false</value>
+    </property>
+    <property>
+        <name>yarn.application.classpath</name>
+        <value>$HADOOP_CONF_DIR,$HADOOP_COMMON_HOME/share/hadoop/common/*,$HADOOP_COMMON_HOME/share/hadoop/common/lib/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/lib/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*,$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*,$YARN_HOME/share/hadoop/yarn/*,$YARN_HOME/share/hadoop/yarn/lib/*</value>
     </property>
 </configuration>
 ```
@@ -492,4 +549,24 @@ hdfs dfsadmin -safemode leave
 1. In VMware Workstation, go to **Edit** ➔ **Preferences** ➔ **Input**.
 2. Set **Optimize mouse for games** to **Always**.
 3. Click **OK** and click inside the Kali VM window.
+
+---
+
+## 11. Architectural Comparison: Legacy Tutorial vs. Modern Big Data Engineering
+
+Many university courses and legacy tutorials (e.g., from 2018–2019) distribute snippets that fail on modern Linux kernels, create security vulnerabilities, or cause silent data loss. Here is why the modern approach implemented in this repository is superior:
+
+| Component / Setting | Legacy Tutorial Snippet (e.g., Ubuntu 18.04 era) | Modern Production Architecture (This Suite) | Technical Justification & Failure Analysis |
+| :--- | :--- | :--- | :--- |
+| **Java Runtime** | `wget https://blog.forsre.com/.../jdk-8u221.tar.gz` (Oracle JDK 8 from blog) | **`openjdk-11-jdk-headless` via official Debian/Kali repository** | **Security & Supply Chain**: Downloading closed-source JDKs from unverified blogs introduces supply-chain attack risks. OpenJDK 11 LTS from official apt mirrors receives signed security patches and adheres to Debian packaging standards. |
+| **Hadoop Mirror** | `wget https://www-eu.apache.org/.../hadoop-3.1.2.tar.gz` | **Official Apache CDN (`dlcdn.apache.org`) + `archive.apache.org` fallback** | **Dead Links**: The `www-eu.apache.org` mirror was decommissioned by the Apache Infrastructure team years ago and returns 404 HTTP errors. Hadoop 3.3.6 LTS includes CVE patches, Java 11 support, and CycloneDX SBOM validation. |
+| **Kernel IPv6 Config** | `net.ipb6.conf.lo.disable_ipv6=1` in `/etc/sysctl.conf` | **`-Djava.net.preferIPv4Stack=true` in `HADOOP_OPTS` & `hadoop-env.sh`** | **Syntax Error**: The typo `ipb6` breaks `sysctl -p` with `/proc/sys/net/ipb6` errors. More critically, disabling IPv6 globally at kernel level breaks modern desktop display managers (LightDM/Wayland) and local IPC. Hadoop should be instructed to prefer IPv4 at the JVM layer instead. |
+| **HDFS NameNode Directory** | `<name>dfs.namemode.name.dir</name>` in `hdfs-site.xml` | **`<name>dfs.namenode.name.dir</name>` pointing to `$HOME/hadoopdata/hdfs/namenode`** | **Silent Data Loss**: Notice the typo `namemode` (instead of `namenode`). Because Hadoop ignores unknown XML keys, it silently fell back to `/tmp/hadoop-hduser/dfs/name`. On reboot, Linux clears `/tmp`, **destroying the NameNode metadata and rendering HDFS unrecoverable**. |
+| **Filesystem URI Property** | `<name>fs.default.name</name>` | **`<name>fs.defaultFS</name>`** | `fs.default.name` was deprecated in Hadoop 2.x and removed in modern clients. `fs.defaultFS` is the official standard. |
+| **MapReduce Framework Property** | `<name>mapred.framework.name</name>` | **`<name>mapreduce.framework.name</name>`** | Modern Hadoop 3.x uses `mapreduce.framework.name` and requires explicit environment variable passthroughs (`yarn.app.mapreduce.am.env`, `mapreduce.map.env`, `mapreduce.reduce.env`). |
+| **POSIX Security & Permissions** | `chmod -R 777 /app/hadoop/...` | **`chmod 750` / `700` owned by dedicated user (`kali:kali`)** | **Security Anti-Pattern**: World-writable `777` permissions permit any process or user on the machine to modify, truncate, or corrupt raw HDFS block files directly on disk, bypassing HDFS access control lists. |
+| **YARN Virtual Memory Checks** | Omitted | **`yarn.nodemanager.vmem-check-enabled=false`** | Modern glibc address space allocations in Java 11 trigger YARN virtual memory threshold alerts, causing NodeManager to kill containers immediately unless disabled. |
+| **Single-Node Container Sizing** | Default AM (1536MB) + Map/Reduce (1024–2048MB) | **AM (512MB), Map (512MB), Reduce (512MB), MinAlloc (256MB)** | **Deadlock Prevention**: In single-node VMs with 3GB YARN pools, if AM holds 1536MB and Reduce asks for 2048MB, total needed is 3584MB > 3072MB, permanently deadlocking the cluster at `reduce 0%`. Sizing at 512MB allows AM + Map + Reduce to execute concurrently without starvation. |
+| **Garbage Collection (GC)** | Default Parallel / CMS GC | **Low-Pause G1GC (`-XX:+UseG1GC`) with explicit heap caps** | Eliminates multi-second stop-the-world GC pauses that cause DataNodes and NodeManagers to miss ZK/Heartbeat intervals in VM environments. |
+
 
