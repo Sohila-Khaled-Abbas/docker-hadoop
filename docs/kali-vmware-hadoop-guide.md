@@ -146,10 +146,9 @@ Inside the Kali Linux VM terminal, run the automated, idempotent installation sc
 
 ```bash
 # If using VMware Shared Folders (/mnt/hgfs):
-bash /mnt/hgfs/docker-hadoop/scripts/install-hadoop-kali.sh
-
-# Or download/copy and run directly:
-curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/install-hadoop-kali.sh | bash
+bash /mnt/hgfs/docker-hadoop/scripts/vmware/install-hadoop-kali.sh
+# OR via curl directly from master:
+curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/vmware/install-hadoop-kali.sh | bash
 ```
 
 The script executes 8 automated phases:

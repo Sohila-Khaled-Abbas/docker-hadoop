@@ -71,7 +71,7 @@ Run our automated optimization script from the project root:
 ```cmd
 Fix-Lag-And-Start-VM.bat
 ```
-*(Or in PowerShell as Administrator: `powershell -ExecutionPolicy Bypass -File scripts/optimize-hyperv-vm.ps1`)*.
+*(Or in PowerShell as Administrator: `powershell -ExecutionPolicy Bypass -File scripts/hyperv/optimize-hyperv-vm.ps1`)*.
 
 ---
 
@@ -139,7 +139,7 @@ Hyper-V supports **Enhanced Session Mode** for Ubuntu over native Hyper-V socket
 
 #### Inside Ubuntu VM (Run in Terminal):
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/enable-hyperv-enhanced-session.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/hyperv/enable-hyperv-enhanced-session.sh | bash
 ```
 
 #### On Windows Host:
@@ -172,7 +172,7 @@ Use keyboard navigation to complete the installation smoothly:
 Once you reach the Ubuntu Desktop, install the entire Hadoop cluster with a single unattended command:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/install-hadoop-wsl.sh | bash
+curl -sSL https://raw.githubusercontent.com/Sohila-Khaled-Abbas/docker-hadoop/master/scripts/wsl/install-hadoop-wsl.sh | bash
 ```
 
 ### What this automated installer configures:

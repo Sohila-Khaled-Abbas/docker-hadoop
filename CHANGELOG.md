@@ -9,7 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-04
+
 ### Added
+- **Domain-Modular Script Architecture**: Restructured 21 automation scripts into dedicated subdirectories (`scripts/docker/`, `scripts/vmware/`, `scripts/hyperv/`, `scripts/virtualbox/`, `scripts/wsl/`, `scripts/linux/`), cleanly separating container runtime logic from hypervisor and bare-metal provisioners.
+- **Dedicated 1-Click Launchers (`launchers/windows/`)**: Introduced standalone Windows batch utilities (`Start-Hadoop-Docker.bat`, `Stop-Hadoop-Docker.bat`, `Launch-Kali-VMware.bat`, `Fix-Lag-And-Start-VM.bat`, `Fix-VM-Internet.bat`, `Eject-ISO-And-Enable-Clipboard.bat`, and `Ubuntu-WSL-GUI.rdp`) with backward-compatible root forwarding wrappers.
+- **Interactive HDFS CLI Demonstration Suite (`examples/hdfs-cli/`)**: Added end-to-end automated script (`demo-hdfs-operations.sh`) and reference manual covering SafeMode status, directory trees, block replication factor adjustments (`-setrep`), checksum verification, and quota monitoring.
+- **Sample Datasets (`datasets/`)**: Added real-world unstructured text (`wordcount-sample.txt`) and tabular CSV (`employees.csv`) datasets along with HDFS ingestion and MapReduce recipes in `datasets/README.md`.
+- **Modernized Enterprise Lab Branding**: Revamped `README.md` with badges, platform logos, architecture diagrams, multi-runtime selection cards, and comprehensive quickstarts.
+
+### Changed
+- Updated `Dockerfile` and `docker-compose.yml` to source container scripts from `scripts/docker/`.
+- Updated `Makefile` with targets for `docker-start`, `docker-stop`, and `test-hdfs-cli`.
+- Updated `.github/workflows/ci.yml` to preserve executable bit across all script subdirectories.
+- Hardened `.gitignore` to prevent scratch files (`Launching`, `VM`, `*.tmp`) and virtual machine disk binaries from being committed.
 - **Kali Linux on VMware Workstation Pro (`Launch-Kali-VMware.bat` & `scripts/optimize-kali-vmx.ps1`)**: Automated Windows launcher and VMX hardware tuning script tailored for Intel Core i5-10300H / 16GB host systems, scaling RAM from 2048 MB to 6144 MB (6 GB), allocating 4 vCPUs, enabling bidirectional clipboard (`Ctrl+C`/`Ctrl+V`), and disabling unsupported nested VT-x/EPT (`vhv.enable=FALSE`) to eliminate Windows WHPX/Hyper-V startup popups.
 - **Automated Kali Linux Hadoop Cluster Provisioner (`scripts/install-hadoop-kali.sh`)**: End-to-end, idempotent automated installation script deploying OpenJDK 11, passwordless loopback SSH, Linux kernel swappiness hardening (`vm.swappiness=1`), Apache Hadoop 3.3.6, G1GC low-pause garbage collection heap limits, cluster XML configurations, NameNode formatting, and daemon lifecycle management.
 - **Kali Linux & VMware Workstation Apache Hadoop Guide (`docs/kali-vmware-hadoop-guide.md`)**: Comprehensive documentation covering hardware sizing architecture, 1-click VM startup, credential management (`kali`/`kali`), automated and manual installation, cluster verification, and web console endpoints.

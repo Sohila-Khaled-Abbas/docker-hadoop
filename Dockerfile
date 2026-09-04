@@ -109,9 +109,9 @@ RUN echo 'export JAVA_HOME=/usr/local/java' > /etc/profile.d/hadoop.sh \
     && cat /etc/profile.d/hadoop.sh >> /root/.profile
 
 # Copy automation scripts
-COPY scripts/entrypoint.sh /entrypoint.sh
-COPY scripts/healthcheck.sh /healthcheck.sh
-COPY scripts/test-cluster.sh /test-cluster.sh
+COPY scripts/docker/entrypoint.sh /entrypoint.sh
+COPY scripts/docker/healthcheck.sh /healthcheck.sh
+COPY scripts/docker/test-cluster.sh /test-cluster.sh
 RUN chmod +x /entrypoint.sh /healthcheck.sh /test-cluster.sh
 
 # Ports:

@@ -345,7 +345,7 @@ mapred --daemon start historyserver
 ### 6. Installing Hadoop in User Space (Zero Sudo / Passwordless)
 * If you do not wish to use `sudo` or provide root passwords during Hadoop cluster setup, run the standalone user-space installer:
   ```bash
-  bash ~/docker-hadoop/scripts/install-hadoop-user.sh
+  bash ~/docker-hadoop/scripts/linux/install-hadoop-user.sh
   ```
   This installs Apache Hadoop directly into `~/hadoop` and manages all data in `~/hadoopdata`.
 

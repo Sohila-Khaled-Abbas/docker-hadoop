@@ -86,8 +86,17 @@ hdfs-shell:
 clean:
 	docker compose down -v --rmi all
 
+test-hdfs-cli:
+	docker compose exec hadoop bash < examples/hdfs-cli/demo-hdfs-operations.sh
+
+docker-start:
+	cmd /c launchers\windows\Start-Hadoop-Docker.bat
+
+docker-stop:
+	cmd /c launchers\windows\Stop-Hadoop-Docker.bat
+
 vm-create:
-	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox-setup.ps1
+	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox/virtualbox-setup.ps1
 
 vm-start:
 	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" startvm "Ubuntu-Hadoop" --type gui
@@ -108,11 +117,11 @@ vm-ports:
 	"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" showvminfo "Ubuntu-Hadoop" | findstr /i "NIC.1.Rule"
 
 vm-rebuild:
-	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox-setup.ps1 -Rebuild
+	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox/virtualbox-setup.ps1 -Rebuild
 
 vm-kali-optimize:
-	powershell -ExecutionPolicy Bypass -File ./scripts/optimize-kali-vmx.ps1
+	powershell -ExecutionPolicy Bypass -File ./scripts/vmware/optimize-kali-vmx.ps1
 
 vm-kali-start:
-	cmd /c Launch-Kali-VMware.bat
+	cmd /c launchers\windows\Launch-Kali-VMware.bat
 

@@ -38,3 +38,8 @@ logs/
 kali-linux-*.vmwarevm/
 Ubuntu-*.vmwarevm/
 
+# Temporary and Scratch Files
+Launching
+VM
+*.tmp
+scratch/

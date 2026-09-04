@@ -174,7 +174,7 @@ The `.github/workflows/ci.yml` pipeline automatically builds the image, starts t
 The container implements a robust health check mechanism:
 
 ```bash
-# scripts/healthcheck.sh
+# scripts/docker/healthcheck.sh
 #!/bin/bash
 set -e
 

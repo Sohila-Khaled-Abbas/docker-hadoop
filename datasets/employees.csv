@@ -1,0 +1,16 @@
+id,name,department,salary,city,hire_date
+101,Alice Johnson,Engineering,95000,Cairo,2021-03-15
+102,Bob Smith,Marketing,68000,Alexandria,2020-07-22
+103,Charlie Brown,Engineering,105000,Giza,2019-11-01
+104,Diana Prince,Data Science,112000,Cairo,2022-01-10
+105,Evan Wright,Marketing,72000,Cairo,2021-09-05
+106,Fiona Gallagher,Data Science,120000,Alexandria,2018-04-18
+107,George Clark,DevOps,98000,Giza,2020-02-14
+108,Hannah Abbott,Engineering,89000,Cairo,2023-06-01
+109,Ian Malcolm,Data Science,125000,Luxor,2017-08-30
+110,Julia Roberts,HR,65000,Alexandria,2022-10-12
+111,Kevin Bacon,Finance,91000,Cairo,2020-12-05
+112,Laura Croft,DevOps,104000,Giza,2019-05-20
+113,Michael Scott,Management,115000,Cairo,2016-01-15
+114,Nancy Wheeler,Marketing,70000,Alexandria,2023-02-18
+115,Oliver Queen,Finance,94000,Giza,2021-11-25

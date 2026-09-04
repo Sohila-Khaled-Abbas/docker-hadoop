@@ -1,0 +1,18 @@
+Apache Hadoop is an open-source framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models.
+It is designed to scale up from single servers to thousands of machines, each offering local computation and storage.
+Rather than rely on hardware to deliver high-availability, the library itself is designed to detect and handle failures at the application layer.
+
+Hadoop consists of four core modules:
+1. Hadoop Common: The common utilities that support the other Hadoop modules.
+2. Hadoop Distributed File System (HDFS): A distributed file system that provides high-throughput access to application data.
+3. Hadoop YARN: A framework for job scheduling and cluster resource management.
+4. Hadoop MapReduce: A YARN-based system for parallel processing of large data sets.
+
+The Hadoop Distributed File System provides high fault tolerance and is designed to be deployed on low-cost hardware.
+HDFS provides high throughput access to application data and is suitable for applications that have large data sets.
+MapReduce is a software framework for easily writing applications which process vast amounts of data in parallel on large clusters of commodity hardware in a reliable, fault-tolerant manner.
+
+In Big Data engineering, data pipelines ingest raw structured, semi-structured, and unstructured events.
+Batch processing frameworks such as Apache Spark, MapReduce, and Apache Hive read partitions from HDFS and execute parallel transformations.
+Modern lakehouse architectures combine the flexibility of distributed file systems with the reliability of ACID transactions.
+Hadoop remains the foundational distributed storage layer for enterprise analytics, business intelligence, and scalable machine learning workloads.

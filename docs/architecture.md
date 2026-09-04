@@ -114,7 +114,7 @@ Host Docker Volume               Container Mount Path                           
 
 ## 🚀 Container Startup & Initialization Flow
 
-When the container boots, `scripts/entrypoint.sh` executes the bootstrap sequence:
+When the container boots, `scripts/docker/entrypoint.sh` executes the bootstrap sequence:
 
 ```mermaid
 sequenceDiagram

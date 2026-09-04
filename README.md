@@ -1,18 +1,62 @@
 <div align="center">
 
-# 🐘 Apache Hadoop 3.1.2 Single-Node Cluster on Docker
+# 🐘 Apache Hadoop Enterprise Multi-Platform Lab
 
-### *Production-grade, fully configured Big Data environment for local development, education, and distributed processing.*
+### *Unified Big Data Engineering Ecosystem for Docker, VMware (Kali Linux), Hyper-V, WSL 2, Oracle VirtualBox & Bare-Metal Linux*
 
-[![Docker Build & Test CI](https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/ci.yml/badge.svg)](https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/ci.yml)
-[![Apache Hadoop](https://img.shields.io/badge/Apache%20Hadoop-3.1.2-66CCFF?logo=apache&logoColor=white)](https://hadoop.apache.org/)
-[![Java](https://img.shields.io/badge/Java-OpenJDK%208-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20LTS-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com/)
-[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-v3.8-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+<p align="center">
+  <a href="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/ci.yml">
+    <img src="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/ci.yml/badge.svg" alt="CI Build & Test" />
+  </a>
+  <a href="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/security-scan.yml">
+    <img src="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/security-scan.yml/badge.svg" alt="Security Scan" />
+  </a>
+  <a href="https://hadoop.apache.org/">
+    <img src="https://img.shields.io/badge/Apache%20Hadoop-3.1.2%20%7C%203.3.6-66CCFF?logo=apache&logoColor=white" alt="Hadoop" />
+  </a>
+  <a href="https://openjdk.org/">
+    <img src="https://img.shields.io/badge/Java-OpenJDK%208%20%7C%2011-ED8B00?logo=openjdk&logoColor=white" alt="Java" />
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Python-3.8%2B%20%7C%20PySpark-3776AB?logo=python&logoColor=white" alt="Python" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License" />
+  </a>
+</p>
 
-[Quick Start](#-quick-start) • [Architecture](#-system-architecture) • [Web Interfaces](#-web-interfaces--port-mappings) • [MapReduce Tutorials](#-mapreduce-tutorials) • [Documentation](#-in-depth-documentation) • [Troubleshooting](#-troubleshooting--faq)
+<p align="center">
+  <a href="https://www.docker.com/">
+    <img src="https://img.shields.io/badge/Platform-Docker%20%26%20Compose-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  </a>
+  <a href="https://www.vmware.com/">
+    <img src="https://img.shields.io/badge/Platform-VMware%20Workstation-607078?logo=vmware&logoColor=white" alt="VMware" />
+  </a>
+  <a href="https://learn.microsoft.com/virtualization/hyper-v-on-windows/">
+    <img src="https://img.shields.io/badge/Platform-Microsoft%20Hyper--V-0078D4?logo=windows&logoColor=white" alt="Hyper-V" />
+  </a>
+  <a href="https://learn.microsoft.com/windows/wsl/">
+    <img src="https://img.shields.io/badge/Platform-WSL%202%20Ubuntu-FCC624?logo=linux&logoColor=black" alt="WSL 2" />
+  </a>
+  <a href="https://www.kali.org/">
+    <img src="https://img.shields.io/badge/OS-Kali%20Linux%20Rolling-557C94?logo=kalilinux&logoColor=white" alt="Kali Linux" />
+  </a>
+  <a href="https://ubuntu.com/">
+    <img src="https://img.shields.io/badge/OS-Ubuntu%2020.04%20%7C%2024.04-E95420?logo=ubuntu&logoColor=white" alt="Ubuntu" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="#-overview">Overview</a> •
+  <a href="#-supported-environments">Environments</a> •
+  <a href="#-1-click-quick-start">Quick Start</a> •
+  <a href="#-system-architecture">Architecture</a> •
+  <a href="#-web-interfaces--port-mappings">Web Consoles</a> •
+  <a href="#-data-engineering-tutorials">Tutorials</a> •
+  <a href="#-sample-datasets">Datasets</a> •
+  <a href="#-repository-structure">Structure</a> •
+  <a href="#-documentation">Docs</a>
+</p>
 
 </div>
 
@@ -20,36 +64,41 @@
 
 ## 📖 Overview
 
-This repository provides a containerized, single-node **Apache Hadoop 3.1.2** cluster running on **Ubuntu 20.04** with **OpenJDK 8**. It includes the complete distributed daemon stack (HDFS, YARN, MapReduce JobHistory), non-root execution (`hduser`), automated health checks, persistent volume management, and hands-on examples for Java and Python Hadoop Streaming.
+Welcome to the **Apache Hadoop Enterprise Multi-Platform Lab** — a unified, production-grade Big Data engineering workspace designed for distributed computing research, university courses, ETL prototyping, and performance benchmarking.
 
-Ideal for:
-
-- 🎓 **Big Data Education & Academic Courses**: Learn HDFS, YARN, and MapReduce internals without multi-machine cluster overhead.
-- 🧪 **Local ETL & Algorithm Prototyping**: Test MapReduce jobs and HDFS storage pipelines locally before deploying to AWS EMR, GCP Dataproc, or on-premise clusters.
-- 🔌 **Ecosystem Integration**: Seamlessly connect **Apache Spark**, **PySpark**, **Apache Hive**, **Presto / Trino**, and **Jupyter Notebooks** to HDFS.
+Unlike conventional single-purpose repositories, this project delivers a **cross-platform deployment suite** supporting:
+1. **Containerized Cluster (Docker & Docker Compose)**: Single-node Hadoop 3.1.2 with automated daemon supervisors, named persistent storage, and built-in health probes.
+2. **Virtual Machine Workstations (VMware Workstation Pro & Kali Linux)**: Automated VMX hardware tuning (6GB RAM, 4 vCPUs, G1GC optimization, swappiness tuning, full-screen 1080p, programmatic mouse fix, and Hadoop 3.3.6 installer).
+3. **Enterprise Type-1 Hypervisor (Microsoft Hyper-V Generation 2)**: 4 vCPUs, dynamic memory allocation, enhanced session mode (`HvSocket` bidirectional clipboard), and automated NAT virtual switch recovery.
+4. **Near-Bare-Metal Windows Subsystem (WSL 2 Ubuntu)**: Ultra-fast I/O with XFCE4 visual desktop over RDP (port 3390) and zero-friction cluster startup.
+5. **Open Source Virtualization (Oracle VirtualBox)**: Automated PowerShell VM orchestrator (`virtualbox-setup.ps1`) with NAT port forwarding rules.
+6. **Native Linux & Bare Metal**: Non-root systemd service unit configurations and user-space zero-sudo installers.
 
 ---
 
 ## 🚀 Key Features
 
-- **Complete Hadoop 3.1.2 Daemon Stack**:
+- **Multi-Environment Orchestration**: Launch Hadoop across Docker, VMware, Hyper-V, WSL 2, or VirtualBox with platform-tailored scripts.
+- **Complete Hadoop Daemon Stack**:
   - **HDFS**: NameNode, DataNode, SecondaryNameNode.
   - **YARN**: ResourceManager, NodeManager.
   - **MapReduce**: JobHistory Server.
-- **Enterprise Best Practices & Hardening**:
-  - Secure non-root daemon execution under dedicated `hduser:hadoop` (UID/GID 1000).
-  - Centralized `/etc/profile.d/hadoop.sh` and multi-shell profile exports (`.bashrc`, `.profile`) for seamless environment and PATH resolution.
-  - Pre-configured passwordless SSH loopback keys with strict permission masks (`0600`/`0700`).
-- **Optimized Multi-Stage Build**:
-  - Automated pruning of ~60,000 redundant Javadoc/API HTML files to bypass WSL2/ext4 inode journal bottlenecks and accelerate build times.
-- **Data Persistence**:
-  - 4 named Docker volumes isolating NameNode metadata, DataNode blocks, temporary workspaces, and logs.
-- **Automated Health Monitoring**:
-  - Docker Compose container health checks querying Web UI endpoints and HDFS status.
-  - GitHub Actions automated CI workflow validating builds, daemons, and MapReduce execution.
-- **Developer Experience**:
-  - Ready-to-run Java and Python Streaming MapReduce examples with one-click test runners.
-  - Extensive `Makefile` shortcuts for all common lifecycle tasks.
+- **1-Click Windows Launchers (`launchers/windows/`)**:
+  - `Start-Hadoop-Docker.bat` & `Stop-Hadoop-Docker.bat` for instant Docker cluster control.
+  - `Launch-Kali-VMware.bat` for automated VMX tuning & Kali boot.
+  - `Fix-Lag-And-Start-VM.bat` & `Fix-VM-Internet.bat` for Hyper-V management.
+  - `Ubuntu-WSL-GUI.rdp` for instant Remote Desktop GUI access.
+- **Hands-On Big Data Tutorials (`examples/`)**:
+  - **HDFS CLI**: Comprehensive operations walkthrough (`demo-hdfs-operations.sh`) covering block inspection, quotas, and SafeMode.
+  - **Python Hadoop Streaming**: Automated mapper/reducer WordCount pipeline.
+  - **Java Native MapReduce**: Standalone WordCount application with automated compiler and runner.
+  - **Apache Spark & PySpark**: Direct HDFS Parquet & CSV DataFrame ingestion and aggregation.
+- **Pre-Packaged Datasets (`datasets/`)**:
+  - Real-world unstructured text (`wordcount-sample.txt`) and tabular records (`employees.csv`) for zero-setup experimentation.
+- **Enterprise Hardening & DevOps CI/CD**:
+  - Dedicated non-root `hduser:hadoop` (UID/GID 1000) execution.
+  - Multi-stage Docker build pruning ~60,000 redundant Javadoc HTML files to bypass filesystem journal overhead.
+  - GitHub Actions CI matrix validating builds, container health checks, JPS daemons, and MapReduce jobs on every push.
 
 ---
 
@@ -61,24 +110,25 @@ Ideal for:
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion["📥 1. DATA INGESTION LAYER"]
-        Kafka["Apache Kafka / Event Streams"]
-        Logstash["Fluentd / Logstash / Ingestion"]
-        BatchSources["RDBMS CDC / Batch Files / S3"]
+    subgraph Environments["🖥️ MULTI-PLATFORM RUNTIMES"]
+        DockerEnv["🐳 Docker & Compose<br/>(Hadoop 3.1.2 / Java 8)"]
+        VMwareEnv["🐉 VMware Workstation<br/>(Kali Linux / Hadoop 3.3.6)"]
+        HyperVEnv["🪟 Microsoft Hyper-V<br/>(Ubuntu Gen2 / 4 vCPUs)"]
+        WSLEnv["🐧 WSL 2 Ubuntu GUI<br/>(XFCE4 / RDP 3390)"]
+        VBoxEnv["📦 Oracle VirtualBox<br/>(Automated Setup)"]
     end
 
-    subgraph StorageLayer["🗄️ 2. DISTRIBUTED STORAGE LAYER (HDFS)"]
+    subgraph StorageLayer["🗄️ DISTRIBUTED STORAGE LAYER (HDFS)"]
         NN["NameNode (Metadata Master)<br/>Port: 9870 (Web) / 9000 (RPC)"]
         SNN["SecondaryNameNode (Checkpointer)<br/>Port: 9868"]
-        subgraph DataNodeGroup["Replicated DataNodes"]
+        subgraph DataNodeGroup["Replicated Storage Blocks"]
             DN1["DataNode 1<br/>Block Storage"]
-            DN2["DataNode 2<br/>Block Storage"]
         end
-        NN <-->|Heartbeats & Block Reports| DN1 & DN2
+        NN <-->|Heartbeats & Block Reports| DN1
         NN <-->|FSImage Checkpoints| SNN
     end
 
-    subgraph ComputeLayer["⚙️ 3. RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
+    subgraph ComputeLayer["⚙️ RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
         RM["YARN ResourceManager<br/>Port: 8088 (Web) / 8032 (IPC)"]
         subgraph NodeManagerGroup["NodeManagers & Containers"]
             NM1["NodeManager<br/>Task Containers"]
@@ -88,352 +138,183 @@ flowchart TD
         NM1 -->|Completed Job Logs| JHS
     end
 
-    subgraph ProcessingEngines["⚡ 4. DISTRIBUTED PROCESSING ENGINES"]
+    subgraph ProcessingEngines["⚡ ANALYTICAL PROCESSING ENGINES"]
         Spark["Apache Spark / PySpark"]
         MR["Native Java MapReduce"]
         StreamingMR["Python Hadoop Streaming"]
-        Hive["Apache Hive / Trino SQL"]
+        HDFSCLI["HDFS Command Line (hdfs dfs)"]
     end
 
-    subgraph SWELayer["🛠️ 5. SOFTWARE ENGINEERING & DEVOPS"]
-        DockerInit["Docker Containerization (tini / init: true)"]
-        CI["GitHub Actions CI/CD (Test Automation)"]
-        HealthChecks["Health Probes & JMX Metrics"]
-    end
+    Environments -->|Provisions & Hosts| StorageLayer & ComputeLayer
+    ProcessingEngines -->|Submit Distributed Jobs| RM
+    ProcessingEngines -->|High-Throughput Block I/O| NN & DataNodeGroup
 
-    Ingestion -->|Batch & Streaming Ingestion| NN
-    NN -->|Block Pipelines| DataNodeGroup
-    ProcessingEngines -->|Submit Compute Tasks| RM
-    RM -->|Allocate Tasks| NodeManagerGroup
-    NodeManagerGroup -->|High-Throughput Block I/O| DataNodeGroup
-    SWELayer -.->|Supervises & Automates| StorageLayer & ComputeLayer
-
-    classDef ingestion fill:#0f766e,stroke:#14b8a6,stroke-width:2px,color:#ffffff;
+    classDef env fill:#1e293b,stroke:#475569,stroke-width:2px,color:#ffffff;
     classDef storage fill:#0369a1,stroke:#0ea5e9,stroke-width:2px,color:#ffffff;
     classDef compute fill:#4338ca,stroke:#6366f1,stroke-width:2px,color:#ffffff;
     classDef engines fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
-    classDef swe fill:#be185d,stroke:#f43f5e,stroke-width:2px,color:#ffffff;
 
-    class Kafka,Logstash,BatchSources ingestion;
-    class NN,SNN,DN1,DN2 storage;
+    class DockerEnv,VMwareEnv,HyperVEnv,WSLEnv,VBoxEnv env;
+    class NN,SNN,DN1 storage;
     class RM,NM1,JHS compute;
-    class Spark,MR,StreamingMR,Hive engines;
-    class DockerInit,CI,HealthChecks swe;
+    class Spark,MR,StreamingMR,HDFSCLI engines;
 ```
-
-> [!NOTE]
-> For detailed architectural specifications, HDFS read/write pipelines, and YARN scheduling lifecycles, see the [Architecture Documentation](docs/architecture.md). Also check our [Big Data Engineering Patterns Guide](docs/data-engineering-patterns.md) and [Software Engineering Best Practices](docs/software-engineering-practices.md).
 
 ---
 
 ## 🌐 Web Interfaces & Port Mappings
 
-All standard Apache Hadoop web consoles and service endpoints are mapped to host ports:
+All standard Hadoop web consoles and service endpoints are mapped to localhost:
 
 | Service | Container Port | Host Port | Web Console URL | Description |
 | :--- | :---: | :---: | :--- | :--- |
 | **HDFS NameNode** | `9870` | `9870` | [http://localhost:9870](http://localhost:9870) | Browse HDFS filesystem, inspect cluster capacity, and view active DataNodes. |
-| **HDFS DataNode** | `9864` | `9864` | [http://localhost:9864](http://localhost:9864) | DataNode status, block storage details, and volume metrics. |
-| **YARN ResourceManager** | `8088` | `8088` | [http://localhost:8088](http://localhost:8088) | View running applications, memory/vcore metrics, and node queues. |
-| **YARN NodeManager** | `8042` | `8042` | [http://localhost:8042](http://localhost:8042) | NodeManager status and container allocations. |
-| **MapReduce JobHistory** | `19888` | `19888` | [http://localhost:19888](http://localhost:19888) | Historical MapReduce job logs, execution counters, and analytics. |
-| **HDFS RPC Endpoint** | `9000` | `9000` | `hdfs://localhost:9000` | Client IPC protocol endpoint for external tools (Spark, Flink, PySpark). |
+| **YARN ResourceManager** | `8088` | `8088` | [http://localhost:8088](http://localhost:8088) | Monitor running applications, cluster memory/vcore metrics, and scheduler queues. |
+| **HDFS DataNode** | `9864` | `9864` | [http://localhost:9864](http://localhost:9864) | Inspect DataNode volume status and raw block metrics. |
+| **YARN NodeManager** | `8042` | `8042` | [http://localhost:8042](http://localhost:8042) | Container allocation and node execution details. |
+| **MapReduce JobHistory** | `19888` | `19888` | [http://localhost:19888](http://localhost:19888) | Historical MapReduce task counters, logs, and execution timelines. |
+| **HDFS RPC Endpoint** | `9000` | `9000` | `hdfs://localhost:9000` | IPC protocol endpoint for external tools (Spark, Flink, PySpark). |
 | **SSH Daemon** | `22` | `22222` | `ssh -p 22222 hduser@localhost` | Direct SSH access (`password: ubuntu`). |
-
-> [!TIP]
-> You can customize all external port numbers by editing `.env` or setting environment variables (e.g. `HADOOP_NAMENODE_PORT=19870`).
+| **WSL 2 GUI Desktop** | `3390` | `3390` | `localhost:3390` (RDP) | XFCE4 graphical desktop session for WSL 2 (`Ubuntu-WSL-GUI.rdp`). |
 
 > [!NOTE]
-> Web consoles operate over plain HTTP (`http://`). If your browser displays `ERR_EMPTY_RESPONSE` or auto-redirects to HTTPS, access the dashboard in an **Incognito / Private Window** using [http://127.0.0.1:9870](http://127.0.0.1:9870) or see [Troubleshooting Guide: Issue 9](docs/troubleshooting.md#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis).
+> Web consoles operate over plain HTTP (`http://`). If your browser auto-redirects to HTTPS, open an **Incognito / Private Window** using [http://127.0.0.1:9870](http://127.0.0.1:9870) or refer to [Troubleshooting Runbook: Issue 9](docs/troubleshooting.md#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis).
 
 ---
 
-## ⚡ Quick Start
+## ⚡ 1-Click Quick Start
 
-### Prerequisites
-
-- [Docker Engine](https://docs.docker.com/get-docker/) (v20.10+)
-- [Docker Compose](https://docs.docker.com/compose/) (v2.0+)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
-cd docker-hadoop
-```
-
-### 2. Start the Cluster
+Choose your preferred deployment platform below:
 
 <details open>
-<summary><b>Option A: Using Docker Compose</b></summary>
+<summary><b>Option 1: Docker Compose (1-Click or CLI) - Recommended</b></summary>
 
+### Via 1-Click Windows Launcher:
+Double-click **`Start-Hadoop-Docker.bat`** (or `launchers/windows/Start-Hadoop-Docker.bat`).
+
+### Via Terminal:
 ```bash
+# Clone the repository
+git clone https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
+cd docker-hadoop
+
 # Build and start container in background
 docker compose up -d
 
-# Check startup status
+# Check startup status and running daemons
 docker compose ps
-```
-
-</details>
-
-<details>
-<summary><b>Option B: Using Make</b></summary>
-
-```bash
-# Build and start container in background
-make up
-
-# Check status
-make ps
-```
-
-</details>
-
-<details>
-<summary><b>Option C: Using Oracle VirtualBox & Ubuntu VM</b></summary>
-
-```powershell
-# 1. Automatically create and start the Ubuntu VM in VirtualBox
-powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox-setup.ps1
-
-# 2. SSH into the VM (port 2222, password: hadoopuser)
-ssh -p 2222 hadoopuser@localhost
-
-# 3. Run the automated Hadoop cluster installer
-bash /path/to/install-hadoop-ubuntu.sh
-```
-
-> [!TIP]
-> See the complete [VirtualBox & Ubuntu Setup Guide](docs/virtualbox-ubuntu-guide.md) for full configuration, networking, and troubleshooting details.
-
-</details>
-
-<details>
-<summary><b>Option D: Using Kali Linux in VMware Workstation (Official Image)</b></summary>
-
-```bat
-:: 1. From Windows host, run the one-click launcher to optimize VMX (6GB RAM, 4 vCPUs) and boot Kali:
-Launch-Kali-VMware.bat
-```
-
-Inside the Kali Linux VM terminal (`username: kali`, `password: kali`):
-```bash
-# 2. Execute the automated Hadoop 3.3.6 high-performance installer:
-bash /path/to/install-hadoop-kali.sh
-```
-
-> [!TIP]
-> See the complete [Kali Linux & VMware Workstation Setup Guide](docs/kali-vmware-hadoop-guide.md) for full architecture sizing, G1GC tuning, and troubleshooting details.
-
-</details>
-
-
-### 3. Verify Daemon Status
-
-Verify that all 6 Java daemons are running:
-
-```bash
 docker compose exec hadoop jps
 ```
 
-Expected output:
-
-```text
-NameNode
-DataNode
-SecondaryNameNode
-ResourceManager
-NodeManager
-JobHistoryServer
-Jps
+To stop the cluster:
+```bash
+docker compose down
+# or double-click Stop-Hadoop-Docker.bat
 ```
+
+</details>
+
+<details>
+<summary><b>Option 2: Kali Linux on VMware Workstation Pro</b></summary>
+
+1. From Windows host, double-click **`Launch-Kali-VMware.bat`** (tunes VMX for 6GB RAM, 4 vCPUs, disables WHPX popups, and launches VMware).
+2. Inside Kali Linux terminal (`user: kali`, `pass: kali`):
+   ```bash
+   bash scripts/vmware/install-hadoop-kali.sh
+   ```
+3. Read the complete [Kali Linux & VMware Guide](docs/kali-vmware-hadoop-guide.md).
+
+</details>
+
+<details>
+<summary><b>Option 3: Microsoft Hyper-V Generation 2 (Ubuntu)</b></summary>
+
+1. Double-click **`Fix-Lag-And-Start-VM.bat`** to allocate 4 vCPUs and launch the VM.
+2. If internet connection is lost, double-click **`Fix-VM-Internet.bat`**.
+3. To enable clipboard & full-screen resizing, run `Eject-ISO-And-Enable-Clipboard.bat`.
+4. Read the complete [Hyper-V Ubuntu Guide](docs/hyperv-ubuntu-guide.md).
+
+</details>
+
+<details>
+<summary><b>Option 4: WSL 2 Ubuntu with Visual XFCE4 GUI</b></summary>
+
+1. Inside WSL 2 Ubuntu terminal:
+   ```bash
+   bash scripts/wsl/install-hadoop-wsl.sh
+   ```
+2. Double-click **`Ubuntu-WSL-GUI.rdp`** to connect to the desktop interface on `localhost:3390`.
+3. Start the Hadoop cluster with `bash scripts/wsl/start-hadoop-cluster.sh`.
+4. Read the complete [WSL 2 Ubuntu GUI Guide](docs/wsl2-ubuntu-hadoop-guide.md).
+
+</details>
+
+<details>
+<summary><b>Option 5: Oracle VirtualBox Automated Setup</b></summary>
+
+1. Run the automated PowerShell VM creator:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\scripts\virtualbox\virtualbox-setup.ps1
+   ```
+2. SSH into the VM: `ssh -p 2222 hadoopuser@localhost` (password: `hadoopuser`).
+3. Read the complete [VirtualBox Ubuntu Guide](docs/virtualbox-ubuntu-guide.md).
+
+</details>
 
 ---
 
-## 🧪 Testing & Verification
+## 🔬 Data Engineering Tutorials
 
-Run the automated integration suite:
-
+### 1. Interactive HDFS CLI Operations
+Run the comprehensive HDFS operations walkthrough inside the container:
 ```bash
-make test
-# or
-docker compose exec hadoop /test-cluster.sh
+docker compose exec hadoop bash < examples/hdfs-cli/demo-hdfs-operations.sh
 ```
+*Read the [HDFS CLI Tutorial](examples/hdfs-cli/README.md) for complete command examples.*
 
-### Calculate Pi with MapReduce (Monte Carlo Estimation)
-
-```bash
-docker compose exec hadoop yarn jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.2.jar pi 4 1000
-```
-
----
-
-## 💻 HDFS CLI Cheat Sheet
-
-Open an interactive shell inside the container:
-
-```bash
-docker compose exec -it hadoop bash
-```
-
-| Operation | Command |
-| :--- | :--- |
-| **List Root Directory** | `hdfs dfs -ls /` |
-| **Create Directory** | `hdfs dfs -mkdir -p /user/mydata` |
-| **Upload Local File** | `hdfs dfs -put /path/to/local/file.txt /user/mydata/` |
-| **Download File** | `hdfs dfs -get /user/mydata/file.txt /tmp/` |
-| **Display File Content** | `hdfs dfs -cat /user/mydata/file.txt \| head -n 20` |
-| **Check Storage Disk Usage** | `hdfs dfs -du -h /user` |
-| **Delete File** | `hdfs dfs -rm /user/mydata/file.txt` |
-| **Delete Directory (Recursive)** | `hdfs dfs -rm -r /user/mydata` |
-| **HDFS Health Report** | `hdfs dfsadmin -report` |
-| **Exit SafeMode** | `hdfs dfsadmin -safemode leave` |
-
----
-
-## 🔬 MapReduce Tutorials
-
-### 1. Python Hadoop Streaming WordCount
-
-Run the Python streaming example using the pre-configured runner:
-
+### 2. Python Hadoop Streaming WordCount
+Execute mapper/reducer streaming pipeline on sample text:
 ```bash
 make test-mr-python
 # or
 bash examples/mapreduce-python/run.sh
 ```
+*Read the [Python Streaming Guide](examples/mapreduce-python/README.md).*
 
-*Read the full [Python Streaming Guide](examples/mapreduce-python/README.md).*
-
-### 2. Java Native MapReduce WordCount
-
-Compile and execute the standalone Java WordCount application:
-
+### 3. Native Java MapReduce WordCount
+Compile and execute standalone Java MapReduce job:
 ```bash
 make test-mr-java
 # or
 bash examples/mapreduce-java/compile-and-run.sh
 ```
+*Read the [Java MapReduce Guide](examples/mapreduce-java/README.md).*
 
-*Read the full [Java MapReduce Guide](examples/mapreduce-java/README.md).*
-
----
-
-## 🔌 Big Data Ecosystem Integration
-
-Connect external data processing frameworks directly to this cluster:
-
-```python
-# PySpark HDFS Connection Example
-from pyspark.sql import SparkSession
-
-spark = SparkSession.builder \
-    .appName("HadoopDockerDemo") \
-    .config("spark.hadoop.fs.defaultFS", "hdfs://localhost:9000") \
-    .getOrCreate()
-
-df = spark.read.parquet("hdfs://localhost:9000/data/spark_employees.parquet")
-df.show()
-```
-
-*See [Ecosystem Integration Guide](docs/ecosystem-integration.md) for Apache Spark, Apache Hive, Presto/Trino, and Jupyter Notebook setup instructions.*
-
----
-
-## 💾 Storage & Persistent Volumes
-
-Cluster state is preserved across container lifecycles via named Docker volumes:
-
-| Docker Volume Name | Container Mount Path | Description |
-| :--- | :--- | :--- |
-| `hadoop_namenode_data` | `/usr/local/hadoop/yarn_data/hdfs/namenode` | NameNode metadata, `fsimage`, and transaction edit logs. |
-| `hadoop_datanode_data` | `/usr/local/hadoop/yarn_data/hdfs/datanode` | DataNode HDFS block storage. |
-| `hadoop_tmp_data` | `/app/hadoop/tmp` | Hadoop intermediate temporary files. |
-| `hadoop_logs_data` | `/usr/local/hadoop/logs` | Daemon log files and historical application logs. |
-
-> [!WARNING]
-> To perform a clean cluster reset and reformat the NameNode from scratch, run `make clean` or `docker compose down -v`.
-
----
-
-## 📚 In-Depth Documentation
-
-| Guide | Description |
-| :--- | :--- |
-| 📖 [Getting Started Guide](docs/getting-started.md) | Step-by-step installation, verification, and first steps. |
-| 🏛️ [Architecture Blueprint](docs/architecture.md) | Complete internal architecture, HDFS pipelines, and Mermaid diagrams. |
-| ⚙️ [MapReduce Developer Guide](docs/mapreduce-guide.md) | Java & Python MapReduce development, Combiners, and memory tuning. |
-| 🔌 [Ecosystem Integration Guide](docs/ecosystem-integration.md) | Connecting Apache Spark, Hive, Presto/Trino, and Jupyter to HDFS. |
-| 🛠️ [Troubleshooting Runbook](docs/troubleshooting.md) | Solutions for SafeMode, ClusterID mismatch, memory limits, and port conflicts. |
-| 🚀 [Configuration & Performance Tuning](docs/configuration-tuning.md) | XML configuration parameters, JVM heap sizing, and optimization. |
-| ⚡ [Hyper-V Ubuntu & Hadoop Guide](docs/hyperv-ubuntu-guide.md) | Native Type-1 Hyper-V VM deployment, 4-vCPU tuning, Full Screen scaling, and Hadoop. |
-| 🐧 [WSL 2 Ubuntu & GUI Guide](docs/wsl2-ubuntu-hadoop-guide.md) | Bare-metal performance WSL 2 Ubuntu 24.04 with XFCE4 visual GUI (RDP 3390) & Hadoop. |
-| 📦 [VirtualBox Ubuntu Guide](docs/virtualbox-ubuntu-guide.md) | Oracle VirtualBox automated setup, 4-vCPU tuning, and troubleshooting runbooks. |
-
----
-
-## 🛠️ Troubleshooting & FAQ
-
-<details>
-<summary><b>Q: NameNode is stuck in SafeMode (<code>Cannot create file... Name node is in safe mode</code>)</b></summary>
-
-**Fix**: Execute the following command to manually exit SafeMode:
-
+### 4. Apache Spark & PySpark HDFS Integration
 ```bash
-make safemode-leave
-# or
-docker compose exec hadoop hdfs dfsadmin -safemode leave
+python examples/spark-pyspark/pyspark_hdfs_read_write.py
 ```
-
-</details>
-
-<details>
-<summary><b>Q: DataNode is missing or <code>clusterID</code> mismatch occurs</b></summary>
-
-**Fix**: When NameNode is formatted without wiping DataNode storage, the IDs diverge. Perform a full volume reset:
-
-```bash
-make clean
-make up
-```
-
-</details>
-
-<details>
-<summary><b>Q: Host port conflict (e.g. port 9870 or 8088 already in use)</b></summary>
-
-**Fix**: Create a `.env` file and change the conflicting port mappings:
-
-```bash
-cp .env.example .env
-# Edit .env and change HADOOP_NAMENODE_PORT=19870
-docker compose up -d
-```
-
-</details>
-
-*For more solutions, see the [Troubleshooting Runbook](docs/troubleshooting.md).*
+*Read the [PySpark Integration Guide](examples/spark-pyspark/README.md).*
 
 ---
 
-## 📚 In-Depth Documentation & Guides
+## 📊 Sample Datasets
 
-Explore specialized technical guides tailored for Data Engineers and Software Engineers:
+The repository includes pre-built test datasets in [`datasets/`](datasets/):
 
-| Guide | Description | Key Focus Areas |
-| :--- | :--- | :--- |
-| [🏗️ **Data Engineering Patterns**](docs/data-engineering-patterns.md) | Architectural patterns for high-throughput distributed data pipelines. | Lakehouse / Medallion Architecture, Parquet vs ORC vs Avro, Map-Side Joins, Small Files solutions, WAP pattern, PySpark ETL. |
-| [🛠️ **Software Engineering Practices**](docs/software-engineering-practices.md) | Production engineering, containerization standards, and CI/CD. | 12-Factor Big Data, Tini init system, Zombie reaping, Signal propagation, Unit testing pipelines, JMX observability. |
-| [🐉 **Kali Linux & VMware Setup Guide**](docs/kali-vmware-hadoop-guide.md) | High-performance Hadoop 3.3.6 on Kali Linux inside VMware Workstation. | Host hardware sizing, VMX optimization (6GB RAM, 4 vCPUs), G1GC heap tuning, swappiness=1, automated script. |
-| [🏛️ **System Architecture**](docs/architecture.md) | Complete Hadoop 3.1.2 topology blueprint and interaction lifecycles. | HDFS NameNode / DataNode RPC, YARN Scheduler, SecondaryNameNode Checkpointing, Network Port Matrix. |
-| [⚡ **MapReduce Programming Guide**](docs/mapreduce-guide.md) | Comprehensive development guide for Java & Python Streaming. | Mapper/Reducer execution, Shuffle & Sort internals, Partitioner logic, In-Mapper Combiners, Streaming API. |
-| [⚙️ **Configuration & JVM Tuning**](docs/configuration-tuning.md) | Complete XML parameter guide and JVM performance tuning. | Heap sizing, GC optimization, container vCore/RAM allocations, HDFS block sizing, speculative execution. |
-| [🔌 **Ecosystem Integration**](docs/ecosystem-integration.md) | Connecting external Big Data and analytical compute engines. | Apache Spark / PySpark, Apache Hive Metastore, Presto / Trino SQL, Jupyter Notebooks. |
-| [🔍 **Troubleshooting & Diagnostics**](docs/troubleshooting.md) | Operational runbook for diagnosing and resolving cluster failures. | Port conflicts, SafeMode deadlocks, DataNode clusterID divergence, OOM errors, Healthcheck debugging. |
-| [🖥️ **VirtualBox & Ubuntu Setup Guide**](docs/virtualbox-ubuntu-guide.md) | Step-by-step guide for provisioning Ubuntu VM and running Hadoop on VirtualBox. | Hardware specs, NAT port forwarding, automation scripts, passwordless SSH, troubleshooting. |
-| [🪟 **Hyper-V Ubuntu Setup Guide**](docs/hyperv-ubuntu-guide.md) | Native Windows Hyper-V Generation 2 Ubuntu deployment guide. | Enhanced session mode, dynamic memory, virtual switch networking, lag mitigation. |
-| [🚀 **Getting Started Guide**](docs/getting-started.md) | Fast onboarding walkthrough for developers and researchers. | Prerequisites, step-by-step setup, cluster verification, CLI execution. |
+| Dataset | Format | Path | Purpose |
+| :--- | :---: | :--- | :--- |
+| **Text Corpus** | `.txt` | [`datasets/wordcount-sample.txt`](datasets/wordcount-sample.txt) | WordCount benchmarking, tokenization, grep |
+| **Employees Data** | `.csv` | [`datasets/employees.csv`](datasets/employees.csv) | PySpark DataFrames, aggregations, SQL queries |
+
+To load them directly into HDFS:
+```bash
+docker cp datasets/employees.csv hadoop-master:/tmp/
+docker compose exec hadoop hdfs dfs -mkdir -p /datasets
+docker compose exec hadoop hdfs dfs -put -f /tmp/employees.csv /datasets/
+docker compose exec hadoop hdfs dfs -cat /datasets/employees.csv
+```
+*See [Datasets Documentation](datasets/README.md) for advanced ingestion recipes.*
 
 ---
 
@@ -442,104 +323,149 @@ Explore specialized technical guides tailored for Data Engineers and Software En
 ```text
 docker-hadoop/
 ├── .github/
+│   ├── ISSUE_TEMPLATE/          # Bug report & feature templates
 │   ├── workflows/
-│   │   └── ci.yml               # Automated GitHub Actions CI workflow
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md        # Structured Bug Report template
-│   │   ├── feature_request.md   # Structured Feature Proposal template
-│   │   └── config.yml           # Issue template settings
-│   └── pull_request_template.md # Standard PR checklist & description template
-├── config/
-│   ├── core-site.xml            # Default filesystem & temp storage parameters
-│   ├── hdfs-site.xml            # HDFS NameNode / DataNode parameters
-│   ├── mapred-site.xml          # MapReduce on YARN & JobHistory server config
-│   ├── yarn-site.xml            # YARN ResourceManager & NodeManager config
-│   └── hadoop-env.sh            # Java & Hadoop runtime environment variables
-├── docs/
-│   ├── architecture.md          # In-depth architectural blueprint & Mermaid diagrams
-│   ├── configuration-tuning.md  # XML parameter reference & JVM tuning guide
-│   ├── data-engineering-patterns.md # Distributed data architectural patterns
-│   ├── ecosystem-integration.md # Spark, Hive, Presto, and Jupyter integration
-│   ├── getting-started.md       # Developer onboarding & operational guide
-│   ├── hyperv-ubuntu-guide.md   # Microsoft Hyper-V Ubuntu setup guide
-│   ├── kali-vmware-hadoop-guide.md # Kali Linux & VMware Workstation Hadoop setup guide
-│   ├── mapreduce-guide.md       # Comprehensive MapReduce programming guide
-│   ├── software-engineering-practices.md # 12-Factor Big Data & DevOps practices
-│   ├── troubleshooting.md       # Diagnostics & troubleshooting runbook
-│   ├── virtualbox-ubuntu-guide.md # Oracle VirtualBox & Ubuntu installation guide
-│   └── wsl2-ubuntu-hadoop-guide.md# WSL 2 Ubuntu 24.04 LTS High-Performance GUI & Hadoop guide
-├── examples/
-│   ├── mapreduce-java/          # Standalone Java WordCount with compile script
+│   │   ├── ci.yml               # Automated GitHub Actions build & test CI
+│   │   ├── security-scan.yml    # Hadolint Docker linter & Trivy vulnerability scanner
+│   │   └── release-drafter.yml  # Automated release notes drafter
+│   ├── dependabot.yml           # Automated dependency updates
+│   ├── pull_request_template.md # PR guidelines template
+│   └── release-drafter.yml      # Release draft configuration
+├── config/                      # Core XML configurations
+│   ├── core-site.xml            # Filesystem & temporary storage configuration
+│   ├── hadoop-env.sh            # Environment exports & JVM options
+│   ├── hdfs-site.xml            # NameNode, DataNode & replication settings
+│   ├── mapred-site.xml          # MapReduce framework & JobHistory configuration
+│   └── yarn-site.xml            # YARN ResourceManager & NodeManager settings
+├── datasets/                    # Built-in sample datasets
+│   ├── employees.csv            # Structured employee records for Spark/SQL
+│   ├── wordcount-sample.txt     # Distributed systems text corpus
+│   └── README.md                # HDFS loading instructions & recipes
+├── docs/                        # Comprehensive technical documentation
+│   ├── architecture.md          # Internal architecture & sequence diagrams
+│   ├── configuration-tuning.md  # XML tuning & JVM GC optimization
+│   ├── data-engineering-patterns.md # Lakehouse, Medallion, & join patterns
+│   ├── ecosystem-integration.md # Spark, Hive, Presto, & Jupyter guides
+│   ├── getting-started.md       # Fast onboarding guide
+│   ├── hyperv-ubuntu-guide.md   # Microsoft Hyper-V setup & optimization
+│   ├── kali-vmware-hadoop-guide.md # VMware Workstation & Kali Linux guide
+│   ├── mapreduce-guide.md       # Comprehensive MapReduce manual
+│   ├── software-engineering-practices.md # 12-factor Big Data & DevOps
+│   ├── troubleshooting.md       # Diagnostic runbook for cluster issues
+│   ├── virtualbox-ubuntu-guide.md # Oracle VirtualBox guide
+│   └── wsl2-ubuntu-hadoop-guide.md# WSL 2 Ubuntu GUI & Hadoop setup
+├── examples/                    # Hands-on Big Data examples
+│   ├── hdfs-cli/                # Interactive HDFS CLI demonstration & guide
+│   │   ├── demo-hdfs-operations.sh
+│   │   └── README.md
+│   ├── mapreduce-java/          # Standalone Java WordCount application
 │   │   ├── WordCount.java
 │   │   ├── compile-and-run.sh
 │   │   └── README.md
-│   ├── mapreduce-python/        # Python Hadoop Streaming WordCount example
+│   ├── mapreduce-python/        # Python Hadoop Streaming example
 │   │   ├── mapper.py
 │   │   ├── reducer.py
 │   │   ├── run.sh
 │   │   ├── sample.txt
 │   │   └── README.md
-│   └── spark-pyspark/           # PySpark HDFS read/write integration example
+│   └── spark-pyspark/           # PySpark HDFS read/write integration
 │       ├── pyspark_hdfs_read_write.py
 │       └── README.md
-├── scripts/
-│   ├── entrypoint.sh            # Container bootstrap & daemon orchestration
-│   ├── healthcheck.sh           # Container health check script
-│   ├── install-hadoop-kali.sh   # Kali Linux automated Hadoop 3.3.6 installer (G1GC, swappiness=1)
-│   ├── install-hadoop-ubuntu.sh # Ubuntu native Hadoop automated installer (system-wide)
-│   ├── install-hadoop-user.sh   # Rootless / user-space zero-sudo Hadoop installer
-│   ├── install-hadoop-wsl.sh    # WSL 2 Ubuntu 24.04 automated Hadoop & GUI installer
-│   ├── optimize-kali-vmx.ps1    # PowerShell VMX hardware optimizer for Kali (RAM/vCPUs)
-│   ├── start-hadoop-cluster.sh  # WSL 2 Hadoop cluster daemon startup script
-│   ├── sync-wsl-configs.sh      # WSL 2 Hadoop XML configuration synchronizer
-│   ├── test-cluster.sh          # MapReduce & HDFS integration tests
-│   └── virtualbox-setup.ps1     # Automated PowerShell VirtualBox VM creator (4 vCPUs, UEFI)
-├── Launch-Kali-VMware.bat       # 1-Click launcher to optimize & boot Kali in VMware Workstation
-├── Ubuntu-WSL-GUI.rdp           # 1-Click Remote Desktop connection profile (Port 3390)
+├── launchers/                   # 1-Click platform launchers
+│   └── windows/
+│       ├── Start-Hadoop-Docker.bat # 1-Click Docker cluster startup
+│       ├── Stop-Hadoop-Docker.bat  # 1-Click Docker cluster shutdown
+│       ├── Launch-Kali-VMware.bat  # VMware Workstation Kali launcher
+│       ├── Fix-Lag-And-Start-VM.bat# Hyper-V 4-vCPU & performance launcher
+│       ├── Fix-VM-Internet.bat     # Hyper-V virtual switch network repair
+│       ├── Eject-ISO-And-Enable-Clipboard.bat # Hyper-V ISO & clipboard setup
+│       └── Ubuntu-WSL-GUI.rdp      # WSL 2 Remote Desktop profile
+├── scripts/                     # Modular automation scripts
+│   ├── docker/                  # Docker container entrypoint & probes
+│   │   ├── entrypoint.sh
+│   │   ├── healthcheck.sh
+│   │   └── test-cluster.sh
+│   ├── vmware/                  # VMware & Kali Linux automation
+│   │   ├── install-hadoop-kali.sh
+│   │   ├── optimize-kali-vmx.ps1
+│   │   ├── apply-guest-mouse-fix.ps1
+│   │   ├── fix-mouse-in-guest.sh
+│   │   └── set-fullscreen-resolution.ps1
+│   ├── hyperv/                  # Hyper-V host & guest automation
+│   │   ├── configure-hyperv-host-enhanced-session.ps1
+│   │   ├── enable-hyperv-enhanced-session.sh
+│   │   ├── fix-vm-internet.ps1
+│   │   └── optimize-hyperv-vm.ps1
+│   ├── virtualbox/              # VirtualBox VM provisioning
+│   │   └── virtualbox-setup.ps1
+│   ├── wsl/                     # WSL 2 Ubuntu automation
+│   │   ├── install-hadoop-wsl.sh
+│   │   ├── start-hadoop-cluster.sh
+│   │   ├── sync-wsl-configs.sh
+│   │   └── fix-xrdp.sh
+│   └── linux/                   # Bare-metal & native Linux scripts
+│       ├── install-hadoop-ubuntu.sh
+│       ├── install-hadoop-user.sh
+│       ├── setup-hadoop-systemd.sh
+│       └── start-daemons-direct.sh
+├── Start-Hadoop-Docker.bat      # Root 1-click Docker startup wrapper
+├── Stop-Hadoop-Docker.bat       # Root 1-click Docker shutdown wrapper
+├── Launch-Kali-VMware.bat       # Root 1-click VMware Kali wrapper
+├── Fix-Lag-And-Start-VM.bat     # Root 1-click Hyper-V lag fix wrapper
+├── Fix-VM-Internet.bat          # Root 1-click Hyper-V network wrapper
+├── Eject-ISO-And-Enable-Clipboard.bat # Root 1-click Hyper-V ISO wrapper
+├── Ubuntu-WSL-GUI.rdp           # Root 1-click WSL 2 RDP connection profile
 ├── .dockerignore                # Docker build exclusions
-├── .env.example                 # Configuration template
-├── .gitignore                   # Git exclusions
-├── CHANGELOG.md                 # Semantic version changelog
-├── CODE_OF_CONDUCT.md           # Contributor Covenant Code of Conduct
-├── CONTRIBUTING.md              # Development & contribution guidelines
-├── Dockerfile                   # Multi-stage Ubuntu 20.04 Hadoop 3 image
-├── docker-compose.yml           # Container orchestration with volumes & ports
+├── .env.example                 # Port and environment variable templates
+├── .gitignore                   # Git exclusions (ISOs, 7z, and VM disks ignored)
+├── CHANGELOG.md                 # Semantic version history
+├── CODE_OF_CONDUCT.md           # Community code of conduct
+├── CONTRIBUTING.md              # Guidelines for contributing
+├── Dockerfile                   # Multi-stage Ubuntu 20.04 Hadoop 3.1.2 image
+├── docker-compose.yml           # Multi-volume container orchestration
 ├── LICENSE                      # Apache 2.0 License
-├── Makefile                     # Developer CLI commands
+├── Makefile                     # Developer CLI shortcuts
 ├── README.md                    # Project documentation
-└── SECURITY.md                  # Vulnerability reporting & container security
+└── SECURITY.md                  # Security policies & vulnerability reporting
 ```
 
 ---
 
-## 🛠️ Management & Automation Commands
+## 🛠️ Developer Command Shortcuts (`Makefile`)
 
 | Command | Description |
 | :--- | :--- |
-| `make help` | Display list of available developer commands |
-| `make build` | Build the Hadoop Docker image |
-| `make up` | Start the cluster in detached mode |
-| `make down` | Stop and remove the cluster container |
+| `make help` | Display available developer CLI commands |
+| `make build` | Build the Hadoop Docker image locally |
+| `make up` | Start the Hadoop Docker cluster in background |
+| `make down` | Stop and remove the Docker container |
 | `make restart` | Restart the cluster services |
 | `make logs` | Stream container logs in real time |
-| `make ps` | Check container health and running services |
-| `make jps` | List running Hadoop Java daemons (`NameNode`, `DataNode`, etc.) |
+| `make ps` | Inspect container health status |
+| `make jps` | List running Java daemons inside the container |
 | `make test` | Run built-in integration tests & Pi MapReduce |
-| `make test-mr-python` | Run Python Hadoop Streaming WordCount job |
-| `make test-mr-java` | Compile and run Java Native MapReduce WordCount job |
-| `make safemode-leave` | Force HDFS NameNode to exit SafeMode |
-| `make hdfs-report` | Display HDFS storage and DataNode health report |
-| `make bash` | Open interactive shell inside the container |
-| `make clean` | Stop and remove containers, images, and persistent volumes |
+| `make test-mr-python` | Run Python Streaming MapReduce WordCount |
+| `make test-mr-java` | Compile & run Java Native MapReduce WordCount |
+| `make test-hdfs-cli` | Run HDFS CLI interactive demo script |
+| `make safemode-leave` | Force HDFS NameNode to leave SafeMode |
+| `make hdfs-report` | Display HDFS storage capacity report |
+| `make bash` | Open root shell inside the container |
+| `make hdfs-shell` | Open interactive shell as `hduser` |
+| `make clean` | Full teardown (removes containers, images, and named volumes) |
+| `make vm-create` | Create & configure Ubuntu VM in Oracle VirtualBox |
+| `make vm-start` | Start VirtualBox VM in GUI window |
+| `make vm-ssh` | Connect to VirtualBox VM via SSH (`port 2222`) |
+| `make vm-kali-optimize` | Tune Kali VMX hardware specs (6GB RAM, 4 vCPUs) |
+| `make vm-kali-start` | Launch Kali Linux in VMware Workstation |
 
 ---
 
 ## 🤝 Contributing & Community
 
-Contributions are welcome! Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting pull requests.
+Contributions are warmly welcomed! Please read our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting pull requests.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
