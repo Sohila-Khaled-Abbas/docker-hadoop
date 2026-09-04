@@ -18,12 +18,12 @@ docker compose exec -T hadoop bash -c "
 echo "=== 3. Preparing HDFS input directories ==="
 docker compose exec -T hadoop hdfs dfs -mkdir -p /example/java/input
 docker compose exec -T hadoop hdfs dfs -rm -r -f /example/java/output
-docker compose exec -T hadoop hdfs dfs -put -f /usr/local/hadoop/etc/hadoop/*.xml /example/java/input/
+docker compose exec -T hadoop bash -c "hdfs dfs -put -f /usr/local/hadoop/etc/hadoop/*.xml /example/java/input/"
 
 echo "=== 4. Running YARN MapReduce Job ==="
 docker compose exec -T hadoop yarn jar /tmp/wordcount.jar WordCount /example/java/input /example/java/output
 
 echo "=== 5. Reading Output from HDFS ==="
-docker compose exec -T hadoop hdfs dfs -cat /example/java/output/part-r-00000 | head -n 30
+docker compose exec -T hadoop hdfs dfs -cat /example/java/output/part* | head -n 30
 
 echo "=== Java MapReduce Job Completed Successfully ==="
