@@ -44,6 +44,16 @@ sudo apt-get install -y \
 # Ensure SSH service is running and enabled on boot
 sudo systemctl enable --now ssh || true
 
+# Fix VMware X11 invisible mouse cursor bug (switch from hardware to software cursor)
+sudo mkdir -p /etc/X11/xorg.conf.d
+sudo tee /etc/X11/xorg.conf.d/20-vmware.conf > /dev/null << 'EOF'
+Section "Device"
+    Identifier "VMware SVGA"
+    Driver "vmware"
+    Option "HWCursor" "off"
+EndSection
+EOF
+
 echo -e "${GREEN}--> [2/8] Applying Linux Kernel & Virtual Memory Hardening...${NC}"
 # 1. Swappiness tuning (keep Hadoop JVMs in RAM, prevent paging out)
 if ! grep -q "vm.swappiness=1" /etc/sysctl.conf 2>/dev/null; then

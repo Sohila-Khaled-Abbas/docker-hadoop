@@ -478,3 +478,19 @@ start-yarn.sh
 ```bash
 hdfs dfsadmin -safemode leave
 ```
+
+### Issue 5: Invisible Mouse Cursor in Kali Linux on VMware Workstation
+**Cause**: Kali Linux X11/Xorg defaults to hardware-accelerated cursor (`HWCursor`), which modern VMware SVGA drivers do not render on the screen.
+**Fix (Quickest via Keyboard in Kali)**:
+1. Press **`Ctrl + Alt + T`** inside Kali to open the terminal.
+2. Run:
+   ```bash
+   sudo mkdir -p /etc/X11/xorg.conf.d && echo -e 'Section "Device"\n    Identifier "VMware SVGA"\n    Driver "vmware"\n    Option "HWCursor" "off"\nEndSection' | sudo tee /etc/X11/xorg.conf.d/20-vmware.conf && sudo systemctl restart lightdm
+   ```
+3. Type password `kali`. The desktop reloads and the mouse pointer appears immediately!
+
+**Alternative Fix (From VMware Workstation Host)**:
+1. In VMware Workstation, go to **Edit** ➔ **Preferences** ➔ **Input**.
+2. Set **Optimize mouse for games** to **Always**.
+3. Click **OK** and click inside the Kali VM window.
+
