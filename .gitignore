@@ -43,3 +43,13 @@ Launching
 VM
 *.tmp
 scratch/
+
+# Course Materials, Books, Slides & Proprietary Documents (Keep offline - DO NOT SHARE)
+*.pdf
+*.pptx
+*.ppt
+*.docx
+*.doc
+*.xlsx
+*.xls
+

@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-04
+
+### Added
+- **Comprehensive Hadoop Ecosystem & HDFS Architecture Guide (`docs/hadoop-ecosystem-guide.md`)**:
+  - Authored a complete 700+ line guide covering Hadoop foundational principles, 2 core tasks (Storage & Processing), and component classification (Ingestion, Storage, Compute, Analysis, Management).
+  - Detailed HDFS architectural internals: NameNode vs DataNode responsibilities, in-memory inode structures, FSImage & EditLog lifecycle, 128MB block sizing trade-offs, and rack-aware replication topology.
+  - Comprehensive fault-tolerance mechanics: heartbeat intervals (3s) & dead node detection (630s), block corruption repair, Secondary NameNode checkpointing flow, and Active/Standby NameNode High Availability with QJM & ZKFC.
+  - End-to-end HDFS 7-step write pipeline with data streaming and packet ACK protocol.
+  - Essential Linux commands cheatsheet for data engineers.
+- **HDFS Deep-Dive Sections in System Architecture (`docs/architecture.md`)**:
+  - Expanded architecture documentation with authoritative master-vs-worker comparison tables, block allocation lifecycle, checkpointing sequence diagrams, and HA failover mechanisms.
+- **Dedicated Documentation Table in `README.md`**:
+  - Added a categorized index table in `README.md` linking all 13 architecture, deployment, tuning, and troubleshooting guides.
+
+### Changed
+- **Privacy & Security Hardening (`.gitignore`)**:
+  - Added explicit ignore patterns for `*.pdf`, `*.pptx`, `*.ppt`, `*.docx`, `*.doc`, `*.xlsx` ensuring proprietary course slides and educational PDFs remain local and are never shared online.
+- **Repository Links & Contributing Guidelines (`CONTRIBUTING.md`)**:
+  - Replaced repository placeholder URLs with canonical `Sohila-Khaled-Abbas/docker-hadoop` repository links.
+
 ## [2.1.0] - 2026-09-04
 
 ### Added

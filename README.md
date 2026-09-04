@@ -369,11 +369,12 @@ docker-hadoop/
 │   ├── wordcount-sample.txt     # Distributed systems text corpus
 │   └── README.md                # HDFS loading instructions & recipes
 ├── docs/                        # Comprehensive technical documentation
-│   ├── architecture.md          # Internal architecture & sequence diagrams
+│   ├── architecture.md          # Internal architecture, HDFS deep dive & sequence diagrams
 │   ├── configuration-tuning.md  # XML tuning & JVM GC optimization
 │   ├── data-engineering-patterns.md # Lakehouse, Medallion, & join patterns
 │   ├── ecosystem-integration.md # Spark, Hive, Presto, & Jupyter guides
 │   ├── getting-started.md       # Fast onboarding guide
+│   ├── hadoop-ecosystem-guide.md# Complete ecosystem, HDFS & fault-tolerance guide
 │   ├── hyperv-ubuntu-guide.md   # Microsoft Hyper-V setup & optimization
 │   ├── kali-vmware-hadoop-guide.md # VMware Workstation & Kali Linux guide
 │   ├── mapreduce-guide.md       # Comprehensive MapReduce manual
@@ -479,6 +480,28 @@ docker-hadoop/
 | `make vm-ssh` | Connect to VirtualBox VM via SSH (`port 2222`) |
 | `make vm-kali-optimize` | Tune Kali VMX hardware specs (6GB RAM, 4 vCPUs) |
 | `make vm-kali-start` | Launch Kali Linux in VMware Workstation |
+
+---
+
+## 📚 Documentation
+
+Explore our comprehensive technical documentation and deep-dive guides:
+
+| Document | Topic & Focus | Key Highlights |
+| :--- | :--- | :--- |
+| **[Hadoop Ecosystem Guide](docs/hadoop-ecosystem-guide.md)** | Ecosystem & HDFS Architecture | Core Hadoop principles, component classification, HDFS block sizes, replication topology, fault tolerance, NameNode HA, and write pipelines. |
+| **[System Architecture](docs/architecture.md)** | Architecture & Daemon Internals | Comprehensive system breakdown, NameNode vs DataNode table, block management, heartbeat mechanisms, Secondary vs Standby NameNode, and network topology. |
+| **[Getting Started](docs/getting-started.md)** | Fast Onboarding | Prerequisites, 3-minute quickstart, cluster verification, and basic data ingest. |
+| **[Configuration & Tuning](docs/configuration-tuning.md)** | Performance & GC Tuning | JVM G1GC optimizations, XML configuration recipes (`hdfs-site.xml`, `yarn-site.xml`), heap memory sizing. |
+| **[MapReduce Engineering Manual](docs/mapreduce-guide.md)** | Compute Paradigms | Detailed MapReduce execution flow, combiners, partitioners, custom Writable comparators, and streaming pipelines. |
+| **[Data Engineering Patterns](docs/data-engineering-patterns.md)** | Enterprise Architecture | Medallion Lakehouse architecture (Bronze/Silver/Gold), idempotent pipelines, distributed joins, compaction, and data partitioning. |
+| **[Ecosystem Integration](docs/ecosystem-integration.md)** | Modern Big Data Stack | Connecting Apache Spark, Hive, Presto/Trino, Kafka, and Jupyter notebooks to the containerized HDFS storage layer. |
+| **[Troubleshooting Runbook](docs/troubleshooting.md)** | Diagnostics & RCA | 10+ categorized production issue resolutions (SafeMode, RPC connection refused, Java OutOfMemory, port collisions, browser empty responses). |
+| **[Software Engineering Practices](docs/software-engineering-practices.md)** | Big Data DevOps | 12-factor Big Data principles, CI/CD with GitHub Actions, container health checks, and linting. |
+| **[Kali Linux & VMware Guide](docs/kali-vmware-hadoop-guide.md)** | VMware Workstation Pro | Automated VMX tuning (6GB RAM, 4 vCPUs), resolution scaling, guest mouse integration, and native Hadoop 3.3.6 installation. |
+| **[Hyper-V Ubuntu Guide](docs/hyperv-ubuntu-guide.md)** | Microsoft Hyper-V Gen 2 | Dynamic memory, virtual switch recovery, enhanced session mode via `HvSocket`, and full-screen display. |
+| **[WSL 2 Ubuntu GUI Guide](docs/wsl2-ubuntu-hadoop-guide.md)** | Windows Subsystem for Linux | Native I/O performance, XFCE4 desktop GUI over RDP (port 3390), and single-script cluster lifecycle. |
+| **[Oracle VirtualBox Guide](docs/virtualbox-ubuntu-guide.md)** | VirtualBox Automation | PowerShell VM provisioning script, NAT port forwarding rules, and headless execution. |
 
 ---
 

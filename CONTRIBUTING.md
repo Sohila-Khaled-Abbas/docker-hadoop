@@ -27,8 +27,8 @@ All contributors and maintainers are expected to adhere to our [Code of Conduct]
 
 You can contribute in multiple ways:
 
-1. **Reporting Bugs**: File detailed bug reports via [GitHub Issues](https://github.com/your-username/docker-hadoop/issues/new?template=bug_report.md) with reproduction steps and container logs.
-2. **Proposing Enhancements**: Suggest performance improvements, ecosystem integrations (e.g. Hive, Spark, Presto), or Docker optimizations via [Feature Requests](https://github.com/your-username/docker-hadoop/issues/new?template=feature_request.md).
+1. **Reporting Bugs**: File detailed bug reports via [GitHub Issues](https://github.com/Sohila-Khaled-Abbas/docker-hadoop/issues/new?template=bug_report.md) with reproduction steps and container logs.
+2. **Proposing Enhancements**: Suggest performance improvements, ecosystem integrations (e.g. Hive, Spark, Presto), or Docker optimizations via [Feature Requests](https://github.com/Sohila-Khaled-Abbas/docker-hadoop/issues/new?template=feature_request.md).
 3. **Improving Documentation**: Fix typos, add examples, enhance architecture diagrams, or write troubleshooting guides.
 4. **Submitting Code**: Submit bug fixes, script improvements, or configuration tuning via Pull Requests.
 
@@ -49,12 +49,12 @@ Ensure you have the following installed locally:
 1. Fork the repository on GitHub.
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/<your-username>/docker-hadoop.git
+   git clone https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
    cd docker-hadoop
    ```
 3. Set the upstream remote:
    ```bash
-   git remote add upstream https://github.com/your-username/docker-hadoop.git
+   git remote add upstream https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
    ```
 
 ### Local Build & Run
