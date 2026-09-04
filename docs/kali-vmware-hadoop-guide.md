@@ -87,7 +87,7 @@ sequenceDiagram
     participant VM as VMware Workstation (Kali)
     participant Script as install-hadoop-kali.sh
 
-    Dev->>PS: Double-click Launch-Kali-VMware.bat
+    Dev->>PS: Double-click launchers/windows/Launch-Kali-VMware.bat
     PS->>PS: Back up VMX and tune RAM=6GB, vCPUs=4, clipboard=ON
     PS->>VM: Launch Kali VM in VMware Workstation
     Dev->>VM: Log in (kali / kali) & Open Terminal
@@ -106,10 +106,10 @@ Before powering on the VM for the first time, run the automated tuning script on
 
 ```powershell
 # From the repository root in PowerShell:
-powershell -ExecutionPolicy Bypass -File .\scripts\optimize-kali-vmx.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\vmware\optimize-kali-vmx.ps1
 ```
 
-Or simply double-click **`Launch-Kali-VMware.bat`**.
+Or simply double-click **`launchers/windows/Launch-Kali-VMware.bat`**.
 
 This script automatically:
 1. Locates `kali-linux-2026.2-vmware-amd64.vmx`.
@@ -124,7 +124,7 @@ This script automatically:
 
 ## 4. Launching the VM in VMware Workstation
 
-1. **Option A (1-Click)**: Run [Launch-Kali-VMware.bat](file:///d:/courses/AraBigData/docker-hadoop/Launch-Kali-VMware.bat).
+1. **Option A (1-Click)**: Run [Launch-Kali-VMware.bat](file:///d:/courses/AraBigData/docker-hadoop/launchers/windows/Launch-Kali-VMware.bat).
 2. **Option B (GUI)**:
    - Open **VMware Workstation Pro**.
    - Navigate to **File > Open...** (`Ctrl + O`).

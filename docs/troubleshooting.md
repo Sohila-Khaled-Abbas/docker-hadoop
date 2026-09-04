@@ -273,7 +273,7 @@ Hyper-V defaults new virtual machines to only **1 virtual processor (1 vCPU)**. 
 1. Turn off the VM.
 2. Run our automated optimizer script:
    ```cmd
-   Fix-Lag-And-Start-VM.bat
+   launchers\windows\Fix-Lag-And-Start-VM.bat
    ```
    *Or* in Hyper-V Manager: Right-click VM $\rightarrow$ **Settings** $\rightarrow$ **Processor** $\rightarrow$ increase from `1` to **`4` vCPUs**.
 

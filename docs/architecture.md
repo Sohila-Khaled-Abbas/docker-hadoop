@@ -22,62 +22,88 @@ This document provides a comprehensive architectural overview of the single-node
 ## 🏛️ System Architecture Overview
 
 <p align="center">
-  <img src="images/hadoop-data-engineering-infographic.png" alt="Apache Hadoop Modern Big Data Engineering and Software Engineering Architecture" width="100%" />
+  <a href="images/hadoop-data-engineering-system-architecture.svg">
+    <img src="images/hadoop-data-engineering-infographic.png" alt="Apache Hadoop Modern Big Data Engineering and Software Engineering Architecture" width="100%" />
+  </a>
+  <br/>
+  <em>🔍 Click the diagram above to view the scalable, high-definition vector SVG version.</em>
 </p>
 
 The container orchestrates the complete Apache Hadoop 3.1.2 daemon stack inside an isolated Ubuntu 20.04 environment. It exposes all native Web UIs, RPC ports, and SSH endpoints to the host while persisting cluster state through named Docker volumes.
 
 ```mermaid
-graph TB
-    subgraph Host["Host Machine"]
-        subgraph Browsers["Web Browsers & External Clients"]
-            ClientUI["Developer Browser / External Client"]
-        end
-        subgraph Volumes["Docker Named Volumes"]
-            V_NN["hadoop_namenode_data<br/>(FSImage & Edits)"]
-            V_DN["hadoop_datanode_data<br/>(HDFS Blocks)"]
-            V_TMP["hadoop_tmp_data<br/>(/app/hadoop/tmp)"]
-            V_LOG["hadoop_logs_data<br/>(/usr/local/hadoop/logs)"]
-        end
+flowchart TB
+    subgraph Host["💻 DEVELOPER HOST & CLIENT ACCESS LAYER"]
+        direction LR
+        DevUI["🌐 Web Consoles<br/>(:9870, :8088, :19888)"]
+        DevCLI["💻 Terminal CLI<br/>(make / docker compose)"]
+        DevLaunch["🚀 1-Click Launchers<br/>(launchers/windows/*.bat)"]
+        DevSSH["🔑 SSH Client<br/>(:22222 hduser:ubuntu)"]
     end
 
-    subgraph Container["Hadoop Docker Container (localhost / hadoop-master)"]
-        subgraph StorageLayer["HDFS Storage Layer"]
-            NN["NameNode<br/>Port: 9870 (Web), 9000 (RPC)"]
-            SNN["SecondaryNameNode<br/>Port: 9868 (Web)"]
-            DN["DataNode<br/>Port: 9864 (Web), 9866 (Data)"]
+    subgraph Container["🐳 DOCKER CONTAINER: hadoop-master (Ubuntu 20.04 / OpenJDK 8 / hduser:1000)"]
+        direction TB
+
+        subgraph HDFS["🗄️ DISTRIBUTED STORAGE LAYER (HDFS)"]
+            direction TB
+            NN["👑 NameNode (Master)<br/>Port: 9870 (Web) / 9000 (RPC)<br/>• Inodes Tree • FSImage • EditLog"]
+            SNN["🔄 SecondaryNameNode (Checkpointer)<br/>Port: 9868 (HTTP)<br/>• Merges FSImage + Edits Checkpoints"]
+            DN["📦 DataNode (Worker)<br/>Port: 9864 (Web) / 9866 (Data)<br/>• 128MB Blocks • CRC32C Checksums"]
+            NN <-->|"Heartbeats (3s) & Block Reports"| DN
+            NN <-->|"Checkpoint Sync"| SNN
         end
 
-        subgraph ComputeLayer["YARN Compute Layer"]
-            RM["ResourceManager<br/>Port: 8088 (Web), 8032 (IPC)"]
-            NM["NodeManager<br/>Port: 8042 (Web), 8040 (IPC)"]
-            JHS["JobHistoryServer<br/>Port: 19888 (Web), 10020 (IPC)"]
+        subgraph YARN["⚙️ RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
+            direction TB
+            RM["🧠 ResourceManager (Master)<br/>Port: 8088 (Web) / 8032 (IPC)<br/>• Capacity Scheduler • ApplicationsManager"]
+            NM["👷 NodeManager (Worker)<br/>Port: 8042 (Web) / 8040 (IPC)<br/>• Container Allocation & cgroups Monitoring"]
+            AM["🎯 ApplicationMaster<br/>(Container #001)<br/>• Per-Job Coordinator"]
+            Tasks["⚡ Map / Reduce Tasks<br/>(Containers #002, #003)<br/>• In-Container Execution"]
+            JHS["📜 JobHistoryServer<br/>Port: 19888 (Web)<br/>• Historical Logs & Counters"]
+            RM <-->|"Heartbeats & Allocations"| NM
+            NM -->|"Launch"| AM
+            AM -->|"Directs"| Tasks
+            NM -->|"Aggregated Logs"| JHS
         end
 
-        subgraph OS["Container OS / Runtime"]
-            SSHD["OpenSSH Daemon<br/>Port: 22 (Mapped to 22222)"]
-            JVM["OpenJDK 8 Runtime"]
-            HDUSER["hduser (UID: 1000, GID: 1000)"]
-        end
+        Tasks -.->|"Data Locality Read (128MB)"| DN
+        Tasks -.->|"Write Results (part-r-00000)"| DN
     end
 
-    ClientUI -->|HTTP :9870| NN
-    ClientUI -->|HTTP :9864| DN
-    ClientUI -->|HTTP :8088| RM
-    ClientUI -->|HTTP :8042| NM
-    ClientUI -->|HTTP :19888| JHS
-    ClientUI -->|RPC :9000| NN
-    ClientUI -->|SSH :22222| SSHD
+    subgraph Engines["⚡ ANALYTICS & PROCESSING ENGINES"]
+        direction TB
+        Spark["🔥 Apache Spark / PySpark<br/>(DataFrames & RDDs)"]
+        MR["☕ Native Java MapReduce<br/>(Compiled JAR)"]
+        StreamMR["🐍 Python Streaming<br/>(mapper.py | reducer.py)"]
+        HDFSCLI["📁 Interactive HDFS CLI<br/>(hdfs dfs -put / -ls)"]
+    end
 
-    NN <-->|Heartbeats & Block Reports| DN
-    NN <-->|Checkpoint Merging| SNN
-    RM <-->|Node Heartbeats & Allocations| NM
-    NM -->|Completed Job Logs| JHS
+    subgraph Volumes["💾 DOCKER NAMED VOLUMES (Persistent Host Storage)"]
+        direction LR
+        V_NN["📁 hadoop_namenode_data<br/>/usr/local/hadoop/hdfs/namenode"]
+        V_DN["🧱 hadoop_datanode_data<br/>/usr/local/hadoop/hdfs/datanode"]
+        V_TMP["📦 hadoop_tmp_data<br/>/app/hadoop/tmp"]
+        V_LOG["📜 hadoop_logs_data<br/>/usr/local/hadoop/logs"]
+    end
 
-    NN -.->|Persist Metadata| V_NN
-    DN -.->|Persist Data Blocks| V_DN
-    StorageLayer -.->|Temp Files| V_TMP
-    ComputeLayer -.->|Runtime Logs| V_LOG
+    Host ==>|"① Submit Job & Ingest Data"| RM & NN
+    Engines ==>|"Submit Applications"| RM
+    NN ==>|"Persist Inode Metadata"| V_NN
+    DN ==>|"Persist 128MB Blocks"| V_DN
+    YARN -.->|"Temp Spills & Tokens"| V_TMP
+    Container -.->|"Daemon Event Logs"| V_LOG
+
+    classDef hostStyle fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#ffffff;
+    classDef hdfsStyle fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
+    classDef yarnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
+    classDef engineStyle fill:#581c87,stroke:#a855f7,stroke-width:2px,color:#ffffff;
+    classDef volStyle fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff;
+
+    class DevUI,DevCLI,DevLaunch,DevSSH hostStyle;
+    class NN,SNN,DN hdfsStyle;
+    class RM,NM,AM,Tasks,JHS yarnStyle;
+    class Spark,MR,StreamMR,HDFSCLI engineStyle;
+    class V_NN,V_DN,V_TMP,V_LOG volStyle;
 ```
 
 ---

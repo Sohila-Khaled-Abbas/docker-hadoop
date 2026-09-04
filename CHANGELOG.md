@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-04
+
+### Added
+- **Modern Vector SVG & Ultra-HD System Architecture Diagrams**:
+  - Authored modern, educational dark-mode architectural vector diagrams ([`docs/images/hadoop-data-engineering-system-architecture.svg`](docs/images/hadoop-data-engineering-system-architecture.svg) and [`docs/images/hadoop-data-engineering-infographic.svg`](docs/images/hadoop-data-engineering-infographic.svg)).
+  - Rendered crystal-clear 2800x1850 high-resolution PNG representations ([`docs/images/hadoop-data-engineering-system-architecture.png`](docs/images/hadoop-data-engineering-system-architecture.png) and [`docs/images/hadoop-data-engineering-infographic.png`](docs/images/hadoop-data-engineering-infographic.png)) showcasing multi-platform runtimes, HDFS master-worker mechanics, YARN container orchestration, analytical engines, and Docker volume persistence.
+- **Dedicated Catalogs for Launchers and Scripts**:
+  - Created [`launchers/README.md`](launchers/README.md) cataloging all 1-click desktop batch utilities and connection profiles.
+  - Created [`scripts/README.md`](scripts/README.md) documenting modular automation scripts across Docker, VMware, Hyper-V, Linux, VirtualBox, and WSL 2.
+
+### Changed
+- **Repository Root Organization & Noise Elimination**:
+  - Removed duplicate and forwarding batch/RDP scripts from the root directory (`Start-Hadoop-Docker.bat`, `Stop-Hadoop-Docker.bat`, `Launch-Kali-VMware.bat`, `Fix-Lag-And-Start-VM.bat`, `Fix-VM-Internet.bat`, `Eject-ISO-And-Enable-Clipboard.bat`, `Ubuntu-WSL-GUI.rdp`), keeping the root directory clean, minimal, and standardized.
+  - Canonical launchers now reside exclusively within [`launchers/windows/`](launchers/windows/).
+  - Updated all documentation references across `README.md`, `Makefile`, and `docs/` (`kali-vmware-hadoop-guide.md`, `hyperv-ubuntu-guide.md`, `wsl2-ubuntu-hadoop-guide.md`, `troubleshooting.md`).
+- **Modernized Mermaid Architecture Flowcharts**:
+  - Updated Mermaid system architecture diagrams in `README.md` and `docs/architecture.md` with modern directional subgraphs, high-contrast node styling, and explicit step callouts.
+
 ## [2.0.0] - 2026-09-04
 
 ### Added

@@ -66,7 +66,7 @@ flowchart TD
 We have configured **xRDP** on port **3390** (to avoid collision with Windows host Remote Desktop on port 3389).
 
 1. Double-click the pre-generated shortcut:
-   `d:\courses\AraBigData\docker-hadoop\Ubuntu-WSL-GUI.rdp`
+   `d:\courses\AraBigData\docker-hadoop\launchers\windows\Ubuntu-WSL-GUI.rdp`
    *Or* open **Remote Desktop Connection (`mstsc.exe`)** and enter:
    ```text
    localhost:3390

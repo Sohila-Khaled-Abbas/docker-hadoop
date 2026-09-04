@@ -83,11 +83,11 @@ Unlike conventional single-purpose repositories, this project delivers a **cross
   - **HDFS**: NameNode, DataNode, SecondaryNameNode.
   - **YARN**: ResourceManager, NodeManager.
   - **MapReduce**: JobHistory Server.
-- **1-Click Windows Launchers (`launchers/windows/`)**:
-  - `Start-Hadoop-Docker.bat` & `Stop-Hadoop-Docker.bat` for instant Docker cluster control.
-  - `Launch-Kali-VMware.bat` for automated VMX tuning & Kali boot.
-  - `Fix-Lag-And-Start-VM.bat` & `Fix-VM-Internet.bat` for Hyper-V management.
-  - `Ubuntu-WSL-GUI.rdp` for instant Remote Desktop GUI access.
+- **1-Click Windows Launchers ([`launchers/windows/`](launchers/windows/))**:
+  - [`Start-Hadoop-Docker.bat`](launchers/windows/Start-Hadoop-Docker.bat) & [`Stop-Hadoop-Docker.bat`](launchers/windows/Stop-Hadoop-Docker.bat) for instant Docker cluster control.
+  - [`Launch-Kali-VMware.bat`](launchers/windows/Launch-Kali-VMware.bat) for automated VMX tuning & Kali boot.
+  - [`Fix-Lag-And-Start-VM.bat`](launchers/windows/Fix-Lag-And-Start-VM.bat) & [`Fix-VM-Internet.bat`](launchers/windows/Fix-VM-Internet.bat) for Hyper-V management.
+  - [`Ubuntu-WSL-GUI.rdp`](launchers/windows/Ubuntu-WSL-GUI.rdp) for instant Remote Desktop GUI access.
 - **Hands-On Big Data Tutorials (`examples/`)**:
   - **HDFS CLI**: Comprehensive operations walkthrough (`demo-hdfs-operations.sh`) covering block inspection, quotas, and SafeMode.
   - **Python Hadoop Streaming**: Automated mapper/reducer WordCount pipeline.
@@ -105,59 +105,86 @@ Unlike conventional single-purpose repositories, this project delivers a **cross
 ## 🏛️ System Architecture
 
 <p align="center">
-  <img src="docs/images/hadoop-data-engineering-infographic.png" alt="Apache Hadoop Modern Big Data Engineering and Software Engineering Architecture" width="95%" />
+  <a href="docs/images/hadoop-data-engineering-system-architecture.svg">
+    <img src="docs/images/hadoop-data-engineering-infographic.png" alt="Apache Hadoop Modern Big Data Engineering and Software Engineering Architecture" width="100%" />
+  </a>
+  <br/>
+  <em>🔍 Click the diagram above to view the scalable, high-definition vector SVG version.</em>
 </p>
 
 ```mermaid
-flowchart TD
-    subgraph Environments["🖥️ MULTI-PLATFORM RUNTIMES"]
-        DockerEnv["🐳 Docker & Compose<br/>(Hadoop 3.1.2 / Java 8)"]
-        VMwareEnv["🐉 VMware Workstation<br/>(Kali Linux / Hadoop 3.3.6)"]
-        HyperVEnv["🪟 Microsoft Hyper-V<br/>(Ubuntu Gen2 / 4 vCPUs)"]
-        WSLEnv["🐧 WSL 2 Ubuntu GUI<br/>(XFCE4 / RDP 3390)"]
-        VBoxEnv["📦 Oracle VirtualBox<br/>(Automated Setup)"]
+flowchart TB
+    subgraph Host["💻 DEVELOPER HOST & CLIENT ACCESS LAYER"]
+        direction LR
+        DevUI["🌐 Web Consoles<br/>(:9870, :8088, :19888)"]
+        DevCLI["💻 Terminal CLI<br/>(make / docker compose)"]
+        DevLaunch["🚀 1-Click Launchers<br/>(launchers/windows/*.bat)"]
+        DevSSH["🔑 SSH Client<br/>(:22222 hduser:ubuntu)"]
     end
 
-    subgraph StorageLayer["🗄️ DISTRIBUTED STORAGE LAYER (HDFS)"]
-        NN["NameNode (Metadata Master)<br/>Port: 9870 (Web) / 9000 (RPC)"]
-        SNN["SecondaryNameNode (Checkpointer)<br/>Port: 9868"]
-        subgraph DataNodeGroup["Replicated Storage Blocks"]
-            DN1["DataNode 1<br/>Block Storage"]
+    subgraph Container["🐳 DOCKER RUNTIME: hadoop-master (Ubuntu 20.04 / OpenJDK 8 / hduser:1000)"]
+        direction TB
+
+        subgraph HDFS["🗄️ DISTRIBUTED STORAGE LAYER (HDFS)"]
+            direction TB
+            NN["👑 NameNode (Master)<br/>Port: 9870 (Web) / 9000 (RPC)<br/>• Inodes Tree • FSImage • EditLog"]
+            SNN["🔄 SecondaryNameNode (Checkpointer)<br/>Port: 9868 (HTTP)<br/>• Periodically Merges FSImage + Edits"]
+            DN["📦 DataNode (Worker)<br/>Port: 9864 (Web) / 9866 (Data)<br/>• 128MB Blocks • CRC32C Checksums"]
+            NN <-->|"Heartbeats (3s) & Block Reports"| DN
+            NN <-->|"Checkpoint Sync"| SNN
         end
-        NN <-->|Heartbeats & Block Reports| DN1
-        NN <-->|FSImage Checkpoints| SNN
-    end
 
-    subgraph ComputeLayer["⚙️ RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
-        RM["YARN ResourceManager<br/>Port: 8088 (Web) / 8032 (IPC)"]
-        subgraph NodeManagerGroup["NodeManagers & Containers"]
-            NM1["NodeManager<br/>Task Containers"]
+        subgraph YARN["⚙️ RESOURCE & COMPUTE ORCHESTRATION (YARN)"]
+            direction TB
+            RM["🧠 ResourceManager (Master)<br/>Port: 8088 (Web) / 8032 (IPC)<br/>• Pluggable Scheduler • AppManager"]
+            NM["👷 NodeManager (Worker)<br/>Port: 8042 (Web) / 8040 (IPC)<br/>• Container Lifecycle & Monitoring"]
+            AM["🎯 ApplicationMaster<br/>(Container #001)<br/>• Per-Job Coordinator"]
+            Tasks["⚡ Map / Reduce Tasks<br/>(Containers #002, #003)<br/>• In-Container Execution"]
+            JHS["📜 JobHistoryServer<br/>Port: 19888 (Web)<br/>• Historical Logs & Counters"]
+            RM <-->|"Heartbeats & Allocations"| NM
+            NM -->|"Launch"| AM
+            AM -->|"Directs"| Tasks
+            NM -->|"Aggregated Logs"| JHS
         end
-        JHS["JobHistoryServer<br/>Port: 19888 (Web)"]
-        RM <-->|Heartbeats & Allocations| NM1
-        NM1 -->|Completed Job Logs| JHS
+
+        Tasks -.->|"Data Locality Read (128MB)"| DN
+        Tasks -.->|"Write Results (part-r-00000)"| DN
     end
 
-    subgraph ProcessingEngines["⚡ ANALYTICAL PROCESSING ENGINES"]
-        Spark["Apache Spark / PySpark"]
-        MR["Native Java MapReduce"]
-        StreamingMR["Python Hadoop Streaming"]
-        HDFSCLI["HDFS Command Line (hdfs dfs)"]
+    subgraph Engines["⚡ ANALYTICS & PROCESSING ENGINES"]
+        direction TB
+        Spark["🔥 Apache Spark / PySpark<br/>(DataFrames & RDDs)"]
+        MR["☕ Native Java MapReduce<br/>(Compiled JAR)"]
+        StreamMR["🐍 Python Streaming<br/>(mapper.py | reducer.py)"]
+        HDFSCLI["📁 Interactive HDFS CLI<br/>(hdfs dfs -put / -ls)"]
     end
 
-    Environments -->|Provisions & Hosts| StorageLayer & ComputeLayer
-    ProcessingEngines -->|Submit Distributed Jobs| RM
-    ProcessingEngines -->|High-Throughput Block I/O| NN & DataNodeGroup
+    subgraph Volumes["💾 DOCKER NAMED VOLUMES (Persistent Host Storage)"]
+        direction LR
+        V_NN["📁 hadoop_namenode_data<br/>/usr/local/hadoop/hdfs/namenode"]
+        V_DN["🧱 hadoop_datanode_data<br/>/usr/local/hadoop/hdfs/datanode"]
+        V_TMP["📦 hadoop_tmp_data<br/>/app/hadoop/tmp"]
+        V_LOG["📜 hadoop_logs_data<br/>/usr/local/hadoop/logs"]
+    end
 
-    classDef env fill:#1e293b,stroke:#475569,stroke-width:2px,color:#ffffff;
-    classDef storage fill:#0369a1,stroke:#0ea5e9,stroke-width:2px,color:#ffffff;
-    classDef compute fill:#4338ca,stroke:#6366f1,stroke-width:2px,color:#ffffff;
-    classDef engines fill:#b45309,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
+    Host ==>|"① Submit Job & Ingest Data"| RM & NN
+    Engines ==>|"Submit Applications"| RM
+    NN ==>|"Persist Inode Metadata"| V_NN
+    DN ==>|"Persist 128MB Blocks"| V_DN
+    YARN -.->|"Temp Spills & Tokens"| V_TMP
+    Container -.->|"Daemon Event Logs"| V_LOG
 
-    class DockerEnv,VMwareEnv,HyperVEnv,WSLEnv,VBoxEnv env;
-    class NN,SNN,DN1 storage;
-    class RM,NM1,JHS compute;
-    class Spark,MR,StreamingMR,HDFSCLI engines;
+    classDef hostStyle fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#ffffff;
+    classDef hdfsStyle fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
+    classDef yarnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff;
+    classDef engineStyle fill:#581c87,stroke:#a855f7,stroke-width:2px,color:#ffffff;
+    classDef volStyle fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff;
+
+    class DevUI,DevCLI,DevLaunch,DevSSH hostStyle;
+    class NN,SNN,DN hdfsStyle;
+    class RM,NM,AM,Tasks,JHS yarnStyle;
+    class Spark,MR,StreamMR,HDFSCLI engineStyle;
+    class V_NN,V_DN,V_TMP,V_LOG volStyle;
 ```
 
 ---
@@ -190,7 +217,7 @@ Choose your preferred deployment platform below:
 <summary><b>Option 1: Docker Compose (1-Click or CLI) - Recommended</b></summary>
 
 ### Via 1-Click Windows Launcher:
-Double-click **`Start-Hadoop-Docker.bat`** (or `launchers/windows/Start-Hadoop-Docker.bat`).
+Double-click **[`launchers/windows/Start-Hadoop-Docker.bat`](launchers/windows/Start-Hadoop-Docker.bat)**.
 
 ### Via Terminal:
 ```bash
@@ -209,7 +236,7 @@ docker compose exec hadoop jps
 To stop the cluster:
 ```bash
 docker compose down
-# or double-click Stop-Hadoop-Docker.bat
+# or double-click launchers/windows/Stop-Hadoop-Docker.bat
 ```
 
 </details>
@@ -217,7 +244,7 @@ docker compose down
 <details>
 <summary><b>Option 2: Kali Linux on VMware Workstation Pro</b></summary>
 
-1. From Windows host, double-click **`Launch-Kali-VMware.bat`** (tunes VMX for 6GB RAM, 4 vCPUs, disables WHPX popups, and launches VMware).
+1. From Windows host, double-click **[`launchers/windows/Launch-Kali-VMware.bat`](launchers/windows/Launch-Kali-VMware.bat)** (tunes VMX for 6GB RAM, 4 vCPUs, disables WHPX popups, and launches VMware).
 2. Inside Kali Linux terminal (`user: kali`, `pass: kali`):
    ```bash
    bash scripts/vmware/install-hadoop-kali.sh
@@ -229,9 +256,9 @@ docker compose down
 <details>
 <summary><b>Option 3: Microsoft Hyper-V Generation 2 (Ubuntu)</b></summary>
 
-1. Double-click **`Fix-Lag-And-Start-VM.bat`** to allocate 4 vCPUs and launch the VM.
-2. If internet connection is lost, double-click **`Fix-VM-Internet.bat`**.
-3. To enable clipboard & full-screen resizing, run `Eject-ISO-And-Enable-Clipboard.bat`.
+1. Double-click **[`launchers/windows/Fix-Lag-And-Start-VM.bat`](launchers/windows/Fix-Lag-And-Start-VM.bat)** to allocate 4 vCPUs and launch the VM.
+2. If internet connection is lost, double-click **[`launchers/windows/Fix-VM-Internet.bat`](launchers/windows/Fix-VM-Internet.bat)**.
+3. To enable clipboard & full-screen resizing, run **[`launchers/windows/Eject-ISO-And-Enable-Clipboard.bat`](launchers/windows/Eject-ISO-And-Enable-Clipboard.bat)**.
 4. Read the complete [Hyper-V Ubuntu Guide](docs/hyperv-ubuntu-guide.md).
 
 </details>
@@ -243,7 +270,7 @@ docker compose down
    ```bash
    bash scripts/wsl/install-hadoop-wsl.sh
    ```
-2. Double-click **`Ubuntu-WSL-GUI.rdp`** to connect to the desktop interface on `localhost:3390`.
+2. Double-click **[`launchers/windows/Ubuntu-WSL-GUI.rdp`](launchers/windows/Ubuntu-WSL-GUI.rdp)** to connect to the desktop interface on `localhost:3390`.
 3. Start the Hadoop cluster with `bash scripts/wsl/start-hadoop-cluster.sh`.
 4. Read the complete [WSL 2 Ubuntu GUI Guide](docs/wsl2-ubuntu-hadoop-guide.md).
 
@@ -371,8 +398,9 @@ docker-hadoop/
 │   └── spark-pyspark/           # PySpark HDFS read/write integration
 │       ├── pyspark_hdfs_read_write.py
 │       └── README.md
-├── launchers/                   # 1-Click platform launchers
-│   └── windows/
+├── launchers/                   # Standalone 1-Click platform launchers
+│   ├── README.md                # Launcher catalog and usage guide
+│   └── windows/                 # Windows 1-click desktop batch launchers
 │       ├── Start-Hadoop-Docker.bat # 1-Click Docker cluster startup
 │       ├── Stop-Hadoop-Docker.bat  # 1-Click Docker cluster shutdown
 │       ├── Launch-Kali-VMware.bat  # VMware Workstation Kali launcher
@@ -381,6 +409,7 @@ docker-hadoop/
 │       ├── Eject-ISO-And-Enable-Clipboard.bat # Hyper-V ISO & clipboard setup
 │       └── Ubuntu-WSL-GUI.rdp      # WSL 2 Remote Desktop profile
 ├── scripts/                     # Modular automation scripts
+│   ├── README.md                # Script catalog and runtime architecture
 │   ├── docker/                  # Docker container entrypoint & probes
 │   │   ├── entrypoint.sh
 │   │   ├── healthcheck.sh
@@ -408,13 +437,6 @@ docker-hadoop/
 │       ├── install-hadoop-user.sh
 │       ├── setup-hadoop-systemd.sh
 │       └── start-daemons-direct.sh
-├── Start-Hadoop-Docker.bat      # Root 1-click Docker startup wrapper
-├── Stop-Hadoop-Docker.bat       # Root 1-click Docker shutdown wrapper
-├── Launch-Kali-VMware.bat       # Root 1-click VMware Kali wrapper
-├── Fix-Lag-And-Start-VM.bat     # Root 1-click Hyper-V lag fix wrapper
-├── Fix-VM-Internet.bat          # Root 1-click Hyper-V network wrapper
-├── Eject-ISO-And-Enable-Clipboard.bat # Root 1-click Hyper-V ISO wrapper
-├── Ubuntu-WSL-GUI.rdp           # Root 1-click WSL 2 RDP connection profile
 ├── .dockerignore                # Docker build exclusions
 ├── .env.example                 # Port and environment variable templates
 ├── .gitignore                   # Git exclusions (ISOs, 7z, and VM disks ignored)

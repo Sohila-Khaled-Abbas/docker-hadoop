@@ -69,7 +69,7 @@ Hyper-V defaults to basic server configurations (1 vCPU, static RAM, and "Micros
 ### 🚀 1-Click Automated Configuration
 Run our automated optimization script from the project root:
 ```cmd
-Fix-Lag-And-Start-VM.bat
+launchers\windows\Fix-Lag-And-Start-VM.bat
 ```
 *(Or in PowerShell as Administrator: `powershell -ExecutionPolicy Bypass -File scripts/hyperv/optimize-hyperv-vm.ps1`)*.
 
