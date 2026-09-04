@@ -1,4 +1,5 @@
-.PHONY: help build up down restart logs ps test test-mr-python test-mr-java bash hdfs-shell jps safemode-leave hdfs-report clean
+.PHONY: help build up down restart logs ps test test-mr-python test-mr-java bash hdfs-shell jps safemode-leave hdfs-report clean vm-create vm-start vm-start-headless vm-stop vm-ssh vm-status vm-ports vm-rebuild vm-kali-optimize vm-kali-start
+
 
 help:
 	@echo "=========================================================="
@@ -34,6 +35,10 @@ help:
 	@echo "    make vm-status       - Check VM running status, memory, and vCPUs"
 	@echo "    make vm-ports        - List active NAT port forwardings"
 	@echo "    make vm-rebuild      - Teardown and cleanly recreate VM from ISO"
+	@echo ""
+	@echo "  VMware Workstation Kali VM Management:"
+	@echo "    make vm-kali-optimize - Tune Kali VMX (6GB RAM, 4 vCPUs, disable VT-x popup)"
+	@echo "    make vm-kali-start   - Launch Kali Linux in VMware Workstation"
 	@echo "=========================================================="
 
 build:
@@ -104,3 +109,10 @@ vm-ports:
 
 vm-rebuild:
 	powershell -ExecutionPolicy Bypass -File ./scripts/virtualbox-setup.ps1 -Rebuild
+
+vm-kali-optimize:
+	powershell -ExecutionPolicy Bypass -File ./scripts/optimize-kali-vmx.ps1
+
+vm-kali-start:
+	cmd /c Launch-Kali-VMware.bat
+

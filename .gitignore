@@ -18,7 +18,23 @@ logs/
 /yarn_data/
 /app/
 
-# VirtualBox and ISO Images
+# VirtualBox, VMware, Hyper-V and Disk Images
 *.iso
 *.vdi
 *.viso
+*.vmdk
+*.vmx
+*.vmxf
+*.nvram
+*.vmsd
+*.scoreboard
+*.vhdx
+*.vhd
+*.bak
+*.7z
+*.zip
+*.tar.gz
+*.tar
+kali-linux-*.vmwarevm/
+Ubuntu-*.vmwarevm/
+

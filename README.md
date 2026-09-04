@@ -209,6 +209,26 @@ bash /path/to/install-hadoop-ubuntu.sh
 
 </details>
 
+<details>
+<summary><b>Option D: Using Kali Linux in VMware Workstation (Official Image)</b></summary>
+
+```bat
+:: 1. From Windows host, run the one-click launcher to optimize VMX (6GB RAM, 4 vCPUs) and boot Kali:
+Launch-Kali-VMware.bat
+```
+
+Inside the Kali Linux VM terminal (`username: kali`, `password: kali`):
+```bash
+# 2. Execute the automated Hadoop 3.3.6 high-performance installer:
+bash /path/to/install-hadoop-kali.sh
+```
+
+> [!TIP]
+> See the complete [Kali Linux & VMware Workstation Setup Guide](docs/kali-vmware-hadoop-guide.md) for full architecture sizing, G1GC tuning, and troubleshooting details.
+
+</details>
+
+
 ### 3. Verify Daemon Status
 
 Verify that all 6 Java daemons are running:
@@ -405,12 +425,14 @@ Explore specialized technical guides tailored for Data Engineers and Software En
 | :--- | :--- | :--- |
 | [🏗️ **Data Engineering Patterns**](docs/data-engineering-patterns.md) | Architectural patterns for high-throughput distributed data pipelines. | Lakehouse / Medallion Architecture, Parquet vs ORC vs Avro, Map-Side Joins, Small Files solutions, WAP pattern, PySpark ETL. |
 | [🛠️ **Software Engineering Practices**](docs/software-engineering-practices.md) | Production engineering, containerization standards, and CI/CD. | 12-Factor Big Data, Tini init system, Zombie reaping, Signal propagation, Unit testing pipelines, JMX observability. |
+| [🐉 **Kali Linux & VMware Setup Guide**](docs/kali-vmware-hadoop-guide.md) | High-performance Hadoop 3.3.6 on Kali Linux inside VMware Workstation. | Host hardware sizing, VMX optimization (6GB RAM, 4 vCPUs), G1GC heap tuning, swappiness=1, automated script. |
 | [🏛️ **System Architecture**](docs/architecture.md) | Complete Hadoop 3.1.2 topology blueprint and interaction lifecycles. | HDFS NameNode / DataNode RPC, YARN Scheduler, SecondaryNameNode Checkpointing, Network Port Matrix. |
 | [⚡ **MapReduce Programming Guide**](docs/mapreduce-guide.md) | Comprehensive development guide for Java & Python Streaming. | Mapper/Reducer execution, Shuffle & Sort internals, Partitioner logic, In-Mapper Combiners, Streaming API. |
 | [⚙️ **Configuration & JVM Tuning**](docs/configuration-tuning.md) | Complete XML parameter guide and JVM performance tuning. | Heap sizing, GC optimization, container vCore/RAM allocations, HDFS block sizing, speculative execution. |
 | [🔌 **Ecosystem Integration**](docs/ecosystem-integration.md) | Connecting external Big Data and analytical compute engines. | Apache Spark / PySpark, Apache Hive Metastore, Presto / Trino SQL, Jupyter Notebooks. |
 | [🔍 **Troubleshooting & Diagnostics**](docs/troubleshooting.md) | Operational runbook for diagnosing and resolving cluster failures. | Port conflicts, SafeMode deadlocks, DataNode clusterID divergence, OOM errors, Healthcheck debugging. |
 | [🖥️ **VirtualBox & Ubuntu Setup Guide**](docs/virtualbox-ubuntu-guide.md) | Step-by-step guide for provisioning Ubuntu VM and running Hadoop on VirtualBox. | Hardware specs, NAT port forwarding, automation scripts, passwordless SSH, troubleshooting. |
+| [🪟 **Hyper-V Ubuntu Setup Guide**](docs/hyperv-ubuntu-guide.md) | Native Windows Hyper-V Generation 2 Ubuntu deployment guide. | Enhanced session mode, dynamic memory, virtual switch networking, lag mitigation. |
 | [🚀 **Getting Started Guide**](docs/getting-started.md) | Fast onboarding walkthrough for developers and researchers. | Prerequisites, step-by-step setup, cluster verification, CLI execution. |
 
 ---
@@ -436,9 +458,13 @@ docker-hadoop/
 ├── docs/
 │   ├── architecture.md          # In-depth architectural blueprint & Mermaid diagrams
 │   ├── configuration-tuning.md  # XML parameter reference & JVM tuning guide
+│   ├── data-engineering-patterns.md # Distributed data architectural patterns
 │   ├── ecosystem-integration.md # Spark, Hive, Presto, and Jupyter integration
 │   ├── getting-started.md       # Developer onboarding & operational guide
+│   ├── hyperv-ubuntu-guide.md   # Microsoft Hyper-V Ubuntu setup guide
+│   ├── kali-vmware-hadoop-guide.md # Kali Linux & VMware Workstation Hadoop setup guide
 │   ├── mapreduce-guide.md       # Comprehensive MapReduce programming guide
+│   ├── software-engineering-practices.md # 12-Factor Big Data & DevOps practices
 │   ├── troubleshooting.md       # Diagnostics & troubleshooting runbook
 │   ├── virtualbox-ubuntu-guide.md # Oracle VirtualBox & Ubuntu installation guide
 │   └── wsl2-ubuntu-hadoop-guide.md# WSL 2 Ubuntu 24.04 LTS High-Performance GUI & Hadoop guide
@@ -459,13 +485,16 @@ docker-hadoop/
 ├── scripts/
 │   ├── entrypoint.sh            # Container bootstrap & daemon orchestration
 │   ├── healthcheck.sh           # Container health check script
+│   ├── install-hadoop-kali.sh   # Kali Linux automated Hadoop 3.3.6 installer (G1GC, swappiness=1)
 │   ├── install-hadoop-ubuntu.sh # Ubuntu native Hadoop automated installer (system-wide)
 │   ├── install-hadoop-user.sh   # Rootless / user-space zero-sudo Hadoop installer
 │   ├── install-hadoop-wsl.sh    # WSL 2 Ubuntu 24.04 automated Hadoop & GUI installer
+│   ├── optimize-kali-vmx.ps1    # PowerShell VMX hardware optimizer for Kali (RAM/vCPUs)
 │   ├── start-hadoop-cluster.sh  # WSL 2 Hadoop cluster daemon startup script
 │   ├── sync-wsl-configs.sh      # WSL 2 Hadoop XML configuration synchronizer
 │   ├── test-cluster.sh          # MapReduce & HDFS integration tests
 │   └── virtualbox-setup.ps1     # Automated PowerShell VirtualBox VM creator (4 vCPUs, UEFI)
+├── Launch-Kali-VMware.bat       # 1-Click launcher to optimize & boot Kali in VMware Workstation
 ├── Ubuntu-WSL-GUI.rdp           # 1-Click Remote Desktop connection profile (Port 3390)
 ├── .dockerignore                # Docker build exclusions
 ├── .env.example                 # Configuration template

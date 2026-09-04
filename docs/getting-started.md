@@ -217,3 +217,17 @@ make clean
 # or
 docker compose down -v --rmi all
 ```
+
+---
+
+## 🖥️ Alternative VM & Native Deployment Guides
+
+Prefer running Hadoop inside a dedicated virtual machine or WSL2 instead of Docker? We provide fully automated, production-tuned deployment guides for all major virtualization platforms:
+
+| Platform | Target OS | Sizing & Tuning | Guide Link |
+| :--- | :--- | :--- | :--- |
+| **VMware Workstation Pro** | **Kali Linux Rolling** | 6GB RAM, 4 vCPUs, OpenJDK 11, G1GC | [Kali VMware Setup Guide](kali-vmware-hadoop-guide.md) |
+| **Oracle VirtualBox** | **Ubuntu 24.04 / 22.04 LTS** | 5GB RAM, 4 vCPUs, UEFI, FHD | [VirtualBox Ubuntu Guide](virtualbox-ubuntu-guide.md) |
+| **Microsoft Hyper-V** | **Ubuntu 24.04 / 22.04 LTS** | Gen 2 UEFI, 4 vCPUs, Dynamic Memory | [Hyper-V Ubuntu Guide](hyperv-ubuntu-guide.md) |
+| **Windows Subsystem for Linux (WSL2)** | **Ubuntu on WSL2** | Mirrored mode, systemd, GUI | [WSL2 Ubuntu Guide](wsl2-ubuntu-hadoop-guide.md) |
+
