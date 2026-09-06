@@ -10,3 +10,39 @@ Makefile
 Thumbs.db
 data/
 logs/
+*.log
+
+# Large VM & ISO images
+*.iso
+*.7z
+*.zip
+*.tar.gz
+*.tar
+*.vdi
+*.vmdk
+*.vmx
+*.vmxf
+*.nvram
+*.vmsd
+*.scoreboard
+*.vhdx
+*.vhd
+*.vmwarevm
+*.vmwarevm/**
+
+# PDF and slide documents
+*.pdf
+*.pptx
+*.ppt
+*.docx
+*.doc
+
+# Node and Python artifacts
+node_modules/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+metastore_db/
+spark-warehouse/
+derby.log
+

@@ -20,6 +20,12 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const DEFAULT_PORT = parseInt(process.env.BIGDATA_PORTAL_PORT || process.env.PORT || '3030', 10);
+const HADOOP_HOST = process.env.HADOOP_HOST || 'hadoop';
+const SPARK_MASTER_HOST = process.env.SPARK_MASTER_HOST || 'spark-master';
+const SPARK_WORKER_HOST = process.env.SPARK_WORKER_HOST || 'spark-worker';
+const SPARK_HISTORY_HOST = process.env.SPARK_HISTORY_HOST || 'spark-history';
+const JUPYTER_HOST = process.env.JUPYTER_HOST || 'jupyter';
+
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DOCS_IMG_DIR = path.join(__dirname, '..', 'docs', 'images');
 const DATASETS_DIR = path.join(__dirname, '..', 'datasets');
@@ -48,7 +54,7 @@ const SERVICES = [
     port: 9870,
     url: 'http://localhost:9870',
     rpc: 'hdfs://localhost:9000',
-    checkUrl: 'http://localhost:9870/dfshealth.html',
+    checkUrl: `http://${HADOOP_HOST}:9870/dfshealth.html`,
     description: 'HDFS Inode Namespace, FSImage & EditLog Master'
   },
   {
@@ -58,7 +64,7 @@ const SERVICES = [
     category: 'Storage',
     port: 9864,
     url: 'http://localhost:9864',
-    checkUrl: 'http://localhost:9864',
+    checkUrl: `http://${HADOOP_HOST}:9864`,
     description: '128MB Checksummed Block Storage Worker'
   },
   {
@@ -68,7 +74,7 @@ const SERVICES = [
     category: 'Orchestration',
     port: 8088,
     url: 'http://localhost:8088',
-    checkUrl: 'http://localhost:8088/cluster',
+    checkUrl: `http://${HADOOP_HOST}:8088/cluster`,
     description: 'Capacity Scheduler & Cluster Resource Arbiter'
   },
   {
@@ -78,7 +84,7 @@ const SERVICES = [
     category: 'Orchestration',
     port: 8042,
     url: 'http://localhost:8042',
-    checkUrl: 'http://localhost:8042/node',
+    checkUrl: `http://${HADOOP_HOST}:8042/node`,
     description: 'Per-Node Container Execution & Resource Slots'
   },
   {
@@ -88,7 +94,7 @@ const SERVICES = [
     category: 'Orchestration',
     port: 19888,
     url: 'http://localhost:19888',
-    checkUrl: 'http://localhost:19888/jobhistory',
+    checkUrl: `http://${HADOOP_HOST}:19888/jobhistory`,
     description: 'Completed MR Task Diagnostics & Aggregated Logs'
   },
   {
@@ -99,7 +105,7 @@ const SERVICES = [
     port: 8080,
     url: 'http://localhost:8080',
     rpc: 'spark://localhost:7077',
-    checkUrl: 'http://localhost:8080',
+    checkUrl: `http://${SPARK_MASTER_HOST}:8080`,
     description: 'Standalone Cluster Coordinator & Resource Master'
   },
   {
@@ -109,7 +115,7 @@ const SERVICES = [
     category: 'Compute',
     port: 8081,
     url: 'http://localhost:8081',
-    checkUrl: 'http://localhost:8081',
+    checkUrl: `http://${SPARK_WORKER_HOST}:8081`,
     description: '2 Cores • 1GB RAM In-Memory Task Engine'
   },
   {
@@ -119,7 +125,7 @@ const SERVICES = [
     category: 'Compute',
     port: 18080,
     url: 'http://localhost:18080',
-    checkUrl: 'http://localhost:18080',
+    checkUrl: `http://${SPARK_HISTORY_HOST}:18080`,
     description: 'Spark Event Log Profiler & Stage DAG Metrics'
   },
   {
@@ -129,7 +135,7 @@ const SERVICES = [
     category: 'Analytics',
     port: 8888,
     url: 'http://localhost:8888',
-    checkUrl: 'http://localhost:8888',
+    checkUrl: `http://${JUPYTER_HOST}:8888`,
     description: 'Interactive PySpark, DuckDB & SQL Notebooks'
   },
   {
@@ -140,7 +146,7 @@ const SERVICES = [
     port: 10002,
     url: 'http://localhost:10002',
     rpc: 'jdbc:hive2://localhost:10000',
-    checkUrl: 'http://localhost:10002',
+    checkUrl: `http://${HADOOP_HOST}:10002`,
     description: 'Schema Metastore (:9083) & HiveServer2 JDBC'
   },
   {
@@ -151,7 +157,7 @@ const SERVICES = [
     port: 11000,
     url: 'http://localhost:11000/oozie',
     rpc: 'http://localhost:11000/oozie',
-    checkUrl: 'http://localhost:11000/oozie/v1/admin/status',
+    checkUrl: `http://${HADOOP_HOST}:11000/oozie/v1/admin/status`,
     description: 'DAG Workflow Scheduler & Coordinator Engine'
   },
   {
@@ -162,7 +168,7 @@ const SERVICES = [
     port: 16000,
     url: '#sqoop-studio',
     rpc: 'sqoop://localhost',
-    checkUrl: 'http://localhost:3030/api/sqoop/status',
+    checkUrl: 'http://localhost:3000/api/sqoop/status',
     description: 'Bulk RDBMS <-> HDFS/Hive Ingestion Engine'
   }
 ];
@@ -207,8 +213,8 @@ const MOCK_HDFS = {
   ]
 };
 
-// Probe helper with timeout
-function probeUrl(targetUrl, timeoutMs = 1200) {
+// Probe helper with timeout & automatic localhost fallback
+function probeUrl(targetUrl, timeoutMs = 1200, retryLocal = true) {
   return new Promise((resolve) => {
     if (targetUrl.includes('#') || targetUrl.includes('api/sqoop/status')) {
       resolve({ online: true, statusCode: 200, latencyMs: 5 });
@@ -217,6 +223,16 @@ function probeUrl(targetUrl, timeoutMs = 1200) {
     const startTime = Date.now();
     try {
       const parsed = new URL(targetUrl);
+      let timer = null;
+      let settled = false;
+
+      const finish = (result) => {
+        if (settled) return;
+        settled = true;
+        if (timer) clearTimeout(timer);
+        resolve(result);
+      };
+
       const req = http.request(
         {
           hostname: parsed.hostname,
@@ -227,7 +243,7 @@ function probeUrl(targetUrl, timeoutMs = 1200) {
           headers: { 'User-Agent': 'BigData-Unified-Platform/2.0' }
         },
         (res) => {
-          resolve({
+          finish({
             online: res.statusCode >= 200 && res.statusCode < 400,
             statusCode: res.statusCode,
             latencyMs: Date.now() - startTime
@@ -236,13 +252,23 @@ function probeUrl(targetUrl, timeoutMs = 1200) {
         }
       );
 
-      req.on('timeout', () => {
-        req.destroy();
-        resolve({ online: false, statusCode: null, latencyMs: timeoutMs, error: 'TIMEOUT' });
-      });
+      timer = setTimeout(() => {
+        try { req.destroy(); } catch (e) {}
+        if (retryLocal && parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+          const fallbackUrl = `http://localhost:${parsed.port}${parsed.pathname || '/'}`;
+          probeUrl(fallbackUrl, timeoutMs, false).then(finish);
+        } else {
+          finish({ online: false, statusCode: null, latencyMs: timeoutMs, error: 'TIMEOUT' });
+        }
+      }, timeoutMs);
 
       req.on('error', (err) => {
-        resolve({ online: false, statusCode: null, latencyMs: Date.now() - startTime, error: err.code });
+        if (retryLocal && (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') && parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') {
+          const fallbackUrl = `http://localhost:${parsed.port}${parsed.pathname || '/'}`;
+          probeUrl(fallbackUrl, timeoutMs, false).then(finish);
+        } else {
+          finish({ online: false, statusCode: null, latencyMs: Date.now() - startTime, error: err.code });
+        }
       });
 
       req.end();
@@ -331,9 +357,9 @@ const server = http.createServer(async (req, res) => {
     const dirPath = parsedUrl.searchParams.get('path') || '/';
     const normalizedPath = dirPath.endsWith('/') && dirPath !== '/' ? dirPath.slice(0, -1) : dirPath;
 
-    const webhdfsUrl = `http://localhost:9870/webhdfs/v1${encodeURIComponent(normalizedPath)}?op=LISTSTATUS`;
+    const webhdfsUrl = `http://${HADOOP_HOST}:9870/webhdfs/v1${encodeURIComponent(normalizedPath)}?op=LISTSTATUS`;
     
-    probeUrl('http://localhost:9870', 500).then((probe) => {
+    probeUrl(`http://${HADOOP_HOST}:9870`, 500).then((probe) => {
       if (probe.online) {
         http.get(webhdfsUrl, (hres) => {
           let body = '';

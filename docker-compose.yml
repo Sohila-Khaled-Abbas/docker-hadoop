@@ -163,7 +163,14 @@ services:
       - "${BIGDATA_PORTAL_PORT:-3030}:3000"          # Unified Control Hub UI (Port 3030 on host)
     environment:
       - PORT=3000
+      - HADOOP_HOST=hadoop
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_WORKER_HOST=spark-worker
+      - SPARK_HISTORY_HOST=spark-history
+      - JUPYTER_HOST=jupyter
     volumes:
+      - ./portal/server.js:/app/server.js:ro
+      - ./portal/public:/app/public:ro
       - ./docs/images:/docs/images:ro
       - ./datasets:/datasets:ro
     networks:

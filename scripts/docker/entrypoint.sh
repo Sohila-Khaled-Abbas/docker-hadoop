@@ -32,11 +32,30 @@ run_hduser() {
     "
 }
 
-# 1. Start SSH daemon
-echo "[1/6] Starting SSH daemon..."
-service ssh start
+# 1. Ensure volume permissions for hduser
+mkdir -p /usr/local/hadoop/yarn_data/hdfs/namenode /usr/local/hadoop/yarn_data/hdfs/datanode /app/hadoop/tmp /usr/local/hadoop/logs /spark-logs
+chown -R hduser:hadoop /usr/local/hadoop/yarn_data /app/hadoop/tmp /usr/local/hadoop/logs /spark-logs
+chmod -R 755 /usr/local/hadoop/yarn_data
 
-# 2. Ensure hduser SSH keys exist and permissions are correct
+# 2. Configure SSHD & client for fast local container connections without banner exchange delays
+sed -i 's/#*UseDNS .*/UseDNS no/' /etc/ssh/sshd_config 2>/dev/null || echo "UseDNS no" >> /etc/ssh/sshd_config
+sed -i 's/#*GSSAPIAuthentication .*/GSSAPIAuthentication no/' /etc/ssh/sshd_config 2>/dev/null || echo "GSSAPIAuthentication no" >> /etc/ssh/sshd_config
+sed -i 's/#*AddressFamily .*/AddressFamily inet/' /etc/ssh/sshd_config 2>/dev/null || echo "AddressFamily inet" >> /etc/ssh/sshd_config
+grep -q "UseDNS no" /etc/ssh/sshd_config || echo "UseDNS no" >> /etc/ssh/sshd_config
+grep -q "MaxStartups 100:30:200" /etc/ssh/sshd_config || echo "MaxStartups 100:30:200" >> /etc/ssh/sshd_config
+
+mkdir -p /etc/ssh/ssh_config.d /home/hduser/.ssh /root/.ssh
+echo "Host *" >> /etc/ssh/ssh_config
+echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config
+echo "    LogLevel ERROR" >> /etc/ssh/ssh_config
+echo "    ConnectTimeout 5" >> /etc/ssh/ssh_config
+echo "    AddressFamily inet" >> /etc/ssh/ssh_config
+
+echo "[1/6] Starting SSH daemon..."
+service ssh restart
+
+# 3. Ensure hduser SSH keys exist and permissions are correct
 run_hduser "
 if [ ! -f ~/.ssh/id_rsa ]; then
     echo 'Generating SSH keys for hduser...'
@@ -47,7 +66,7 @@ if [ ! -f ~/.ssh/id_rsa ]; then
 fi
 "
 
-# 3. Format NameNode if not formatted yet
+# 4. Format NameNode if not formatted yet
 if [ ! -d "/usr/local/hadoop/yarn_data/hdfs/namenode/current" ]; then
     echo "[2/6] Formatting Hadoop NameNode..."
     run_hduser "hdfs namenode -format -force -nonInteractive"
@@ -55,19 +74,22 @@ else
     echo "[2/6] NameNode already formatted. Skipping format."
 fi
 
-# 4. Start HDFS daemons (NameNode, DataNode, SecondaryNameNode)
+# 5. Start HDFS daemons directly (NameNode, DataNode, SecondaryNameNode)
 echo "[3/6] Starting HDFS daemons (NameNode, DataNode, SecondaryNameNode)..."
-run_hduser "start-dfs.sh"
+run_hduser "hdfs --daemon start namenode"
+run_hduser "hdfs --daemon start datanode"
+run_hduser "hdfs --daemon start secondarynamenode"
 
-# 5. Start YARN daemons (ResourceManager, NodeManager)
+# 6. Start YARN daemons directly (ResourceManager, NodeManager)
 echo "[4/6] Starting YARN daemons (ResourceManager, NodeManager)..."
-run_hduser "start-yarn.sh"
+run_hduser "yarn --daemon start resourcemanager"
+run_hduser "yarn --daemon start nodemanager"
 
-# 6. Start MapReduce JobHistory Server
+# 7. Start MapReduce JobHistory Server
 echo "[5/6] Starting MapReduce JobHistory Server..."
 run_hduser "mapred --daemon start historyserver" || true
 
-# 7. Initialize HDFS directories
+# 8. Initialize HDFS directories
 echo "[6/6] Initializing default HDFS directories for Hadoop, Spark & Hive..."
 run_hduser "hdfs dfsadmin -safemode wait" || true
 run_hduser "
