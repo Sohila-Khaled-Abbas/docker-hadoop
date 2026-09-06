@@ -1,0 +1,32 @@
+<coordinator-app name="daily-retail-etl-coordinator"
+                 frequency="${coord:days(1)}"
+                 start="2026-01-01T00:00Z"
+                 end="2026-12-31T23:59Z"
+                 timezone="UTC"
+                 xmlns="uri:oozie:coordinator:0.4">
+    <controls>
+        <timeout>60</timeout>
+        <concurrency>1</concurrency>
+        <execution>FIFO</execution>
+    </controls>
+
+    <action>
+        <workflow>
+            <app-path>${nameNode}/apps/oozie/workflow.xml</app-path>
+            <configuration>
+                <property>
+                    <name>inputDir</name>
+                    <value>${nameNode}/data/raw/${coord:formatTime(coord:nominalTime(), 'yyyy/MM/dd')}</value>
+                </property>
+                <property>
+                    <name>sparkOutputDir</name>
+                    <value>${nameNode}/data/spark/${coord:formatTime(coord:nominalTime(), 'yyyy/MM/dd')}</value>
+                </property>
+                <property>
+                    <name>pigOutputDir</name>
+                    <value>${nameNode}/data/pig/${coord:formatTime(coord:nominalTime(), 'yyyy/MM/dd')}</value>
+                </property>
+            </configuration>
+        </workflow>
+    </action>
+</coordinator-app>

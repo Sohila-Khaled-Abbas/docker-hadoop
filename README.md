@@ -11,6 +11,18 @@
   <a href="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/security-scan.yml">
     <img src="https://github.com/Sohila-Khaled-Abbas/docker-hadoop/actions/workflows/security-scan.yml/badge.svg" alt="Security Scan" />
   </a>
+  <a href="https://spark.apache.org/">
+    <img src="https://img.shields.io/badge/Apache%20Spark-3.5%20Standalone%20%26%20YARN-E25A1C?logo=apachespark&logoColor=white" alt="Apache Spark" />
+  </a>
+  <a href="https://hive.apache.org/">
+    <img src="https://img.shields.io/badge/Apache%20Hive-Metastore%20%26%20SQL-FDEE21?logo=apachehive&logoColor=black" alt="Apache Hive" />
+  </a>
+  <a href="https://jupyter.org/">
+    <img src="https://img.shields.io/badge/JupyterLab-PySpark%20Studio-F37626?logo=jupyter&logoColor=white" alt="JupyterLab" />
+  </a>
+  <a href="http://localhost:3030">
+    <img src="https://img.shields.io/badge/Control%20Hub-Port%203030-38BDF8?logo=googlechrome&logoColor=white" alt="Control Hub" />
+  </a>
   <a href="https://hadoop.apache.org/">
     <img src="https://img.shields.io/badge/Apache%20Hadoop-3.1.2%20%7C%203.3.6-66CCFF?logo=apache&logoColor=white" alt="Hadoop" />
   </a>
@@ -98,6 +110,11 @@ Unlike conventional single-purpose repositories, this project delivers a **cross
   - **Python Hadoop Streaming**: Automated mapper/reducer WordCount pipeline.
   - **Java Native MapReduce**: Standalone WordCount application with automated compiler and runner.
   - **Apache Spark & PySpark**: Direct HDFS Parquet & CSV DataFrame ingestion and aggregation.
+  - **Apache Sqoop Ingestion (`examples/sqoop/`)**: MySQL RDBMS <-> HDFS & Hive bulk import/export scripts and code generation.
+  - **Apache Oozie Workflows (`examples/oozie/`)**: Production multi-action DAG pipeline (`workflow.xml`) and daily scheduler (`coordinator.xml`).
+  - **Apache Pig Latin (`examples/pig/`)**: High-level data transformation, filtering, and country aggregation scripts (`analytics.pig`).
+  - **Apache Hive Warehouse (`examples/hive/`)**: External table DDL (`create-tables.hql`) and window rank queries (`analytics.hql`).
+  - **Apache Flume & HBase (`examples/flume/`, `examples/hbase/`)**: Spooling directory streaming agent and columnar NoSQL table scripts.
 - **Pre-Packaged Datasets (`datasets/`)**:
   - Real-world unstructured text (`wordcount-sample.txt`) and tabular records (`employees.csv`) for zero-setup experimentation.
 - **Enterprise Hardening & DevOps CI/CD**:
@@ -119,108 +136,115 @@ Unlike conventional single-purpose repositories, this project delivers a **cross
 
 ```mermaid
 flowchart TB
-    subgraph Host["💻 DEVELOPER HOST & CLIENT ACCESS LAYER"]
+    subgraph Host["💻 DEVELOPER WORKSTATION & BROWSER ACCESS LAYER"]
         direction LR
-        DevUI["🌐 Web Consoles<br/><b>(:9870, :8088, :19888)</b><br/>Browser Management UIs"]
-        DevCLI["💻 Terminal CLI<br/><b>make / gcloud / bash</b><br/>Multi-Platform Automation"]
-        DevLaunch["🚀 1-Click Launchers<br/><b>launchers/windows/*.bat</b><br/>GCP, Kali, Docker, WSL"]
-        DevSSH["🔑 SSH Bastions<br/><b>:22222 (Docker)</b><br/>192.168.13.128 (Kali)"]
+        DevHub["🌐 <b>Unified Big Data Control Hub</b><br/><b>http://localhost:3030</b><br/>Single Pane of Glass UI"]
+        DevJupyter["🪐 <b>JupyterLab PySpark</b><br/><b>http://localhost:8888</b><br/>Interactive Data Pipelines"]
+        DevSpark["⚡ <b>Spark Master &amp; History</b><br/><b>:8080 &bull; :8081 &bull; :18080</b><br/>Compute Consoles"]
+        DevHadoop["🐘 <b>Hadoop HDFS &amp; YARN</b><br/><b>:9870 &bull; :8088 &bull; :19888</b><br/>Storage &amp; Scheduling"]
     end
 
     subgraph Deployments["🖥️ MULTI-PLATFORM CLUSTER RUNTIMES"]
         direction LR
-        PlatDocker["🐳 Docker Compose<br/><b>Single-Node</b><br/>Hadoop 3.1.2<br/>Named Volumes"]
+        PlatDocker["🐳 Docker Compose Full Stack<br/><b>Hadoop + Spark + Hive + Hub</b><br/>6 Synchronized Services"]
         PlatVMware["🐉 VMware Workstation<br/><b>Kali Linux 2026.2</b><br/>Hadoop 3.3.6 LTS<br/>6GB RAM / 4 vCPUs"]
         PlatGCP["☁️ Google Cloud<br/><b>Dataproc &amp; GCE</b><br/>Decoupled gs://<br/>Auto-Idle Teardown"]
         PlatHyperV["🪟 Microsoft Hyper-V<br/><b>Ubuntu 24.04 Gen 2</b><br/>4 vCPUs / Dynamic RAM<br/>HvSocket Clipboard"]
         PlatWSL["🐧 WSL 2 Ubuntu<br/><b>Windows 11 Native</b><br/>XFCE GUI Desktop<br/>Port 3390 (RDP)"]
     end
 
-    subgraph CoreEngine["🐘 APACHE HADOOP DISTRIBUTED CORE (6 JVM DAEMONS)"]
+    subgraph CoreEngine["🐘 APACHE HADOOP &amp; SPARK DISTRIBUTED ECOSYSTEM"]
         direction TB
 
         subgraph HDFS["🗄️ HDFS DISTRIBUTED STORAGE LAYER"]
             direction TB
-            NN["👑 NameNode (Master)<br/><b>Port: 9870 (Web) | 9000 (RPC)</b><br/>Inodes Namespace Graph<br/>FSImage Snapshot &amp; EditLog WAL"]
-            SNN["🔄 SecondaryNameNode<br/><b>Port: 9868 (HTTP)</b><br/>State Consolidation Engine<br/>Merges Checkpoints to fsimage.ckpt"]
-            DN["📦 DataNode (Worker)<br/><b>Port: 9864 (Web) | 9866 (Data)</b><br/>128MB Checksummed Chunks<br/>CRC32C Integrity &amp; Heartbeats"]
-            NN <-->|"Heartbeat (3s) &amp; Block Reports (6h)"| DN
-            NN <-->|"2-Way HTTP Checkpoint Sync"| SNN
+            NN["👑 NameNode (Master)<br/><b>Port: 9870 (Web / WebHDFS) | 9000 (RPC)</b><br/>Inodes Namespace Graph &amp; WAL Journal"]
+            SNN["🔄 SecondaryNameNode<br/><b>Port: 9868 (HTTP)</b><br/>Consolidates fsimage.ckpt Checkpoints"]
+            DN["📦 DataNode (Worker)<br/><b>Port: 9864 (Web) | 9866 (Data)</b><br/>128MB Blocks &bull; CRC32C Checksums"]
+            NN <-->|"Heartbeats (3s) &amp; Block Reports"| DN
+            NN <-->|"Checkpoint Sync"| SNN
         end
 
-        subgraph YARN["⚙️ YARN RESOURCE &amp; SCHEDULING ORCHESTRATION"]
+        subgraph ComputeGrid["⚙️ MULTI-ENGINE COMPUTE &amp; SCHEDULING"]
             direction TB
-            RM["🧠 ResourceManager (Master)<br/><b>Port: 8088 (Web) | 8032 (IPC)</b><br/>Capacity / Fair Scheduler<br/>3072MB Dynamic Memory Pool"]
-            NM["👷 NodeManager (Worker)<br/><b>Port: 8042 (Web) | 8040 (IPC)</b><br/>cgroups Slot Isolation<br/>vmem-check-enabled=false"]
-            AM["🎯 ApplicationMaster<br/><b>Container #001 (512 MB)</b><br/>Per-Job Lifecycle Master<br/>Negotiates Task Slots"]
-            Tasks["⚡ Map / Reduce Tasks<br/><b>Containers #002, #003 (512 MB)</b><br/>512MB Allocation • Low-Pause G1GC<br/>Deadlock-Free Concurrent Execution"]
-            JHS["📜 JobHistoryServer<br/><b>Port: 19888 (Web) | 10020 (IPC)</b><br/>Post-Mortem Execution Metrics<br/>Aggregated Container Logs"]
-            RM <-->|"Resource Tracker &amp; Allocations"| NM
-            NM -->|"Launch"| AM
-            AM -->|"Directs Tasks"| Tasks
-            NM -->|"Aggregated Logs"| JHS
+            SparkM["⚡ Spark Master &bull; Port: 8080 (Web) | 7077 (RPC)<br/>In-Memory DAG Scheduling &amp; Stages"]
+            SparkW["🔨 Spark Workers (:8081) &bull; In-Memory Task Executors"]
+            SparkH["⏱️ Spark History Server (:18080) &bull; Event Logs"]
+            HiveMS["🐝 Apache Hive Warehouse &bull; Metastore (:9083) | JDBC (:10000)"]
+            RM["🧠 YARN ResourceManager &bull; Port: 8088 (Web) | 8032 (IPC)"]
+            NM["👷 YARN NodeManager &bull; Port: 8042 (Web) | cgroups Slots"]
+            JHS["📜 MapReduce JobHistory &bull; Port: 19888 (Web)"]
+
+            SparkM <--> SparkW
+            SparkM -.-> SparkH
+            RM <--> NM
+            NM --> JHS
         end
 
-        Tasks -.->|"Data Locality Read (128MB)"| DN
-        Tasks -.->|"Write Result (part-r-00000)"| DN
-    end
-
-    subgraph Engines["⚡ ANALYTICS &amp; PROCESSING FRAMEWORKS"]
-        direction TB
-        Spark["🔥 Apache Spark / PySpark<br/>In-Memory DataFrames &amp; Parquet"]
-        MR["☕ Native Java MapReduce<br/>Compiled JAR (WordCount / Pi)"]
-        StreamMR["🐍 Python Streaming<br/>mapper.py | sort | reducer.py"]
-        HDFSCLI["📁 Interactive HDFS CLI<br/>hdfs dfs -put / -ls / -cat"]
+        ComputeGrid -.->|"Data Locality Read/Write"| DN
     end
 
     subgraph Storage["💾 DURABLE PERSISTENT STORAGE TIER (ZERO DATA LOSS)"]
         direction LR
         V_Docker["📁 Docker Named Volumes<br/>hadoop_namenode_data<br/>hadoop_datanode_data"]
-        V_VM["🐉 VMware Virtual Disk<br/>/usr/local/hadoop/hdfs/<br/>ext4 High-Speed SSD"]
-        V_GCS["☁️ Google Cloud Storage<br/>gs://bucket/data &amp; staging<br/>11 9s Durability"]
-        V_Scratch["📦 Scratch &amp; Logs<br/>hadoop_tmp_data (/app/hadoop/tmp)<br/>hadoop_logs_data (/usr/local/hadoop/logs)"]
+        V_Spark["⚡ spark_event_logs_data<br/>/spark-logs &bull; /opt/spark/events"]
+        V_Jupyter["🪐 jupyter_notebooks_data<br/>/home/jovyan/work"]
+        V_GCS["☁️ Google Cloud Storage<br/>gs://bucket/data &amp; staging"]
     end
 
-    Host ==>|"① Submit Applications &amp; Ingest Data"| Deployments
-    Deployments ==>|"Dispatch to Engine"| CoreEngine
-    Engines ==>|"Execute Analytical Jobs"| RM
+    Host ==>|"① Submit Pipelines &amp; Queries"| Deployments
+    Deployments ==>|"Dispatch to Compute Grid"| CoreEngine
     NN ==>|"Persist Inodes"| Storage
     DN ==>|"Store 128MB Blocks"| Storage
+    ComputeGrid ==>|"Stream Logs &amp; Events"| Storage
 
     classDef hostStyle fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
     classDef platStyle fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
     classDef hdfsStyle fill:#0c2d48,stroke:#00a8e8,stroke-width:2px,color:#f8fafc;
     classDef yarnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#f8fafc;
-    classDef engineStyle fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+    classDef sparkStyle fill:#4c0519,stroke:#f43f5e,stroke-width:2px,color:#f8fafc;
     classDef storageStyle fill:#450a0a,stroke:#f87171,stroke-width:2px,color:#f8fafc;
 
-    class DevUI,DevCLI,DevLaunch,DevSSH hostStyle;
+    class DevHub,DevJupyter,DevSpark,DevHadoop hostStyle;
     class PlatDocker,PlatVMware,PlatGCP,PlatHyperV,PlatWSL platStyle;
     class NN,SNN,DN hdfsStyle;
-    class RM,NM,AM,Tasks,JHS yarnStyle;
-    class Spark,MR,StreamMR,HDFSCLI engineStyle;
-    class V_Docker,V_VM,V_GCS,V_Scratch storageStyle;
+    class RM,NM,JHS,HiveMS yarnStyle;
+    class SparkM,SparkW,SparkH sparkStyle;
+    class V_Docker,V_Spark,V_Jupyter,V_GCS storageStyle;
 ```
 
 ---
 
 ## 🌐 Web Interfaces & Port Mappings
 
-All standard Hadoop web consoles and service endpoints are mapped to localhost:
+All Big Data web consoles, interactive developer studios, and service endpoints are mapped to localhost:
 
 | Service | Container Port | Host Port | Web Console URL | Description |
 | :--- | :---: | :---: | :--- | :--- |
-| **HDFS NameNode** | `9870` | `9870` | [http://localhost:9870](http://localhost:9870) | Browse HDFS filesystem, inspect cluster capacity, and view active DataNodes. |
-| **YARN ResourceManager** | `8088` | `8088` | [http://localhost:8088](http://localhost:8088) | Monitor running applications, cluster memory/vcore metrics, and scheduler queues. |
-| **HDFS DataNode** | `9864` | `9864` | [http://localhost:9864](http://localhost:9864) | Inspect DataNode volume status and raw block metrics. |
-| **YARN NodeManager** | `8042` | `8042` | [http://localhost:8042](http://localhost:8042) | Container allocation and node execution details. |
-| **MapReduce JobHistory** | `19888` | `19888` | [http://localhost:19888](http://localhost:19888) | Historical MapReduce task counters, logs, and execution timelines. |
-| **HDFS RPC Endpoint** | `9000` | `9000` | `hdfs://localhost:9000` | IPC protocol endpoint for external tools (Spark, Flink, PySpark). |
-| **SSH Daemon** | `22` | `22222` | `ssh -p 22222 hduser@localhost` | Direct SSH access (`password: ubuntu`). |
-| **WSL 2 GUI Desktop** | `3390` | `3390` | `localhost:3390` (RDP) | XFCE4 graphical desktop session for WSL 2 (`Ubuntu-WSL-GUI.rdp`). |
+| 🌐 **Unified Control Hub** | `3000` | `3030` | [http://localhost:3030](http://localhost:3030) | **Single pane of glass dashboard**: live health monitor, HDFS browser, Hive SQL studio, Sqoop builder, Oozie orchestrator, Pig sandbox & diagrams. |
+| ⚡ **Apache Spark Master** | `8080` | `8080` | [http://localhost:8080](http://localhost:8080) | Standalone cluster coordinator, CPU cores, active workers, and running applications. |
+| 🔨 **Apache Spark Worker** | `8081` | `8081` | [http://localhost:8081](http://localhost:8081) | Worker node execution slots, thread pools, and executor memory metrics. |
+| ⏱️ **Spark History Server** | `18080` | `18080` | [http://localhost:18080](http://localhost:18080) | Post-mortem Spark job diagnostics, DAG execution stages, and timeline metrics. |
+| 🪐 **JupyterLab PySpark Studio** | `8888` | `8888` | [http://localhost:8888](http://localhost:8888) | Interactive Data Engineering notebooks pre-loaded with PySpark, Pandas, and Delta Lake. |
+| 🐘 **HDFS NameNode** | `9870` | `9870` | [http://localhost:9870](http://localhost:9870) | Browse HDFS filesystem, inspect cluster capacity, and WebHDFS REST API. |
+| ⚙️ **YARN ResourceManager** | `8088` | `8088` | [http://localhost:8088](http://localhost:8088) | Monitor running YARN applications, cluster memory/vcore metrics, and queues. |
+| 📦 **HDFS DataNode** | `9864` | `9864` | [http://localhost:9864](http://localhost:9864) | Inspect DataNode volume status, block pools, and raw chunk metrics. |
+| 👷 **YARN NodeManager** | `8042` | `8042` | [http://localhost:8042](http://localhost:8042) | Container allocation and per-node execution details. |
+| 📜 **MapReduce JobHistory** | `19888` | `19888` | [http://localhost:19888](http://localhost:19888) | Historical MapReduce task counters, logs, and execution timelines. |
+| 🐝 **Apache Hive Warehouse** | `10002` | `10002` | [http://localhost:10002](http://localhost:10002) | Schema Metastore (:9083) and HiveServer2 JDBC interface. |
+| 📋 **Apache Oozie Engine** | `11000` | `11000` | `http://localhost:11000/oozie` | Workflow DAG scheduler and coordinator pipeline engine. |
+| 🔄 **Apache Sqoop Ingestion** | -- | `3030` | [Sqoop Studio](http://localhost:3030) | Bulk RDBMS <-> HDFS/Hive data transfer generator & simulator. |
+| 🐷 **Apache Pig Latin** | -- | `3030` | [Pig Studio](http://localhost:3030) | High-level dataflow Pig Latin compilation and execution sandbox. |
+| 🔌 **Spark Master RPC** | `7077` | `7077` | `spark://localhost:7077` | Cluster manager endpoint for PySpark & `spark-submit`. |
+| 🔌 **HDFS RPC Endpoint** | `9000` | `9000` | `hdfs://localhost:9000` | IPC protocol endpoint for external tools (Spark, Flink, PySpark). |
+| 🔑 **SSH Bastion** | `22` | `22222` | `ssh -p 22222 hduser@localhost` | Direct SSH shell access (`password: ubuntu`). |
+| 🖥️ **WSL 2 GUI Desktop** | `3390` | `3390` | `localhost:3390` (RDP) | XFCE4 graphical desktop session for WSL 2 (`Ubuntu-WSL-GUI.rdp`). |
+
+> [!TIP]
+> **Recommended Workflow**: Open the **[Unified Big Data Control Hub](http://localhost:3030)** in your browser. It automatically monitors and links to every service listed above with one-click access!
 
 > [!NOTE]
-> Web consoles operate over plain HTTP (`http://`). If your browser auto-redirects to HTTPS, open an **Incognito / Private Window** using [http://127.0.0.1:9870](http://127.0.0.1:9870) or refer to [Troubleshooting Runbook: Issue 9](docs/troubleshooting.md#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis).
+> Web consoles operate over plain HTTP (`http://`). If your browser auto-redirects to HTTPS, open an **Incognito / Private Window** using [http://127.0.0.1:3030](http://127.0.0.1:3030) or refer to [Troubleshooting Runbook: Issue 9](docs/troubleshooting.md#issue-9-browser-err_empty_response-localhost-didnt-send-any-data-on-web-uis).
 
 ---
 
@@ -232,7 +256,7 @@ Choose your preferred deployment platform below:
 <summary><b>Option 1: Docker Compose (1-Click or CLI) - Recommended</b></summary>
 
 ### Via 1-Click Windows Launcher:
-Double-click **[`launchers/windows/Start-Hadoop-Docker.bat`](launchers/windows/Start-Hadoop-Docker.bat)**.
+Double-click **[`launchers/windows/Start-Hadoop-Docker.bat`](launchers/windows/Start-Hadoop-Docker.bat)** — it boots all Hadoop & Spark containers and automatically launches the **Unified Big Data Control Hub** at `http://localhost:3030` in your default browser.
 
 ### Via Terminal:
 ```bash
@@ -240,10 +264,13 @@ Double-click **[`launchers/windows/Start-Hadoop-Docker.bat`](launchers/windows/S
 git clone https://github.com/Sohila-Khaled-Abbas/docker-hadoop.git
 cd docker-hadoop
 
-# Build and start container in background
+# Start all Big Data containers (Hadoop, Spark, JupyterLab, Control Hub)
 docker compose up -d
 
-# Check startup status and running daemons
+# Open the Unified Control Hub in your browser
+# http://localhost:3030
+
+# Inspect cluster health and active daemons
 docker compose ps
 docker compose exec hadoop jps
 ```
@@ -253,6 +280,7 @@ To stop the cluster:
 docker compose down
 # or double-click launchers/windows/Stop-Hadoop-Docker.bat
 ```
+
 
 </details>
 
@@ -358,10 +386,20 @@ bash examples/mapreduce-java/compile-and-run.sh
 *Read the [Java MapReduce Guide](examples/mapreduce-java/README.md).*
 
 ### 4. Apache Spark & PySpark HDFS Integration
+Run standalone Python script connecting to HDFS:
 ```bash
 python examples/spark-pyspark/pyspark_hdfs_read_write.py
 ```
 *Read the [PySpark Integration Guide](examples/spark-pyspark/README.md).*
+
+### 5. Interactive JupyterLab PySpark Studio & Notebooks
+Open **[http://localhost:8888](http://localhost:8888)** or browse the [`notebooks/`](notebooks/) directory:
+- **`01-pyspark-hdfs-pipeline.ipynb`**: End-to-end ingestion, schema transformation, and partitioned Snappy Parquet write to HDFS.
+- **`02-spark-sql-hive-analytics.ipynb`**: Window functions, revenue ranking, and Spark SQL queries over HDFS tables.
+- **`03-realtime-streaming-simulation.ipynb`**: Structured Streaming micro-batch windowed aggregations.
+
+### 6. Unified Big Data Control Hub (Port 3030)
+Open **[http://localhost:3030](http://localhost:3030)** to view live cluster health, browse HDFS directories via WebHDFS, submit Spark and MapReduce jobs with live terminal output, and inspect architecture diagrams.
 
 ---
 
@@ -389,34 +427,28 @@ docker compose exec hadoop hdfs dfs -cat /datasets/employees.csv
 
 ```text
 docker-hadoop/
-├── .github/
-│   ├── ISSUE_TEMPLATE/          # Bug report & feature templates
-│   ├── workflows/
-│   │   ├── ci.yml               # Automated GitHub Actions build & test CI
-│   │   ├── security-scan.yml    # Hadolint Docker linter & Trivy vulnerability scanner
-│   │   └── release-drafter.yml  # Automated release notes drafter
-│   ├── dependabot.yml           # Automated dependency updates
-│   ├── pull_request_template.md # PR guidelines template
-│   └── release-drafter.yml      # Release draft configuration
-├── config/                      # Core XML configurations
+├── .github/                     # GitHub Actions CI/CD & Issue Templates
+├── config/                      # XML & Configuration Files
 │   ├── core-site.xml            # Filesystem & temporary storage configuration
 │   ├── hadoop-env.sh            # Environment exports & JVM options
-│   ├── hdfs-site.xml            # NameNode, DataNode & replication settings
+│   ├── hdfs-site.xml            # NameNode, DataNode & WebHDFS settings
 │   ├── mapred-site.xml          # MapReduce framework & JobHistory configuration
+│   ├── spark-defaults.conf      # Spark HDFS & History Server defaults
 │   └── yarn-site.xml            # YARN ResourceManager & NodeManager settings
 ├── datasets/                    # Built-in sample datasets
 │   ├── employees.csv            # Structured employee records for Spark/SQL
 │   ├── wordcount-sample.txt     # Distributed systems text corpus
 │   └── README.md                # HDFS loading instructions & recipes
 ├── docs/                        # Comprehensive technical documentation
-│   ├── architecture.md          # Internal architecture, HDFS deep dive & sequence diagrams
+│   ├── architecture.md          # Internal architecture, HDFS & Spark deep dive
 │   ├── configuration-tuning.md  # XML tuning & JVM GC optimization
 │   ├── data-engineering-patterns.md # Lakehouse, Medallion, & join patterns
 │   ├── ecosystem-integration.md # Spark, Hive, Presto, & Jupyter guides
 │   ├── getting-started.md       # Fast onboarding guide
-│   ├── google-cloud-dataproc-hadoop-guide.md # Google Cloud Dataproc & GCE deployment
+│   ├── google-cloud-dataproc-hadoop-guide.md # GCP Dataproc & GCE deployment
 │   ├── hadoop-ecosystem-guide.md# Complete ecosystem, HDFS & fault-tolerance guide
 │   ├── hyperv-ubuntu-guide.md   # Microsoft Hyper-V setup & optimization
+│   ├── images/                  # High-definition vector SVGs & 4K PNG diagrams
 │   ├── kali-vmware-hadoop-guide.md # VMware Workstation & Kali Linux guide
 │   ├── mapreduce-guide.md       # Comprehensive MapReduce manual
 │   ├── software-engineering-practices.md # 12-factor Big Data & DevOps
@@ -424,12 +456,6 @@ docker-hadoop/
 │   ├── virtualbox-ubuntu-guide.md # Oracle VirtualBox guide
 │   └── wsl2-ubuntu-hadoop-guide.md# WSL 2 Ubuntu GUI & Hadoop setup
 ├── examples/                    # Hands-on Big Data examples
-│   ├── hdfs-cli/                # Interactive HDFS CLI demonstration & guide
-│   │   ├── demo-hdfs-operations.sh
-│   │   └── README.md
-│   ├── mapreduce-java/          # Standalone Java WordCount application
-│   │   ├── WordCount.java
-│   │   ├── compile-and-run.sh
 │   │   └── README.md
 │   ├── mapreduce-python/        # Python Hadoop Streaming example
 │   │   ├── mapper.py

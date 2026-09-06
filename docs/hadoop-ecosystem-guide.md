@@ -193,6 +193,21 @@ block-beta
 - **Key value**: Critical for ensuring **reliability** in Hadoop clusters
 - **Services**: Naming, configuration management, synchronization, group services
 
+#### 12. Apache Spark
+- **Role**: **Lightning-fast unified analytics engine** for large-scale data processing
+- **Key value**: Up to **100x faster than traditional MapReduce** by executing computations in memory (RAM)
+- **APIs**: Spark SQL, DataFrames, Spark Streaming, MLlib, GraphX
+- **Deployment**: Standalone Cluster Manager (`:7077`, `:8080`), YARN (`yarn-client`/`yarn-cluster`), or Kubernetes
+
+#### 13. Unified Big Data Control Hub
+- **Role**: **Modern single-pane-of-glass operations and exploration dashboard**
+- **Key value**: Unifies HDFS, YARN, Spark, Hive, and JupyterLab in an ultra-modern, glassmorphic UI (`:3030`)
+- **Capabilities**: Real-time service matrix telemetry, interactive WebHDFS directory/file preview, streaming job & SQL execution terminal, and architectural blueprint visualizer
+
+#### 14. JupyterLab PySpark Studio
+- **Role**: **Interactive data engineering and data science workbench**
+- **Key value**: Allows interactive exploratory data analysis, pipeline prototyping, and Spark SQL queries directly over HDFS datasets (`:8888`)
+
 ### Framework Properties
 
 The Hadoop framework has two important architectural properties:

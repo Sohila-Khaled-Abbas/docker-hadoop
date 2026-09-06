@@ -1,4 +1,7 @@
 services:
+  # ============================================================================
+  # 1. CORE HADOOP DISTRIBUTED STORAGE & YARN ORCHESTRATION
+  # ============================================================================
   hadoop:
     build:
       context: .
@@ -10,18 +13,19 @@ services:
     hostname: localhost
     init: true
     ports:
-      - "${HADOOP_NAMENODE_PORT:-9870}:9870"          # HDFS NameNode Web UI
+      - "${HADOOP_NAMENODE_PORT:-9870}:9870"          # HDFS NameNode Web UI & WebHDFS REST API
       - "${HADOOP_DATANODE_PORT:-9864}:9864"          # HDFS DataNode Web UI
       - "${HADOOP_RESOURCEMANAGER_PORT:-8088}:8088"  # YARN ResourceManager Web UI
       - "${HADOOP_NODEMANAGER_PORT:-8042}:8042"      # YARN NodeManager Web UI
       - "${HADOOP_JOBHISTORY_PORT:-19888}:19888"     # MapReduce JobHistory Web UI
-      - "${HADOOP_HDFS_RPC_PORT:-9000}:9000"         # HDFS RPC Port
-      - "${HADOOP_SSH_PORT:-22222}:22"               # SSH Port
+      - "${HADOOP_HDFS_RPC_PORT:-9000}:9000"         # HDFS RPC Port (external Spark/PySpark)
+      - "${HADOOP_SSH_PORT:-22222}:22"               # SSH Bastion (password: ubuntu)
     volumes:
       - hadoop_namenode:/usr/local/hadoop/yarn_data/hdfs/namenode
       - hadoop_datanode:/usr/local/hadoop/yarn_data/hdfs/datanode
       - hadoop_tmp:/app/hadoop/tmp
       - hadoop_logs:/usr/local/hadoop/logs
+      - spark_event_logs:/spark-logs
       - ./config/core-site.xml:/usr/local/hadoop/etc/hadoop/core-site.xml:ro
       - ./config/hdfs-site.xml:/usr/local/hadoop/etc/hadoop/hdfs-site.xml:ro
       - ./config/mapred-site.xml:/usr/local/hadoop/etc/hadoop/mapred-site.xml:ro
@@ -30,6 +34,12 @@ services:
       - ./scripts/docker/entrypoint.sh:/entrypoint.sh:ro
       - ./scripts/docker/healthcheck.sh:/healthcheck.sh:ro
       - ./scripts/docker/test-cluster.sh:/test-cluster.sh:ro
+      - ./datasets:/datasets:ro
+    networks:
+      bigdata-net:
+        aliases:
+          - hadoop
+          - hadoop-master
     healthcheck:
       test: ["CMD-SHELL", "/healthcheck.sh"]
       interval: 30s
@@ -38,6 +48,136 @@ services:
       start_period: 120s
     restart: unless-stopped
 
+  # ============================================================================
+  # 2. APACHE SPARK STANDALONE MASTER
+  # ============================================================================
+  spark-master:
+    image: bitnami/spark:3.5
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "${SPARK_MASTER_PORT:-8080}:8080"            # Spark Master Web UI
+      - "${SPARK_MASTER_RPC_PORT:-7077}:7077"        # Spark Master RPC Endpoint
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+    volumes:
+      - ./config/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:ro
+      - spark_event_logs:/opt/bitnami/spark/events
+    networks:
+      bigdata-net:
+        aliases:
+          - spark-master
+    depends_on:
+      - hadoop
+    restart: unless-stopped
+
+  # ============================================================================
+  # 3. APACHE SPARK WORKER NODE
+  # ============================================================================
+  spark-worker:
+    image: bitnami/spark:3.5
+    container_name: spark-worker
+    hostname: spark-worker
+    ports:
+      - "${SPARK_WORKER_PORT:-8081}:8081"            # Spark Worker Web UI
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1024m
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+    volumes:
+      - ./config/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:ro
+      - spark_event_logs:/opt/bitnami/spark/events
+    networks:
+      bigdata-net:
+        aliases:
+          - spark-worker
+    depends_on:
+      - spark-master
+    restart: unless-stopped
+
+  # ============================================================================
+  # 4. APACHE SPARK HISTORY SERVER
+  # ============================================================================
+  spark-history:
+    image: bitnami/spark:3.5
+    container_name: spark-history
+    hostname: spark-history
+    ports:
+      - "${SPARK_HISTORY_PORT:-18080}:18080"        # Spark History Server Web UI
+    environment:
+      - SPARK_MODE=history-server
+      - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/opt/bitnami/spark/events
+    volumes:
+      - ./config/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:ro
+      - spark_event_logs:/opt/bitnami/spark/events
+    networks:
+      bigdata-net:
+        aliases:
+          - spark-history
+    depends_on:
+      - spark-master
+    restart: unless-stopped
+
+  # ============================================================================
+  # 5. JUPYTERLAB PYSPARK & BIG DATA ENGINEERING STUDIO
+  # ============================================================================
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: jupyter-pyspark
+    hostname: jupyter
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"                # JupyterLab UI
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - GRANT_SUDO=yes
+      - NOTEBOOK_ARGS=--NotebookApp.token='' --NotebookApp.password=''
+    volumes:
+      - ./notebooks:/home/jovyan/work/notebooks
+      - ./datasets:/home/jovyan/work/datasets
+      - ./examples:/home/jovyan/work/examples
+      - jupyter_data:/home/jovyan/work
+    networks:
+      bigdata-net:
+        aliases:
+          - jupyter
+    depends_on:
+      - hadoop
+    restart: unless-stopped
+
+  # ============================================================================
+  # 6. UNIFIED BIG DATA ENGINEERING CONTROL HUB (MODERN WEB UI)
+  # ============================================================================
+  portal:
+    build:
+      context: ./portal
+      dockerfile: Dockerfile
+    image: bigdata-control-hub:1.0.0
+    container_name: bigdata-portal
+    hostname: portal
+    ports:
+      - "${BIGDATA_PORTAL_PORT:-3030}:3000"          # Unified Control Hub UI (Port 3030 on host)
+    environment:
+      - PORT=3000
+    volumes:
+      - ./docs/images:/docs/images:ro
+      - ./datasets:/datasets:ro
+    networks:
+      bigdata-net:
+        aliases:
+          - portal
+          - bigdata-portal
+    depends_on:
+      - hadoop
+    restart: unless-stopped
+
+# ==============================================================================
+# PERSISTENT DURABLE VOLUMES & ISOLATED NETWORK
+# ==============================================================================
 volumes:
   hadoop_namenode:
     name: hadoop_namenode_data
@@ -47,3 +187,12 @@ volumes:
     name: hadoop_tmp_data
   hadoop_logs:
     name: hadoop_logs_data
+  spark_event_logs:
+    name: spark_event_logs_data
+  jupyter_data:
+    name: jupyter_notebooks_data
+
+networks:
+  bigdata-net:
+    name: bigdata_cluster_network
+    driver: bridge

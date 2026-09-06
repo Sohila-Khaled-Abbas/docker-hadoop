@@ -1,0 +1,64 @@
+<workflow-app name="enterprise-bigdata-etl-pipeline" xmlns="uri:oozie:workflow:0.5">
+    <start to="sqoop-ingestion-node"/>
+
+    <!-- Action 1: Sqoop Data Ingestion from RDBMS -->
+    <action name="sqoop-ingestion-node">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <command>import --connect jdbc:mysql://${dbHost}:3306/${dbName} --username ${dbUser} --password ${dbPass} --table customers --target-dir ${inputDir} --num-mappers 2 --delete-target-dir</command>
+        </sqoop>
+        <ok to="spark-etl-node"/>
+        <error to="fail-notification"/>
+    </action>
+
+    <!-- Action 2: Apache Spark Data Transformation -->
+    <action name="spark-etl-node">
+        <spark xmlns="uri:oozie:spark-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <master>spark://${sparkMaster}:7077</master>
+            <mode>client</mode>
+            <name>SparkCustomerAggregation</name>
+            <class>org.apache.spark.examples.SparkCustomerETL</class>
+            <jar>${nameNode}/apps/spark/spark-customer-etl.jar</jar>
+            <arg>${inputDir}</arg>
+            <arg>${sparkOutputDir}</arg>
+        </spark>
+        <ok to="pig-analytics-node"/>
+        <error to="fail-notification"/>
+    </action>
+
+    <!-- Action 3: Apache Pig Latin Filtering & Windowing -->
+    <action name="pig-analytics-node">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <script>${nameNode}/apps/pig/analytics.pig</script>
+            <param>INPUT=${sparkOutputDir}</param>
+            <param>OUTPUT=${pigOutputDir}</param>
+        </pig>
+        <ok to="hive-warehouse-node"/>
+        <error to="fail-notification"/>
+    </action>
+
+    <!-- Action 4: Apache Hive Data Warehouse Load -->
+    <action name="hive-warehouse-node">
+        <hive xmlns="uri:oozie:hive-action:0.2">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <script>${nameNode}/apps/hive/analytics.hql</script>
+            <param>DATA_PATH=${pigOutputDir}</param>
+        </hive>
+        <ok to="success-end"/>
+        <error to="fail-notification"/>
+    </action>
+
+    <!-- Error Handler Node -->
+    <kill name="fail-notification">
+        <message>Pipeline failed with error code [${wf:errorCode(wf:lastErrorNode())}] and message [${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+
+    <!-- Success Node -->
+    <end name="success-end"/>
+</workflow-app>

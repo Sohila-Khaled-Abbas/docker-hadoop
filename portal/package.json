@@ -1,0 +1,12 @@
+{
+  "name": "bigdata-control-hub",
+  "version": "1.0.0",
+  "description": "Unified Apache Hadoop & Spark Big Data Engineering Control Hub",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["hadoop", "spark", "hdfs", "yarn", "bigdata", "dashboard"],
+  "author": "AraBigData Engineering",
+  "license": "Apache-2.0"
+}

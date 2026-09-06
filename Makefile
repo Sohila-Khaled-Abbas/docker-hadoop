@@ -147,4 +147,24 @@ gcp-dataproc-delete:
 gcp-gce-deploy:
 	bash scripts/gcp/deploy-hadoop-gce.sh
 
+portal:
+	@echo "Opening Unified Big Data Engineering Control Hub..."
+	cmd /c start http://localhost:3030
+
+portal-run:
+	node portal/server.js
+
+spark-shell:
+	docker compose exec spark-master spark-shell
+
+pyspark:
+	docker compose exec spark-master pyspark
+
+test-spark:
+	python examples/spark-pyspark/pyspark_hdfs_read_write.py
+
+spark-pi:
+	docker compose exec spark-master spark-submit --class org.apache.spark.examples.SparkPi /opt/bitnami/spark/examples/jars/spark-examples_2.12-3.5.1.jar 10
+
+
 

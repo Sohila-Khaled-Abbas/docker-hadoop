@@ -68,13 +68,14 @@ echo "[5/6] Starting MapReduce JobHistory Server..."
 run_hduser "mapred --daemon start historyserver" || true
 
 # 7. Initialize HDFS directories
-echo "[6/6] Initializing default HDFS directories..."
+echo "[6/6] Initializing default HDFS directories for Hadoop, Spark & Hive..."
 run_hduser "hdfs dfsadmin -safemode wait" || true
 run_hduser "
-hdfs dfs -mkdir -p /tmp /user /user/hduser /user/hadoop
-hdfs dfs -chmod -R 1777 /tmp
-hdfs dfs -chmod -R 777 /user
+hdfs dfs -mkdir -p /tmp /user /user/hduser /user/hadoop /spark-logs /user/hive/warehouse /data /datasets
+hdfs dfs -chmod -R 1777 /tmp /spark-logs /user/hive/warehouse
+hdfs dfs -chmod -R 777 /user /data /datasets
 " || true
+
 
 echo "=========================================================="
 echo "Hadoop Cluster Started Successfully!"

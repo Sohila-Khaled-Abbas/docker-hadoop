@@ -42,4 +42,11 @@
         <value>false</value>
         <description>If true, enable permission checking in HDFS.</description>
     </property>
+
+    <!-- Enable WebHDFS REST API -->
+    <property>
+        <name>dfs.webhdfs.enabled</name>
+        <value>true</value>
+        <description>Enables WebHDFS REST API on NameNode port 9870.</description>
+    </property>
 </configuration>

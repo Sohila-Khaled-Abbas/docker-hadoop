@@ -38,25 +38,25 @@ This document provides a comprehensive architectural overview of the single-node
   <em>🔍 Click the diagram above to view the scalable, high-definition vector SVG version.</em>
 </p>
 
-The container orchestrates the complete Apache Hadoop 3.1.2 daemon stack inside an isolated Ubuntu 20.04 environment. It exposes all native Web UIs, RPC ports, and SSH endpoints to the host while persisting cluster state through named Docker volumes.
+The system orchestrates a complete, multi-container Big Data Engineering platform composed of:
+1. **Unified Control Hub (`portal`)**: An ultra-modern, glassmorphic single-pane-of-glass management portal (Node.js/Vanilla CSS/HTML5).
+2. **Apache Hadoop Distributed Core (`hadoop`)**: 6 JVM daemons (NameNode, DataNode, SecondaryNameNode, ResourceManager, NodeManager, JobHistoryServer).
+3. **Apache Spark Standalone Cluster (`spark-master`, `spark-worker`, `spark-history`)**: Distributed in-memory compute engine with HDFS event-log persistence.
+4. **Interactive PySpark & SQL Studio (`jupyter`)**: Pre-configured JupyterLab environment with PySpark 3.5, DuckDB, and PyArrow.
 
 ```mermaid
 flowchart TB
-    subgraph Host["💻 DEVELOPER HOST & CLIENT ACCESS LAYER"]
+    subgraph Host["💻 DEVELOPER HOST & UNIFIED CONTROL HUB"]
         direction LR
-        DevUI["🌐 Web Consoles<br/><b>(:9870, :8088, :19888)</b><br/>Browser Management UIs"]
-        DevCLI["💻 Terminal CLI<br/><b>make / gcloud / bash</b><br/>Multi-Platform Automation"]
-        DevLaunch["🚀 1-Click Launchers<br/><b>launchers/windows/*.bat</b><br/>GCP, Kali, Docker, WSL"]
-        DevSSH["🔑 SSH Bastions<br/><b>:22222 (Docker)</b><br/>192.168.13.128 (Kali)"]
+        DevHub["🚀 Control Hub<br/><b>(:3030)</b><br/>Single Pane of Glass"]
+        DevUI["🌐 Native Web Consoles<br/><b>(:9870, :8088, :8080, :8888)</b><br/>HDFS, YARN, Spark, Jupyter"]
+        DevCLI["💻 Terminal CLI<br/><b>make / bash / pyspark</b><br/>Multi-Platform Automation"]
+        DevLaunch["⚡ 1-Click Launchers<br/><b>Start-Hadoop-Docker.bat</b><br/>GCP, Kali, Docker, WSL"]
     end
 
-    subgraph Deployments["🖥️ MULTI-PLATFORM CLUSTER RUNTIMES"]
-        direction LR
-        PlatDocker["🐳 Docker Compose<br/><b>Single-Node</b><br/>Hadoop 3.1.2<br/>Named Volumes"]
-        PlatVMware["🐉 VMware Workstation<br/><b>Kali Linux 2026.2</b><br/>Hadoop 3.3.6 LTS<br/>6GB RAM / 4 vCPUs"]
-        PlatGCP["☁️ Google Cloud<br/><b>Dataproc &amp; GCE</b><br/>Decoupled gs://<br/>Auto-Idle Teardown"]
-        PlatHyperV["🪟 Microsoft Hyper-V<br/><b>Ubuntu 24.04 Gen 2</b><br/>4 vCPUs / Dynamic RAM<br/>HvSocket Clipboard"]
-        PlatWSL["🐧 WSL 2 Ubuntu<br/><b>Windows 11 Native</b><br/>XFCE GUI Desktop<br/>Port 3390 (RDP)"]
+    subgraph PortalEngine["🌐 BIG DATA CONTROL HUB LAYER (PORTAL :3030)"]
+        direction TB
+        HubServer["Node.js Control Server<br/>Auto-probes 10 services • WebHDFS Proxy • Metric Collector • Terminal Streamer"]
     end
 
     subgraph CoreEngine["🐘 APACHE HADOOP DISTRIBUTED CORE (6 JVM DAEMONS)"]
@@ -88,41 +88,53 @@ flowchart TB
         Tasks -.->|"Write Result (part-r-00000)"| DN
     end
 
-    subgraph Engines["⚡ ANALYTICS &amp; PROCESSING FRAMEWORKS"]
+    subgraph SparkCluster["⚡ APACHE SPARK 3.5 DISTRIBUTED CLUSTER"]
         direction TB
-        Spark["🔥 Apache Spark / PySpark<br/>In-Memory DataFrames &amp; Parquet"]
-        MR["☕ Native Java MapReduce<br/>Compiled JAR (WordCount / Pi)"]
-        StreamMR["🐍 Python Streaming<br/>mapper.py | sort | reducer.py"]
-        HDFSCLI["📁 Interactive HDFS CLI<br/>hdfs dfs -put / -ls / -cat"]
+        SM["🔥 Spark Master<br/><b>Port: 8080 (Web) | 7077 (RPC)</b><br/>Standalone Cluster Coordinator"]
+        SW["⚙️ Spark Worker<br/><b>Port: 8081 (Web)</b><br/>2 Cores • 1024MB Memory Pool"]
+        SH["📜 Spark History Server<br/><b>Port: 18080 (Web)</b><br/>Reads /spark-logs on HDFS"]
+        SM <-->|"Worker Heartbeat &amp; Dispatch"| SW
+        SW -.->|"Stage Event Logs"| SH
+    end
+
+    subgraph Analytics["🪐 ANALYTICS &amp; INTERACTIVE NOTEBOOKS"]
+        direction TB
+        Jupyter["📓 JupyterLab PySpark Studio<br/><b>Port: 8888 (Web)</b><br/>PySpark, DuckDB, Pandas, PyArrow"]
+        HiveMeta["🐝 Hive Metastore &amp; Tables<br/><b>/user/hive/warehouse</b> on HDFS"]
     end
 
     subgraph Storage["💾 DURABLE PERSISTENT STORAGE TIER (ZERO DATA LOSS)"]
         direction LR
         V_Docker["📁 Docker Named Volumes<br/>hadoop_namenode_data<br/>hadoop_datanode_data"]
-        V_VM["🐉 VMware Virtual Disk<br/>/usr/local/hadoop/hdfs/<br/>ext4 High-Speed SSD"]
-        V_GCS["☁️ Google Cloud Storage<br/>gs://bucket/data &amp; staging<br/>11 9s Durability"]
-        V_Scratch["📦 Scratch &amp; Logs<br/>hadoop_tmp_data (/app/hadoop/tmp)<br/>hadoop_logs_data (/usr/local/hadoop/logs)"]
+        V_Spark["🔥 Spark Logs<br/>hdfs://hadoop:9000/spark-logs"]
+        V_Warehouse["🐝 Hive Warehouse<br/>hdfs://hadoop:9000/user/hive/warehouse"]
+        V_Scratch["📦 Scratch &amp; Logs<br/>hadoop_tmp_data<br/>hadoop_logs_data"]
     end
 
-    Host ==>|"① Submit Applications &amp; Ingest Data"| Deployments
-    Deployments ==>|"Dispatch to Engine"| CoreEngine
-    Engines ==>|"Execute Analytical Jobs"| RM
+    Host ==>|"Unified Monitoring &amp; Control"| PortalEngine
+    PortalEngine -.->|"Health Checks &amp; WebHDFS API"| CoreEngine
+    PortalEngine -.->|"Cluster Metrics"| SparkCluster
+    Analytics ==>|"Submit In-Memory Jobs"| SM
+    SparkCluster ==>|"Read/Write HDFS Blocks"| NN
+    SparkCluster ==>|"Persist Event Logs"| Storage
     NN ==>|"Persist Inodes"| Storage
     DN ==>|"Store 128MB Blocks"| Storage
 
     classDef hostStyle fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
-    classDef platStyle fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+    classDef portalStyle fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
     classDef hdfsStyle fill:#0c2d48,stroke:#00a8e8,stroke-width:2px,color:#f8fafc;
     classDef yarnStyle fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#f8fafc;
-    classDef engineStyle fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+    classDef sparkStyle fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#f8fafc;
+    classDef analyticsStyle fill:#4c1d95,stroke:#a78bfa,stroke-width:2px,color:#f8fafc;
     classDef storageStyle fill:#450a0a,stroke:#f87171,stroke-width:2px,color:#f8fafc;
 
-    class DevUI,DevCLI,DevLaunch,DevSSH hostStyle;
-    class PlatDocker,PlatVMware,PlatGCP,PlatHyperV,PlatWSL platStyle;
+    class DevHub,DevUI,DevCLI,DevLaunch hostStyle;
+    class HubServer portalStyle;
     class NN,SNN,DN hdfsStyle;
     class RM,NM,AM,Tasks,JHS yarnStyle;
-    class Spark,MR,StreamMR,HDFSCLI engineStyle;
-    class V_Docker,V_VM,V_GCS,V_Scratch storageStyle;
+    class SM,SW,SH sparkStyle;
+    class Jupyter,HiveMeta analyticsStyle;
+    class V_Docker,V_Spark,V_Warehouse,V_Scratch storageStyle;
 ```
 
 ---
@@ -439,18 +451,24 @@ sequenceDiagram
 
 ## 🌐 Network & Port Topology
 
-The container maps internal daemons to host network interfaces:
+The containerized system maps internal daemons and services to host network interfaces:
 
 ```text
 +-------------------------------------------------------------------------------+
 | HOST MACHINE                                                                  |
 |                                                                               |
-|   :9870  ------------------->  NameNode Web UI                                |
-|   :9864  ------------------->  DataNode Web UI                                |
+|   :3030  ------------------->  Unified Big Data Control Hub (Node.js/UI)      |
+|   :9870  ------------------->  HDFS NameNode Web UI                           |
+|   :9864  ------------------->  HDFS DataNode Web UI                           |
 |   :8088  ------------------->  YARN ResourceManager Web UI                    |
 |   :8042  ------------------->  YARN NodeManager Web UI                        |
 |   :19888 ------------------->  MapReduce JobHistory Web UI                    |
-|   :9000  ------------------->  HDFS RPC Port (Client IPC)                     |
+|   :8080  ------------------->  Spark Master Web UI                            |
+|   :8081  ------------------->  Spark Worker Web UI                            |
+|   :18080 ------------------->  Spark History Server Web UI                    |
+|   :8888  ------------------->  JupyterLab PySpark & SQL Studio                |
+|   :9000  ------------------->  HDFS RPC Port (Client IPC / fs.defaultFS)      |
+|   :7077  ------------------->  Spark Master RPC (spark://master:7077)         |
 |   :22222 ------------------->  Container SSH Daemon (Port 22)                 |
 |                                                                               |
 +-------------------------------------------------------------------------------+

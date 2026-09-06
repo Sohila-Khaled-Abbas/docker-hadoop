@@ -23,6 +23,15 @@ jobs:
         run: |
           chmod +x scripts/*/*.sh examples/*/*.sh examples/*/*.py
 
+      - name: 🌐 Validate Node.js Portal Syntax
+        run: |
+          node -c portal/server.js
+          node -c portal/public/app.js
+
+      - name: 🐳 Validate Docker Compose Specification
+        run: |
+          docker compose config
+
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

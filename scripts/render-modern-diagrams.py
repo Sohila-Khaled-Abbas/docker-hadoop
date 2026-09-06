@@ -7,8 +7,9 @@
 # Optimized for:
 # - Zero text overflow: Every line mathematically fitted with generous padding
 # - Modern dark-mode aesthetics: Glassmorphism, tailored gradients, glow filters
-# - Full repo updates: Hadoop 3.3.6 LTS, Kali VMware, GCP Dataproc, 512MB YARN alloc,
-#   G1GC tuning, Monte Carlo Pi benchmark, 1-Click Launchers
+# - Full ecosystem update: Hadoop 3.1.2/3.3.6, Apache Spark 3.5 (Master, Worker,
+#   History Server, PySpark, Spark SQL), Apache Hive Metastore, JupyterLab Studio,
+#   Unified Big Data Control Hub (Port 3030), Docker, VMware, GCP Dataproc
 # ==============================================================================
 import os
 import subprocess
@@ -30,9 +31,10 @@ COMMON_DEFS = '''
 
     <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#388bfd" />
-      <stop offset="25%" stop-color="#a371f7" />
-      <stop offset="50%" stop-color="#3fb950" />
-      <stop offset="75%" stop-color="#d29922" />
+      <stop offset="20%" stop-color="#a371f7" />
+      <stop offset="40%" stop-color="#3fb950" />
+      <stop offset="60%" stop-color="#f59e0b" />
+      <stop offset="80%" stop-color="#f43f5e" />
       <stop offset="100%" stop-color="#38bdf8" />
     </linearGradient>
 
@@ -49,6 +51,12 @@ COMMON_DEFS = '''
     <linearGradient id="yarnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#238636" />
       <stop offset="100%" stop-color="#2ea043" />
+    </linearGradient>
+
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e11d48" />
+      <stop offset="50%" stop-color="#f43f5e" />
+      <stop offset="100%" stop-color="#fb7185" />
     </linearGradient>
 
     <linearGradient id="engineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -68,33 +76,34 @@ COMMON_DEFS = '''
 
     <!-- Glassmorphic Glow Filters -->
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.65" />
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.6" />
     </filter>
+
     <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#388bfd" flood-opacity="0.4" />
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
-    <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#3fb950" flood-opacity="0.4" />
-    </filter>
-    <filter id="glowPurple" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#bc8cff" flood-opacity="0.4" />
-    </filter>
-    <filter id="glowAmber" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#d29922" flood-opacity="0.4" />
+
+    <filter id="glowSpark" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
 
     <!-- Directional Arrow Markers -->
-    <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#58a6ff" />
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#58a6ff" />
     </marker>
-    <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#3fb950" />
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3fb950" />
     </marker>
-    <marker id="arrowPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#bc8cff" />
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#bc8cff" />
     </marker>
-    <marker id="arrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f85149" />
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f85149" />
+    </marker>
+    <marker id="arrowSpark" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fb7185" />
     </marker>
 
     <!-- Engineering Grid Pattern -->
@@ -118,7 +127,7 @@ COMMON_STYLES = '''
 '''
 
 # ==============================================================================
-# 1. GENERATE INFOGRAPHIC SVG (Multi-Platform Ecosystem & Data Engineering Map)
+# 1. GENERATE INFOGRAPHIC SVG (Platform Ecosystem & Unified Data Hub Map)
 # ==============================================================================
 infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 1920" width="2800" height="1920">
   <defs>
@@ -137,43 +146,47 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
   <rect x="25" y="25" width="2750" height="1870" rx="24" fill="none" stroke="#21262d" stroke-width="2" />
 
   <!-- ========================================================================= -->
-  <!-- 1. HEADER SECTION (HERO BANNER WITH ECOSYSTEM BADGES)                     -->
+  <!-- 1. HEADER SECTION (HERO BANNER WITH UNIFIED ECOSYSTEM BADGES)              -->
   <!-- ========================================================================= -->
   <g id="header-section" transform="translate(60, 50)">
     <rect x="0" y="0" width="2680" height="135" rx="16" fill="#151b28" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)" />
     <path d="M 0 16 Q 0 0 16 0 L 22 0 L 22 135 L 16 135 Q 0 135 0 119 Z" fill="url(#headerGrad)" />
 
-    <text x="48" y="54" class="title" font-size="31" letter-spacing="0.5">
-      🐘 APACHE HADOOP 3.3.6 LTS &amp; MULTI-PLATFORM CLUSTER ECOSYSTEM
+    <text x="48" y="54" class="title" font-size="30" letter-spacing="0.5">
+      🐘 APACHE HADOOP, SPARK &amp; ECOSYSTEM UNIFIED BIG DATA PLATFORM
     </text>
-    <text x="48" y="90" class="subtitle" font-size="15">
-      Distributed HDFS Storage • YARN Container Scheduling • Low-Pause G1GC Tuning • Docker, VMware (Kali), Hyper-V &amp; Google Cloud Dataproc
+    <text x="48" y="90" class="subtitle" font-size="14.5">
+      Distributed HDFS • YARN • Apache Spark 3.5 • Hive • Sqoop • Oozie • Pig • JupyterLab Studio • Unified Platform Console (:3030)
     </text>
 
     <!-- Badges Row -->
-    <g transform="translate(1420, 36)">
+    <g transform="translate(1360, 36)">
       <g transform="translate(0, 0)">
-        <rect x="0" y="0" width="160" height="34" rx="8" fill="#1f6feb" fill-opacity="0.18" stroke="#388bfd" stroke-width="1.2" />
-        <text x="80" y="22" class="badge" fill="#58a6ff" text-anchor="middle">HADOOP v3.3.6 LTS</text>
+        <rect x="0" y="0" width="135" height="34" rx="8" fill="#1f6feb" fill-opacity="0.18" stroke="#388bfd" stroke-width="1.2" />
+        <text x="67" y="22" class="badge" fill="#58a6ff" text-anchor="middle">HADOOP v3.1/3.3</text>
       </g>
-      <g transform="translate(175, 0)">
-        <rect x="0" y="0" width="165" height="34" rx="8" fill="#238636" fill-opacity="0.18" stroke="#3fb950" stroke-width="1.2" />
-        <text x="82" y="22" class="badge" fill="#56d364" text-anchor="middle">OPENJDK 11 / 8 LTS</text>
+      <g transform="translate(145, 0)">
+        <rect x="0" y="0" width="145" height="34" rx="8" fill="#e11d48" fill-opacity="0.2" stroke="#f43f5e" stroke-width="1.2" />
+        <text x="72" y="22" class="badge" fill="#fb7185" text-anchor="middle">⚡ SPARK 3.5</text>
       </g>
-      <g transform="translate(355, 0)">
-        <rect x="0" y="0" width="170" height="34" rx="8" fill="#8957e5" fill-opacity="0.18" stroke="#bc8cff" stroke-width="1.2" />
-        <text x="85" y="22" class="badge" fill="#d2a8ff" text-anchor="middle">DOCKER COMPOSE</text>
+      <g transform="translate(300, 0)">
+        <rect x="0" y="0" width="160" height="34" rx="8" fill="#d97706" fill-opacity="0.2" stroke="#f59e0b" stroke-width="1.2" />
+        <text x="80" y="22" class="badge" fill="#fcd34d" text-anchor="middle">🐝 HIVE &amp; SQOOP</text>
       </g>
-      <g transform="translate(540, 0)">
-        <rect x="0" y="0" width="175" height="34" rx="8" fill="#0284c7" fill-opacity="0.18" stroke="#38bdf8" stroke-width="1.2" />
-        <text x="87" y="22" class="badge" fill="#38bdf8" text-anchor="middle">☁️ GCP DATAPROC</text>
+      <g transform="translate(470, 0)">
+        <rect x="0" y="0" width="160" height="34" rx="8" fill="#8957e5" fill-opacity="0.2" stroke="#bc8cff" stroke-width="1.2" />
+        <text x="80" y="22" class="badge" fill="#d2a8ff" text-anchor="middle">📋 OOZIE &amp; PIG</text>
       </g>
-      <g transform="translate(730, 0)">
-        <rect x="0" y="0" width="175" height="34" rx="8" fill="#d29922" fill-opacity="0.18" stroke="#e3b341" stroke-width="1.2" />
-        <text x="87" y="22" class="badge" fill="#f2cc60" text-anchor="middle">🐉 KALI LINUX VM</text>
+      <g transform="translate(640, 0)">
+        <rect x="0" y="0" width="165" height="34" rx="8" fill="#0284c7" fill-opacity="0.2" stroke="#38bdf8" stroke-width="1.2" />
+        <text x="82" y="22" class="badge" fill="#38bdf8" text-anchor="middle">🌐 CONTROL HUB :3030</text>
       </g>
-      <text x="905" y="72" class="body-text" font-size="12" fill="#8b949e" text-anchor="end">
-        Enterprise Big Data Engineering Suite • Zero Silent Corruption
+      <g transform="translate(815, 0)">
+        <rect x="0" y="0" width="155" height="34" rx="8" fill="#238636" fill-opacity="0.18" stroke="#3fb950" stroke-width="1.2" />
+        <text x="77" y="22" class="badge" fill="#56d364" text-anchor="middle">🪐 JUPYTERLAB :8888</text>
+      </g>
+      <text x="965" y="72" class="body-text" font-size="12" fill="#8b949e" text-anchor="end">
+        Enterprise Production-Grade Big Data Stack • Single Pane of Glass Management
       </text>
     </g>
   </g>
@@ -184,25 +197,25 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
   <g id="multi-platform-section" transform="translate(60, 205)">
     <rect x="0" y="0" width="2680" height="165" rx="16" fill="url(#cardGrad)" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)" />
     
-    <rect x="25" y="16" width="310" height="28" rx="6" fill="#d29922" fill-opacity="0.15" stroke="#d29922" stroke-width="1" />
-    <text x="180" y="35" class="subheading" font-size="13" fill="#e3b341" text-anchor="middle">🖥️ 6 SUPPORTED MULTI-PLATFORM RUNTIMES</text>
+    <rect x="25" y="16" width="340" height="28" rx="6" fill="#d29922" fill-opacity="0.15" stroke="#d29922" stroke-width="1" />
+    <text x="195" y="35" class="subheading" font-size="13" fill="#e3b341" text-anchor="middle">🖥️ 6 UNIFIED DATA SYSTEM RUNTIMES</text>
 
-    <!-- Card 1: Docker -->
+    <!-- Card 1: Docker Full Stack -->
     <g transform="translate(25, 55)">
       <rect x="0" y="0" width="425" height="95" rx="10" fill="#0d1117" stroke="#388bfd" stroke-width="1.2" />
-      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#58a6ff">🐳 Docker Engine / Compose</text>
-      <text x="16" y="48" class="body-text" font-size="11.5">Single-Node container (hadoop-master) with named volumes</text>
+      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#58a6ff">🐳 Docker Compose Full Stack</text>
+      <text x="16" y="48" class="body-text" font-size="11.5">Hadoop + Spark + Hive + Jupyter + Control Hub</text>
       <rect x="16" y="60" width="393" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#79c0ff">make up • docker compose up -d • Port 9870</text>
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#79c0ff">docker compose up -d • Hub at :3030</text>
     </g>
 
-    <!-- Card 2: VMware Kali -->
+    <!-- Card 2: Spark Master & Worker -->
     <g transform="translate(465, 55)">
-      <rect x="0" y="0" width="425" height="95" rx="10" fill="#0d1117" stroke="#bc8cff" stroke-width="1.2" />
-      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#d2a8ff">🐉 VMware Workstation (Kali)</text>
-      <text x="16" y="48" class="body-text" font-size="11.5">Kali Rolling • Hadoop 3.3.6 • 6GB RAM / 4 vCPUs • G1GC</text>
+      <rect x="0" y="0" width="425" height="95" rx="10" fill="#0d1117" stroke="#f43f5e" stroke-width="1.2" />
+      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#fb7185">⚡ Apache Spark 3.5 Engine</text>
+      <text x="16" y="48" class="body-text" font-size="11.5">Master (:8080) • Worker (:8081) • History (:18080)</text>
       <rect x="16" y="60" width="393" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#bc8cff">Launch-Kali-VMware.bat • HWCursor off • 1080p</text>
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#fb7185">spark://spark-master:7077 • PySpark • SQL</text>
     </g>
 
     <!-- Card 3: GCP Dataproc -->
@@ -214,8 +227,17 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
       <text x="24" y="75" class="mono" font-size="10.5" fill="#79c0ff">Deploy-Hadoop-GCP.bat • .ps1 • 30m Auto-Idle</text>
     </g>
 
-    <!-- Card 4: Hyper-V -->
+    <!-- Card 4: VMware Workstation -->
     <g transform="translate(1345, 55)">
+      <rect x="0" y="0" width="425" height="95" rx="10" fill="#0d1117" stroke="#bc8cff" stroke-width="1.2" />
+      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#d2a8ff">🐉 VMware Workstation (Kali)</text>
+      <text x="16" y="48" class="body-text" font-size="11.5">Kali Rolling • Hadoop 3.3.6 • 6GB RAM / 4 vCPUs • G1GC</text>
+      <rect x="16" y="60" width="393" height="22" rx="4" fill="#161b22" />
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#bc8cff">Launch-Kali-VMware.bat • HWCursor off • 1080p</text>
+    </g>
+
+    <!-- Card 5: Hyper-V -->
+    <g transform="translate(1785, 55)">
       <rect x="0" y="0" width="425" height="95" rx="10" fill="#0d1117" stroke="#3fb950" stroke-width="1.2" />
       <text x="16" y="26" class="bold-text" font-size="13.5" fill="#56d364">🪟 Hyper-V Generation 2 (Ubuntu)</text>
       <text x="16" y="48" class="body-text" font-size="11.5">Ubuntu 24.04 • 4 vCPUs • Dynamic RAM • UEFI CA • NAT fix</text>
@@ -223,22 +245,13 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
       <text x="24" y="75" class="mono" font-size="10.5" fill="#7ee787">Fix-Lag-And-Start-VM.bat • optimize-hyperv.ps1</text>
     </g>
 
-    <!-- Card 5: WSL 2 -->
-    <g transform="translate(1785, 55)">
-      <rect x="0" y="0" width="425" height="95" rx="10" fill="#0d1117" stroke="#f2cc60" stroke-width="1.2" />
+    <!-- Card 6: WSL 2 Ubuntu GUI -->
+    <g transform="translate(2225, 55)">
+      <rect x="0" y="0" width="430" height="95" rx="10" fill="#0d1117" stroke="#f2cc60" stroke-width="1.2" />
       <text x="16" y="26" class="bold-text" font-size="13.5" fill="#f2cc60">🐧 WSL 2 Ubuntu + Visual XFCE GUI</text>
       <text x="16" y="48" class="body-text" font-size="11.5">Windows 11 Native Kernel • xRDP Port 3390 • Zero VM lag</text>
-      <rect x="16" y="60" width="393" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#f2cc60">Ubuntu-WSL-GUI.rdp • install-hadoop-wsl.sh</text>
-    </g>
-
-    <!-- Card 6: VirtualBox -->
-    <g transform="translate(2225, 55)">
-      <rect x="0" y="0" width="430" height="95" rx="10" fill="#0d1117" stroke="#e3b341" stroke-width="1.2" />
-      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#e3b341">📦 Oracle VirtualBox Automated Setup</text>
-      <text x="16" y="48" class="body-text" font-size="11.5">PowerShell automated NAT port-forwarding &amp; provisioning</text>
       <rect x="16" y="60" width="398" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#e3b341">virtualbox-setup.ps1 • SSH port 2222</text>
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#f2cc60">Ubuntu-WSL-GUI.rdp • install-hadoop-wsl.sh</text>
     </g>
   </g>
 
@@ -251,112 +264,119 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
     <rect x="0" y="0" width="520" height="1100" rx="16" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6,4" filter="url(#shadow)" />
     
     <path d="M 0 16 Q 0 0 16 0 L 504 0 Q 520 0 520 16 L 520 54 L 0 54 Z" fill="url(#gcpGrad)" opacity="0.15" />
-    <rect x="20" y="14" width="280" height="26" rx="6" fill="#0284c7" />
-    <text x="160" y="32" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">💻 HOST SYSTEM &amp; CLIENT ACCESS</text>
-    <text x="20" y="80" class="subheading" font-size="15" fill="#38bdf8">Developer Control Planes</text>
-    <text x="20" y="100" class="body-text" font-size="13">Native Windows Host interfaces connecting into Hadoop</text>
+    <rect x="20" y="14" width="310" height="26" rx="6" fill="#0284c7" />
+    <text x="175" y="32" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">💻 UNIFIED CONTROL HUB &amp; CLIENTS</text>
+    <text x="20" y="80" class="subheading" font-size="15" fill="#38bdf8">Single Pane of Glass Interface</text>
+    <text x="20" y="100" class="body-text" font-size="13">Central dashboard, Web UIs &amp; Interactive Studios</text>
 
-    <!-- Component 1: Web Browsers -->
-    <g transform="translate(20, 120)">
-      <rect x="0" y="0" width="480" height="195" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-      <text x="20" y="30" class="bold-text" font-size="15" fill="#38bdf8">🌐 Web Consoles (Native Web UIs)</text>
-      <text x="20" y="52" class="body-text" font-size="12">Administrative HTTP ports (Localhost or VM IP):</text>
+    <!-- Component 1: Unified Control Hub -->
+    <g transform="translate(20, 115)">
+      <rect x="0" y="0" width="480" height="210" rx="12" fill="#0d1117" stroke="#38bdf8" stroke-width="1.5" filter="url(#glowBlue)" />
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#38bdf8">🌐 Unified Big Data Control Hub</text>
+      <text x="20" y="48" class="body-text" font-size="12">Port <tspan class="mono" fill="#38bdf8">:3030</tspan> &bull; Live Telemetry &amp; Interactive Studio</text>
       
-      <rect x="18" y="65" width="444" height="26" rx="5" fill="#161b22" stroke="#21262d" />
-      <text x="28" y="82" class="mono" font-size="11" fill="#58a6ff">HDFS NameNode UI</text>
-      <text x="450" y="82" class="mono" font-size="11" fill="#79c0ff" text-anchor="end">:9870 (Overview &amp; Explorer)</text>
+      <rect x="18" y="58" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="74" class="mono" font-size="11" fill="#34d399">Cluster Health Monitor</text>
+      <text x="450" y="74" class="mono" font-size="11" fill="#7ee787" text-anchor="end">10/10 Daemons Probed</text>
 
-      <rect x="18" y="97" width="444" height="26" rx="5" fill="#161b22" stroke="#21262d" />
-      <text x="28" y="114" class="mono" font-size="11" fill="#3fb950">YARN ResourceManager UI</text>
-      <text x="450" y="114" class="mono" font-size="11" fill="#7ee787" text-anchor="end">:8088 (Cluster &amp; Apps)</text>
+      <rect x="18" y="86" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="102" class="mono" font-size="11" fill="#38bdf8">Interactive HDFS Explorer</text>
+      <text x="450" y="102" class="mono" font-size="11" fill="#79c0ff" text-anchor="end">WebHDFS File Browser</text>
 
-      <rect x="18" y="129" width="444" height="26" rx="5" fill="#161b22" stroke="#21262d" />
-      <text x="28" y="146" class="mono" font-size="11" fill="#bc8cff">JobHistoryServer UI</text>
-      <text x="450" y="146" class="mono" font-size="11" fill="#d2a8ff" text-anchor="end">:19888 (Metrics &amp; Logs)</text>
+      <rect x="18" y="114" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="130" class="mono" font-size="11" fill="#fb7185">Interactive Job Runner</text>
+      <text x="450" y="130" class="mono" font-size="11" fill="#f43f5e" text-anchor="end">Spark Pi &bull; ETL &bull; Hive SQL</text>
 
-      <rect x="18" y="161" width="444" height="26" rx="5" fill="#161b22" stroke="#21262d" />
-      <text x="28" y="178" class="mono" font-size="11" fill="#e3b341">DataNode / NodeManager</text>
-      <text x="450" y="178" class="mono" font-size="11" fill="#f2cc60" text-anchor="end">:9864 / :8042 (Workers)</text>
+      <rect x="18" y="142" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="158" class="mono" font-size="11" fill="#f59e0b">Architecture Diagram Viewer</text>
+      <text x="450" y="158" class="mono" font-size="11" fill="#fcd34d" text-anchor="end">Interactive SVG Pan/Zoom</text>
+
+      <rect x="18" y="170" width="444" height="26" rx="5" fill="#041226" stroke="#38bdf8" stroke-width="1" />
+      <text x="240" y="187" class="mono" font-size="11" fill="#38bdf8" text-anchor="middle">http://localhost:3030 (1-Click Launch)</text>
     </g>
 
-    <!-- Component 2: 1-Click Launchers -->
-    <g transform="translate(20, 335)">
-      <rect x="0" y="0" width="480" height="205" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+    <!-- Component 2: JupyterLab & Web Consoles -->
+    <g transform="translate(20, 340)">
+      <rect x="0" y="0" width="480" height="210" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#56d364">🪐 Interactive Studios &amp; Consoles</text>
+      <text x="20" y="48" class="body-text" font-size="12">Direct Developer Endpoints (Single-Click Web Access):</text>
+
+      <rect x="18" y="58" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="74" class="mono" font-size="11" fill="#56d364">JupyterLab PySpark Studio</text>
+      <text x="450" y="74" class="mono" font-size="11" fill="#7ee787" text-anchor="end">:8888 (Interactive ETL)</text>
+
+      <rect x="18" y="86" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="102" class="mono" font-size="11" fill="#fb7185">Spark Master Web UI</text>
+      <text x="450" y="102" class="mono" font-size="11" fill="#f43f5e" text-anchor="end">:8080 (Cluster Cores)</text>
+
+      <rect x="18" y="114" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="130" class="mono" font-size="11" fill="#388bfd">HDFS NameNode UI</text>
+      <text x="450" y="130" class="mono" font-size="11" fill="#79c0ff" text-anchor="end">:9870 (Namespace &amp; Files)</text>
+
+      <rect x="18" y="142" width="444" height="24" rx="5" fill="#161b22" />
+      <text x="28" y="158" class="mono" font-size="11" fill="#3fb950">YARN ResourceManager UI</text>
+      <text x="450" y="158" class="mono" font-size="11" fill="#7ee787" text-anchor="end">:8088 (Apps &amp; Queues)</text>
+
+      <rect x="18" y="170" width="444" height="26" rx="5" fill="#161b22" />
+      <text x="28" y="187" class="mono" font-size="11" fill="#d2a8ff">Spark History / MR History</text>
+      <text x="450" y="187" class="mono" font-size="11" fill="#d2a8ff" text-anchor="end">:18080 / :19888</text>
+    </g>
+
+    <!-- Component 3: 1-Click Launchers -->
+    <g transform="translate(20, 565)">
+      <rect x="0" y="0" width="480" height="195" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
       <text x="20" y="28" class="bold-text" font-size="15" fill="#e3b341">🚀 1-Click Windows Launchers</text>
       <text x="20" y="48" class="body-text" font-size="12">Location: <tspan class="mono" fill="#f2cc60">launchers/windows/</tspan></text>
 
-      <text x="20" y="75" class="bold-text" font-size="12.5" fill="#e6edf3">• Deploy-Hadoop-GCP.bat / .ps1</text>
-      <text x="35" y="92" class="body-text" font-size="11.5">Interactive GCP Dataproc &amp; GCE provisioning menu</text>
+      <text x="20" y="75" class="bold-text" font-size="12.5" fill="#e6edf3">• Start-Hadoop-Docker.bat</text>
+      <text x="35" y="92" class="body-text" font-size="11.5">Boots Hadoop + Spark + Hub &amp; auto-opens browser</text>
 
-      <text x="20" y="115" class="bold-text" font-size="12.5" fill="#e6edf3">• Launch-Kali-VMware.bat</text>
-      <text x="35" y="132" class="body-text" font-size="11.5">Applies VMX tuning &amp; launches Kali Hadoop VM</text>
+      <text x="20" y="115" class="bold-text" font-size="12.5" fill="#e6edf3">• Deploy-Hadoop-GCP.bat / .ps1</text>
+      <text x="35" y="132" class="body-text" font-size="11.5">Provisions GCP Dataproc &amp; Compute Engine VM</text>
 
-      <text x="20" y="155" class="bold-text" font-size="12.5" fill="#e6edf3">• Start-Hadoop-Docker.bat / Stop-*.bat</text>
-      <text x="35" y="172" class="body-text" font-size="11.5">Boots / gracefully shuts down containerized cluster</text>
-
-      <text x="20" y="195" class="mono" font-size="11" fill="#79c0ff">• Ubuntu-WSL-GUI.rdp (Direct XFCE Desktop)</text>
+      <text x="20" y="155" class="bold-text" font-size="12.5" fill="#e6edf3">• Launch-Kali-VMware.bat</text>
+      <text x="35" y="172" class="body-text" font-size="11.5">Calibrates VMX specs &amp; boots Kali Workstation</text>
     </g>
 
-    <!-- Component 3: CLI / Terminal & SSH -->
-    <g transform="translate(20, 560)">
-      <rect x="0" y="0" width="480" height="185" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-      <text x="20" y="28" class="bold-text" font-size="15" fill="#58a6ff">💻 Developer CLI &amp; SSH Bastion</text>
-      <text x="20" y="48" class="body-text" font-size="12">Terminal Automation Suite (make / powershell):</text>
+    <!-- Component 4: Pre-Packaged Datasets & Notebooks -->
+    <g transform="translate(20, 775)">
+      <rect x="0" y="0" width="480" height="175" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#3fb950">📊 Datasets &amp; Interactive Notebooks</text>
+      <text x="20" y="48" class="body-text" font-size="12">Hands-on tutorials in <tspan class="mono" fill="#7ee787">notebooks/</tspan> &amp; <tspan class="mono" fill="#7ee787">datasets/</tspan>:</text>
 
-      <rect x="18" y="62" width="444" height="26" rx="5" fill="#161b22" />
-      <text x="28" y="79" class="mono" font-size="11.5" fill="#58a6ff">make test</text>
-      <text x="450" y="79" class="body-text" font-size="11.5" fill="#8b949e" text-anchor="end">Run full HDFS &amp; YARN test suite</text>
+      <text x="20" y="75" class="bold-text" font-size="12.5" fill="#e6edf3">• 01-pyspark-hdfs-pipeline.ipynb</text>
+      <text x="35" y="92" class="body-text" font-size="11.5">DataFrame CSV ingestion &amp; Snappy Parquet write</text>
 
-      <rect x="18" y="94" width="444" height="26" rx="5" fill="#161b22" />
-      <text x="28" y="111" class="mono" font-size="11.5" fill="#58a6ff">make gcp-dataproc-create</text>
-      <text x="450" y="111" class="body-text" font-size="11.5" fill="#8b949e" text-anchor="end">Provision Dataproc cluster</text>
+      <text x="20" y="115" class="bold-text" font-size="12.5" fill="#e6edf3">• 02-spark-sql-hive-analytics.ipynb</text>
+      <text x="35" y="132" class="body-text" font-size="11.5">Relational SQL queries &amp; Hive catalog integration</text>
 
-      <rect x="18" y="126" width="444" height="26" rx="5" fill="#161b22" />
-      <text x="28" y="143" class="mono" font-size="11.5" fill="#58a6ff">make vm-kali-optimize</text>
-      <text x="450" y="143" class="body-text" font-size="11.5" fill="#8b949e" text-anchor="end">Calibrate VMware VMX memory</text>
-
-      <rect x="18" y="158" width="444" height="22" rx="4" fill="#161b22" stroke="#1f6feb" stroke-width="1" />
-      <text x="28" y="174" class="mono" font-size="10.5" fill="#79c0ff">ssh -p 22222 hduser@localhost  (Kali: ssh kali@192.168.13.128)</text>
-    </g>
-
-    <!-- Component 4: Pre-Packaged Datasets -->
-    <g transform="translate(20, 765)">
-      <rect x="0" y="0" width="480" height="155" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-      <text x="20" y="28" class="bold-text" font-size="15" fill="#3fb950">📊 Built-In Practice Datasets</text>
-      <text x="20" y="48" class="body-text" font-size="12">Zero-setup verification datasets in <tspan class="mono" fill="#7ee787">datasets/</tspan>:</text>
-
-      <text x="20" y="75" class="bold-text" font-size="12.5" fill="#e6edf3">• wordcount-sample.txt (Unstructured Text)</text>
-      <text x="35" y="94" class="body-text" font-size="11.5">Large text corpus for testing MapReduce &amp; Streaming</text>
-
-      <text x="20" y="118" class="bold-text" font-size="12.5" fill="#e6edf3">• employees.csv (Tabular Schema)</text>
-      <text x="35" y="137" class="body-text" font-size="11.5">Structured employee records for PySpark DataFrame jobs</text>
+      <text x="20" y="155" class="mono" font-size="11" fill="#79c0ff">• wordcount-sample.txt &bull; employees.csv</text>
     </g>
 
     <!-- Step 1 Indicator Pill -->
-    <g transform="translate(20, 935)">
-      <rect x="0" y="0" width="480" height="145" rx="12" fill="#1f6feb" fill-opacity="0.1" stroke="#1f6feb" stroke-width="1.2" />
+    <g transform="translate(20, 965)">
+      <rect x="0" y="0" width="480" height="115" rx="12" fill="#1f6feb" fill-opacity="0.1" stroke="#1f6feb" stroke-width="1.2" />
       <circle cx="35" cy="35" r="16" fill="#1f6feb" />
       <text x="35" y="35" class="step-num">1</text>
-      <text x="65" y="35" class="bold-text" font-size="15" fill="#58a6ff">Job &amp; Data Ingestion Trigger</text>
-      <text x="25" y="70" class="body-text" font-size="12.5">Developer initiates execution via 1-Click launcher, CLI script,</text>
-      <text x="25" y="90" class="body-text" font-size="12.5">or PySpark pipeline. Requests dispatch to YARN RM (<tspan class="mono" fill="#79c0ff">:8032</tspan>)</text>
-      <text x="25" y="110" class="body-text" font-size="12.5">and HDFS NameNode (<tspan class="mono" fill="#79c0ff">:9000</tspan> / <tspan class="mono" fill="#79c0ff">gs://</tspan> on Dataproc).</text>
+      <text x="65" y="35" class="bold-text" font-size="15" fill="#58a6ff">Job &amp; Query Ingestion Trigger</text>
+      <text x="25" y="70" class="body-text" font-size="12.5">Engineers submit Spark applications, Hive queries, or MR jobs</text>
+      <text x="25" y="90" class="body-text" font-size="12.5">via Control Hub (:3030), JupyterLab (:8888), or Spark RPC (:7077).</text>
     </g>
   </g>
 
-  <!-- CENTER REGION: HADOOP CLUSTER DAEMON RUNTIME (Width: 1540) -->
+  <!-- CENTER REGION: HADOOP & SPARK DISTRIBUTED CLUSTER (Width: 1540) -->
   <g id="docker-container-boundary" transform="translate(620, 390)">
     <rect x="0" y="0" width="1540" height="1100" rx="20" fill="url(#cardGrad)" stroke="#1f6feb" stroke-width="2" filter="url(#shadow)" />
 
     <path d="M 0 20 Q 0 0 20 0 L 1520 0 Q 1540 0 1540 20 L 1540 60 L 0 60 Z" fill="url(#hdfsGrad)" opacity="0.18" />
-    <rect x="30" y="16" width="370" height="30" rx="6" fill="#1f6feb" />
-    <text x="215" y="36" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">🐘 HADOOP CLUSTER ENGINE (6 DAEMONS)</text>
+    <rect x="30" y="16" width="430" height="30" rx="6" fill="#1f6feb" />
+    <text x="245" y="36" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">🐘 HADOOP &amp; SPARK CLUSTER CORE</text>
 
     <!-- Runtime Attributes Info Pill -->
-    <g transform="translate(420, 16)">
-      <rect x="0" y="0" width="1090" height="30" rx="6" fill="#161b22" stroke="#30363d" />
+    <g transform="translate(480, 16)">
+      <rect x="0" y="0" width="1030" height="30" rx="6" fill="#161b22" stroke="#30363d" />
       <text x="20" y="20" class="mono" font-size="12" fill="#8b949e">
-        <tspan fill="#58a6ff">HADOOP:</tspan> 3.3.6 LTS | <tspan fill="#3fb950">JAVA:</tspan> OpenJDK 11 | <tspan fill="#d2a8ff">GC:</tspan> -XX:+UseG1GC Low-Pause | <tspan fill="#f2cc60">ALLOCATION:</tspan> 512MB Deadlock-Free
+        <tspan fill="#58a6ff">HDFS:</tspan> 3.1.2 | <tspan fill="#fb7185">SPARK:</tspan> 3.5.1 | <tspan fill="#f59e0b">HIVE:</tspan> Metastore | <tspan fill="#3fb950">JAVA:</tspan> OpenJDK 8/11 | <tspan fill="#38bdf8">BRIDGE NET:</tspan> bigdata-net
       </text>
     </g>
 
@@ -366,8 +386,8 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
       
       <path d="M 0 16 Q 0 0 16 0 L 709 0 Q 725 0 725 16 L 725 46 L 0 46 Z" fill="#1f6feb" opacity="0.2" />
       <text x="25" y="30" class="heading" font-size="16" fill="#58a6ff">🗄️ HDFS DISTRIBUTED STORAGE LAYER</text>
-      <rect x="575" y="10" width="130" height="26" rx="6" fill="#1f6feb" fill-opacity="0.3" stroke="#1f6feb" />
-      <text x="640" y="27" class="badge" fill="#79c0ff" text-anchor="middle">RPC PORT: 9000</text>
+      <rect x="535" y="10" width="170" height="26" rx="6" fill="#1f6feb" fill-opacity="0.3" stroke="#1f6feb" />
+      <text x="620" y="27" class="badge" fill="#79c0ff" text-anchor="middle">RPC :9000 &bull; REST :9870</text>
 
       <!-- NameNode -->
       <g transform="translate(25, 55)">
@@ -375,15 +395,15 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
         <rect x="15" y="14" width="220" height="28" rx="6" fill="#1f6feb" />
         <text x="125" y="32" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">👑 NameNode (Master)</text>
         
-        <rect x="525" y="14" width="135" height="28" rx="6" fill="#21262d" stroke="#30363d" />
-        <text x="592" y="32" class="mono" font-size="12" fill="#79c0ff" text-anchor="middle">Web UI :9870</text>
+        <rect x="500" y="14" width="160" height="28" rx="6" fill="#21262d" stroke="#30363d" />
+        <text x="580" y="32" class="mono" font-size="12" fill="#79c0ff" text-anchor="middle">UI :9870 / WebHDFS</text>
 
-        <text x="20" y="66" class="bold-text" font-size="13.5" fill="#e6edf3">Cluster Namespace Coordinator • Heap: 1024MB Max (G1GC)</text>
+        <text x="20" y="66" class="bold-text" font-size="13.5" fill="#e6edf3">Cluster Namespace Coordinator • Inodes Tree in RAM</text>
         
         <g transform="translate(20, 80)">
           <rect x="0" y="0" width="635" height="58" rx="8" fill="#0d1117" stroke="#21262d" />
           <text x="15" y="24" class="bold-text" font-size="12.5" fill="#58a6ff">🧠 In-Memory Namespace Tree (RAM)</text>
-          <text x="15" y="44" class="body-text" font-size="11.5">Holds entire HDFS directory structure, file-to-block mapping, permissions, and quotas</text>
+          <text x="15" y="44" class="body-text" font-size="11.5">Holds HDFS directory tree, file-to-block map, quotas, and WebHDFS REST endpoints</text>
         </g>
 
         <g transform="translate(20, 148)">
@@ -440,254 +460,259 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
           <g transform="translate(0, 0)">
             <rect x="0" y="0" width="200" height="100" rx="8" fill="#0d1117" stroke="#1f6feb" stroke-dasharray="3,3" />
             <text x="14" y="24" class="bold-text" font-size="12" fill="#58a6ff">🧱 Block 1 (128 MB)</text>
-            <text x="14" y="46" class="mono" font-size="10.5" fill="#8b949e">blk_1073741825</text>
+            <text x="14" y="46" class="mono" font-size="10.5" fill="#8b949e">spark_employees.parquet</text>
             <text x="14" y="68" class="body-text" font-size="10.5" fill="#3fb950">CRC32C Verified ✓</text>
-            <text x="14" y="88" class="body-text" font-size="10" fill="#8b949e">Localhost Data Storage</text>
+            <text x="14" y="88" class="body-text" font-size="10" fill="#8b949e">Localhost Block Storage</text>
           </g>
           <g transform="translate(217, 0)">
             <rect x="0" y="0" width="200" height="100" rx="8" fill="#0d1117" stroke="#1f6feb" stroke-dasharray="3,3" />
             <text x="14" y="24" class="bold-text" font-size="12" fill="#58a6ff">🧱 Block 2 (128 MB)</text>
-            <text x="14" y="46" class="mono" font-size="10.5" fill="#8b949e">blk_1073741826</text>
+            <text x="14" y="46" class="mono" font-size="10.5" fill="#8b949e">wordcount-sample.txt</text>
             <text x="14" y="68" class="body-text" font-size="10.5" fill="#3fb950">CRC32C Verified ✓</text>
-            <text x="14" y="88" class="body-text" font-size="10" fill="#8b949e">Localhost Data Storage</text>
+            <text x="14" y="88" class="body-text" font-size="10" fill="#8b949e">Localhost Block Storage</text>
           </g>
           <g transform="translate(435, 0)">
             <rect x="0" y="0" width="200" height="100" rx="8" fill="#0d1117" stroke="#1f6feb" stroke-dasharray="3,3" />
-            <text x="14" y="24" class="bold-text" font-size="12" fill="#58a6ff">🧱 Block 3 (Remainder)</text>
-            <text x="14" y="46" class="mono" font-size="10.5" fill="#8b949e">blk_1073741827</text>
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#58a6ff">🧱 Block 3 (128 MB)</text>
+            <text x="14" y="46" class="mono" font-size="10.5" fill="#8b949e">/user/hive/warehouse</text>
             <text x="14" y="68" class="body-text" font-size="10.5" fill="#3fb950">CRC32C Verified ✓</text>
-            <text x="14" y="88" class="body-text" font-size="10" fill="#8b949e">Final Split Partition</text>
+            <text x="14" y="88" class="body-text" font-size="10" fill="#8b949e">Hive Table Blocks</text>
           </g>
         </g>
 
-        <g transform="translate(20, 205)">
-          <rect x="0" y="0" width="635" height="72" rx="8" fill="#0d1117" stroke="#21262d" />
-          <text x="15" y="24" class="bold-text" font-size="12" fill="#c9d1d9">Heartbeat &amp; Block Reporting Pipeline:</text>
-          <text x="15" y="46" class="body-text" font-size="11.5">• <tspan fill="#3fb950">Heartbeat (3s)</tspan>: Reports node liveness &amp; remaining volume capacity to NameNode.</text>
-          <text x="15" y="64" class="body-text" font-size="11.5">• <tspan fill="#58a6ff">Block Report (6h)</tspan>: Transmits inventory of all active raw block IDs for replication check.</text>
+        <!-- DataNode Heartbeats & Block Reports -->
+        <g transform="translate(20, 198)">
+          <rect x="0" y="0" width="635" height="82" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="15" y="24" class="bold-text" font-size="12" fill="#58a6ff">💓 Continuous Heartbeats (Every 3s) &amp; Block Reports (Every 6h)</text>
+          <text x="15" y="44" class="body-text" font-size="11.5">If heartbeat missing for 10 minutes (600s), NameNode marks DataNode dead and</text>
+          <text x="15" y="64" class="body-text" font-size="11.5">triggers automatic under-replicated block healing to surviving worker nodes.</text>
         </g>
       </g>
 
-      <!-- Step 6 Indicator Pill -->
-      <g transform="translate(25, 840)">
-        <rect x="0" y="0" width="675" height="135" rx="10" fill="#1f6feb" fill-opacity="0.1" stroke="#1f6feb" stroke-width="1.2" />
+      <!-- Step 2 Indicator Pill -->
+      <g transform="translate(25, 835)">
+        <rect x="0" y="0" width="675" height="145" rx="12" fill="#1f6feb" fill-opacity="0.1" stroke="#1f6feb" stroke-width="1.2" />
         <circle cx="35" cy="35" r="16" fill="#1f6feb" />
-        <text x="35" y="35" class="step-num">6</text>
-        <text x="65" y="35" class="bold-text" font-size="15" fill="#58a6ff">Checkpointing &amp; Zero Data-Loss Resilience</text>
-        <text x="25" y="70" class="body-text" font-size="12.5">SecondaryNameNode merges transactions every 3600 seconds or 1,000,000 edits.</text>
-        <text x="25" y="92" class="body-text" font-size="12.5">Ensures NameNode boots instantly without replaying gigabytes of transaction logs.</text>
-        <text x="25" y="114" class="body-text" font-size="12.5">Protected against the legacy course typo <tspan class="mono" fill="#f85149">dfs.namemode</tspan> with dedicated persistent directories.</text>
+        <text x="35" y="35" class="step-num">2</text>
+        <text x="65" y="35" class="bold-text" font-size="15" fill="#58a6ff">Distributed Block Placement &amp; Persistence</text>
+        <text x="25" y="70" class="body-text" font-size="12.5">Incoming data chunked into 128MB chunks. Writes stream</text>
+        <text x="25" y="90" class="body-text" font-size="12.5">over Data Transfer Protocol (:9866). Inodes recorded in NameNode</text>
+        <text x="25" y="110" class="body-text" font-size="12.5">WAL (<tspan class="mono" fill="#79c0ff">edits</tspan>) and committed to durable named Docker volumes.</text>
       </g>
     </g>
 
-    <!-- SUB-BOX B: COMPUTE & SCHEDULING LAYER (YARN) [Width: 725] -->
-    <g id="yarn-compute-layer" transform="translate(785, 70)">
+    <!-- SUB-BOX B: COMPUTE & SCHEDULING (YARN & SPARK) [Width: 725] -->
+    <g id="compute-layer" transform="translate(785, 70)">
       <rect x="0" y="0" width="725" height="1000" rx="16" fill="#0d1117" stroke="#238636" stroke-width="1.5" />
       
       <path d="M 0 16 Q 0 0 16 0 L 709 0 Q 725 0 725 16 L 725 46 L 0 46 Z" fill="#238636" opacity="0.2" />
-      <text x="25" y="30" class="heading" font-size="16" fill="#3fb950">⚙️ YARN RESOURCE &amp; COMPUTE ORCHESTRATION</text>
-      <rect x="565" y="10" width="140" height="26" rx="6" fill="#238636" fill-opacity="0.3" stroke="#238636" />
-      <text x="635" y="27" class="badge" fill="#7ee787" text-anchor="middle">IPC PORT: 8032</text>
+      <text x="25" y="30" class="heading" font-size="16" fill="#3fb950">⚡ YARN &amp; SPARK COMPUTE ENGINES</text>
+      <rect x="545" y="10" width="160" height="26" rx="6" fill="#238636" fill-opacity="0.3" stroke="#3fb950" />
+      <text x="625" y="27" class="badge" fill="#7ee787" text-anchor="middle">SPARK :7077 &bull; YARN :8088</text>
 
-      <!-- ResourceManager -->
+      <!-- Apache Spark Master & Worker -->
       <g transform="translate(25, 55)">
-        <rect x="0" y="0" width="675" height="265" rx="12" fill="#161b22" stroke="#2ea043" stroke-width="1.3" filter="url(#glowGreen)" />
-        <rect x="15" y="14" width="250" height="28" rx="6" fill="#238636" />
-        <text x="140" y="32" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">🧠 ResourceManager (Master)</text>
+        <rect x="0" y="0" width="675" height="265" rx="12" fill="#161b22" stroke="#f43f5e" stroke-width="1.3" filter="url(#glowSpark)" />
+        <rect x="15" y="14" width="250" height="28" rx="6" fill="#e11d48" />
+        <text x="140" y="32" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">⚡ Apache Spark 3.5 Master</text>
+        
+        <rect x="500" y="14" width="160" height="28" rx="6" fill="#21262d" stroke="#30363d" />
+        <text x="580" y="32" class="mono" font-size="12" fill="#fb7185" text-anchor="middle">UI :8080 | RPC :7077</text>
+
+        <text x="20" y="66" class="bold-text" font-size="13.5" fill="#e6edf3">In-Memory DAG Execution &bull; Distributed Spark Workers</text>
+        
+        <g transform="translate(20, 80)">
+          <rect x="0" y="0" width="635" height="58" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="15" y="24" class="bold-text" font-size="12.5" fill="#fb7185">🧠 DAGScheduler &amp; TaskScheduler</text>
+          <text x="15" y="44" class="body-text" font-size="11.5">Builds execution DAG of stages, optimizes shuffles, dispatches tasks to Worker Executors</text>
+        </g>
+
+        <g transform="translate(20, 148)">
+          <g transform="translate(0, 0)">
+            <rect x="0" y="0" width="310" height="100" rx="8" fill="#0d1117" stroke="#21262d" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#fb7185">🔨 Spark Worker (:8081)</text>
+            <text x="14" y="46" class="body-text" font-size="11">2 CPU Cores &bull; 1024MB Memory</text>
+            <text x="14" y="64" class="body-text" font-size="11">Executes in-memory Spark tasks</text>
+            <text x="14" y="86" class="mono" font-size="10" fill="#fb7185">spark.master = spark://spark-master:7077</text>
+          </g>
+          <g transform="translate(325, 0)">
+            <rect x="0" y="0" width="310" height="100" rx="8" fill="#0d1117" stroke="#21262d" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#fb7185">⏱️ Spark History Server</text>
+            <text x="14" y="46" class="body-text" font-size="11">Event Log Profiler on Port :18080</text>
+            <text x="14" y="64" class="body-text" font-size="11">Reads from hdfs://.../spark-logs</text>
+            <text x="14" y="86" class="mono" font-size="10" fill="#fb7185">spark.history.fs.logDirectory</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- YARN ResourceManager -->
+      <g transform="translate(25, 335)">
+        <rect x="0" y="0" width="675" height="240" rx="12" fill="#161b22" stroke="#2ea043" stroke-width="1.3" />
+        <rect x="15" y="14" width="280" height="28" rx="6" fill="#238636" />
+        <text x="155" y="32" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">🧠 YARN ResourceManager (Master)</text>
 
         <rect x="525" y="14" width="135" height="28" rx="6" fill="#21262d" stroke="#30363d" />
         <text x="592" y="32" class="mono" font-size="12" fill="#7ee787" text-anchor="middle">Web UI :8088</text>
 
-        <text x="20" y="66" class="bold-text" font-size="13.5" fill="#e6edf3">Cluster Resource Arbitration &amp; Scheduling • Pool: 3072MB (4 vCPUs)</text>
+        <text x="20" y="66" class="bold-text" font-size="13.5" fill="#e6edf3">Capacity Scheduler &bull; 3072 MB Total Dynamic Memory Pool</text>
 
         <g transform="translate(20, 80)">
           <g transform="translate(0, 0)">
-            <rect x="0" y="0" width="310" height="165" rx="8" fill="#0d1117" stroke="#21262d" />
-            <text x="14" y="26" class="bold-text" font-size="12.5" fill="#56d364">📊 Pluggable Scheduler</text>
-            <text x="14" y="48" class="body-text" font-size="11.5">• Capacity &amp; Fair allocation policies</text>
-            <text x="14" y="68" class="body-text" font-size="11.5">• Min Allocation: 256 MB</text>
-            <text x="14" y="88" class="body-text" font-size="11.5">• Max Allocation: 3072 MB</text>
-            <text x="14" y="108" class="body-text" font-size="11.5">• Deadlock-free container balancing</text>
-            <text x="14" y="132" class="mono" font-size="10.5" fill="#7ee787">Scheduler IPC: Port 8030</text>
+            <rect x="0" y="0" width="310" height="70" rx="8" fill="#0d1117" stroke="#21262d" />
+            <text x="14" y="22" class="bold-text" font-size="12" fill="#3fb950">📋 ApplicationsManager (ASM)</text>
+            <text x="14" y="42" class="body-text" font-size="11">Job submission gateway &amp; negotiator</text>
+            <text x="14" y="58" class="mono" font-size="10" fill="#7ee787">yarn.resourcemanager.address</text>
           </g>
           <g transform="translate(325, 0)">
-            <rect x="0" y="0" width="310" height="165" rx="8" fill="#0d1117" stroke="#21262d" />
-            <text x="14" y="26" class="bold-text" font-size="12.5" fill="#56d364">🎯 ApplicationsManager (ASM)</text>
-            <text x="14" y="48" class="body-text" font-size="11.5">• Accepts client job submissions</text>
-            <text x="14" y="68" class="body-text" font-size="11.5">• Negotiates 1st container for AppMaster</text>
-            <text x="14" y="88" class="body-text" font-size="11.5">• Restarts ApplicationMaster on fail</text>
-            <text x="14" y="108" class="body-text" font-size="11.5">• Dispatches status to Client UI</text>
-            <text x="14" y="132" class="mono" font-size="10.5" fill="#7ee787">ResourceTracker: Port 8031</text>
+            <rect x="0" y="0" width="310" height="70" rx="8" fill="#0d1117" stroke="#21262d" />
+            <text x="14" y="22" class="bold-text" font-size="12" fill="#3fb950">⚖️ CapacityScheduler</text>
+            <text x="14" y="42" class="body-text" font-size="11">Pure resource allocation arbiter</text>
+            <text x="14" y="58" class="mono" font-size="10" fill="#7ee787">yarn.scheduler.capacity.*</text>
           </g>
+        </g>
+
+        <g transform="translate(20, 160)">
+          <rect x="0" y="0" width="635" height="65" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="15" y="22" class="bold-text" font-size="12" fill="#7ee787">🎯 Multi-Engine Orchestration: Spark on YARN &amp; MapReduce</text>
+          <text x="15" y="42" class="body-text" font-size="11.5">Supports both standalone Spark and YARN client/cluster submissions (<tspan class="mono" fill="#7ee787">spark-submit --master yarn</tspan>).</text>
+          <text x="15" y="58" class="mono" font-size="10.5" fill="#8b949e">Allocates 512MB slot containers with low-pause G1GC tuning.</text>
         </g>
       </g>
 
-      <!-- NodeManager & Containers -->
-      <g transform="translate(25, 335)">
-        <rect x="0" y="0" width="675" height="310" rx="12" fill="#161b22" stroke="#2ea043" stroke-width="1.3" />
-        <rect x="15" y="14" width="220" height="28" rx="6" fill="#238636" />
-        <text x="125" y="32" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">👷 NodeManager (Worker)</text>
-
-        <rect x="500" y="14" width="160" height="28" rx="6" fill="#21262d" stroke="#30363d" />
-        <text x="580" y="32" class="mono" font-size="12" fill="#7ee787" text-anchor="middle">IPC :8040 | UI :8042</text>
-
-        <text x="20" y="68" class="bold-text" font-size="13.5" fill="#e6edf3">Container Lifecycle Management &amp; Resource Telemetry</text>
-
-        <g transform="translate(20, 82)">
-          <!-- AM -->
-          <g transform="translate(0, 0)">
-            <rect x="0" y="0" width="200" height="135" rx="8" fill="#0d1117" stroke="#2ea043" stroke-width="1.2" />
-            <rect x="10" y="10" width="180" height="22" rx="4" fill="#238636" fill-opacity="0.3" />
-            <text x="100" y="25" class="badge" fill="#56d364" text-anchor="middle">ApplicationMaster (AM)</text>
-            <text x="12" y="52" class="body-text" font-size="11">• Memory: 512 MB</text>
-            <text x="12" y="70" class="body-text" font-size="11">• JVM: -Xmx400m G1GC</text>
-            <text x="12" y="88" class="body-text" font-size="11">• Requests task slots</text>
-            <text x="12" y="106" class="body-text" font-size="11">• Tracks job lifecycle</text>
-            <text x="12" y="124" class="mono" font-size="10" fill="#3fb950">Container #001</text>
-          </g>
-
-          <!-- Map -->
-          <g transform="translate(217, 0)">
-            <rect x="0" y="0" width="200" height="135" rx="8" fill="#0d1117" stroke="#bc8cff" stroke-width="1.2" />
-            <rect x="10" y="10" width="180" height="22" rx="4" fill="#8957e5" fill-opacity="0.3" />
-            <text x="100" y="25" class="badge" fill="#d2a8ff" text-anchor="middle">MapTask (Split 0)</text>
-            <text x="12" y="52" class="body-text" font-size="11">• Memory: 512 MB</text>
-            <text x="12" y="70" class="body-text" font-size="11">• Data Locality: NODE</text>
-            <text x="12" y="88" class="body-text" font-size="11">• Reads local Block 1</text>
-            <text x="12" y="106" class="body-text" font-size="11">• Emits key-values</text>
-            <text x="12" y="124" class="mono" font-size="10" fill="#bc8cff">Container #002</text>
-          </g>
-
-          <!-- Reduce -->
-          <g transform="translate(435, 0)">
-            <rect x="0" y="0" width="200" height="135" rx="8" fill="#0d1117" stroke="#bc8cff" stroke-width="1.2" />
-            <rect x="10" y="10" width="180" height="22" rx="4" fill="#8957e5" fill-opacity="0.3" />
-            <text x="100" y="25" class="badge" fill="#d2a8ff" text-anchor="middle">ReduceTask (Part 0)</text>
-            <text x="12" y="52" class="body-text" font-size="11">• Memory: 512 MB</text>
-            <text x="12" y="70" class="body-text" font-size="11">• Shuffle &amp; Sort phase</text>
-            <text x="12" y="88" class="body-text" font-size="11">• Aggregates values</text>
-            <text x="12" y="106" class="body-text" font-size="11">• Writes part-r-00000</text>
-            <text x="12" y="124" class="mono" font-size="10" fill="#bc8cff">Container #003</text>
-          </g>
-        </g>
-
-        <!-- Memory protection pill -->
-        <g transform="translate(20, 226)">
-          <rect x="0" y="0" width="635" height="70" rx="8" fill="#0d1117" stroke="#21262d" />
-          <text x="15" y="24" class="bold-text" font-size="12" fill="#c9d1d9">Resource Monitoring &amp; Virtual Memory Protection:</text>
-          <text x="15" y="44" class="body-text" font-size="11.5">• <tspan fill="#7ee787">vmem-check-enabled=false</tspan>: Prevents Java 11 glibc thread memory over-allocation kills.</text>
-          <text x="15" y="60" class="body-text" font-size="11.5">• Total concurrent container demand: 1536 MB &lt; 3072 MB pool (Eliminates deadlock at reduce 0%).</text>
-        </g>
-      </g>
-
-      <!-- JobHistoryServer -->
-      <g transform="translate(25, 660)">
-        <rect x="0" y="0" width="675" height="165" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.2" />
-        <rect x="15" y="14" width="280" height="28" rx="6" fill="#21262d" stroke="#3fb950" stroke-width="1" />
-        <text x="155" y="32" class="bold-text" font-size="13" fill="#3fb950" text-anchor="middle">📜 MapReduce JobHistoryServer (JHS)</text>
+      <!-- YARN NodeManager & Containers -->
+      <g transform="translate(25, 590)">
+        <rect x="0" y="0" width="675" height="230" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.2" />
+        <rect x="15" y="14" width="220" height="28" rx="6" fill="#21262d" stroke="#3fb950" stroke-width="1" />
+        <text x="125" y="32" class="bold-text" font-size="13" fill="#3fb950" text-anchor="middle">👷 NodeManager (Worker)</text>
 
         <rect x="525" y="14" width="135" height="28" rx="6" fill="#21262d" stroke="#30363d" />
-        <text x="592" y="32" class="mono" font-size="12" fill="#7ee787" text-anchor="middle">Web UI :19888</text>
+        <text x="592" y="32" class="mono" font-size="12" fill="#7ee787" text-anchor="middle">Web UI :8042</text>
 
-        <text x="20" y="68" class="bold-text" font-size="13" fill="#c9d1d9">Historical Metrics, Log Aggregation &amp; Audit Trail</text>
-        <text x="20" y="88" class="body-text" font-size="12">Collects finished application metrics, task counters, timeline data, and container logs</text>
-        <text x="20" y="108" class="body-text" font-size="12">even after ApplicationMaster and compute worker containers have terminated.</text>
-        <rect x="20" y="122" width="635" height="30" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="35" y="142" class="mono" font-size="11" fill="#7ee787">IPC Port: 10020 • History Dir: /tmp/hadoop-yarn/staging/history/done</text>
+        <text x="20" y="66" class="bold-text" font-size="13" fill="#c9d1d9">Slot Container Supervisor • vmem-check-enabled=false</text>
+
+        <g transform="translate(20, 80)">
+          <g transform="translate(0, 0)">
+            <rect x="0" y="0" width="200" height="70" rx="8" fill="#0d1117" stroke="#238636" />
+            <text x="12" y="22" class="bold-text" font-size="11.5" fill="#3fb950">📦 Container #001</text>
+            <text x="12" y="40" class="mono" font-size="10" fill="#8b949e">ApplicationMaster</text>
+            <text x="12" y="58" class="body-text" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
+          <g transform="translate(217, 0)">
+            <rect x="0" y="0" width="200" height="70" rx="8" fill="#0d1117" stroke="#238636" />
+            <text x="12" y="22" class="bold-text" font-size="11.5" fill="#3fb950">📦 Container #002</text>
+            <text x="12" y="40" class="mono" font-size="10" fill="#8b949e">Spark / MR Task</text>
+            <text x="12" y="58" class="body-text" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
+          <g transform="translate(435, 0)">
+            <rect x="0" y="0" width="200" height="70" rx="8" fill="#0d1117" stroke="#238636" />
+            <text x="12" y="22" class="bold-text" font-size="11.5" fill="#3fb950">📦 Container #003</text>
+            <text x="12" y="40" class="mono" font-size="10" fill="#8b949e">Spark / MR Task</text>
+            <text x="12" y="58" class="body-text" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
+        </g>
+
+        <!-- JobHistory Server Link -->
+        <g transform="translate(20, 160)">
+          <rect x="0" y="0" width="635" height="55" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="15" y="22" class="bold-text" font-size="12" fill="#d2a8ff">📜 MapReduce JobHistoryServer (Port :19888)</text>
+          <text x="15" y="42" class="body-text" font-size="11.5">Archives completed tasks, aggregated container logs, and diagnostic counters.</text>
+        </g>
       </g>
 
-      <!-- Step 2 Indicator Pill -->
-      <g transform="translate(25, 840)">
-        <rect x="0" y="0" width="675" height="135" rx="10" fill="#238636" fill-opacity="0.1" stroke="#238636" stroke-width="1.2" />
+      <!-- Step 3 Indicator Pill -->
+      <g transform="translate(25, 835)">
+        <rect x="0" y="0" width="675" height="145" rx="12" fill="#238636" fill-opacity="0.1" stroke="#238636" stroke-width="1.2" />
         <circle cx="35" cy="35" r="16" fill="#238636" />
-        <text x="35" y="35" class="step-num">2</text>
-        <text x="65" y="35" class="bold-text" font-size="15" fill="#56d364">Container Negotiation &amp; Scheduling Flow</text>
-        <text x="25" y="70" class="body-text" font-size="12.5">ResourceManager arbitrates memory and spawns the ApplicationMaster container.</text>
-        <text x="25" y="92" class="body-text" font-size="12.5">AM negotiates Map and Reduce task slots, prioritizing Data Locality (NODE_LOCAL).</text>
-        <text x="25" y="114" class="body-text" font-size="12.5">Benchmarked: Monte Carlo Pi task finishes in 42.8s with 100% Map and Reduce execution.</text>
+        <text x="35" y="35" class="step-num">3</text>
+        <text x="65" y="35" class="bold-text" font-size="15" fill="#3fb950">Resource Negotiation &amp; Container Dispatch</text>
+        <text x="25" y="70" class="body-text" font-size="12.5">Spark Master launches worker executors, while YARN allocates</text>
+        <text x="25" y="90" class="body-text" font-size="12.5">isolated container slots with strict memory guards (512MB default).</text>
+        <text x="25" y="110" class="body-text" font-size="12.5">Data locality reads 128MB HDFS blocks directly from local DataNode.</text>
       </g>
     </g>
   </g>
 
-  <!-- RIGHT COLUMN: ANALYTICS ENGINES & GOOGLE CLOUD SUITE (Width: 520) -->
-  <g id="analytics-engines-layer" transform="translate(2220, 390)">
+  <!-- RIGHT COLUMN: ANALYTICS & PROCESSING FRAMEWORKS (Width: 520) -->
+  <g id="analytics-frameworks-layer" transform="translate(2220, 390)">
     <rect x="0" y="0" width="520" height="1100" rx="16" fill="url(#cardGrad)" stroke="#8957e5" stroke-width="1.5" stroke-dasharray="6,4" filter="url(#shadow)" />
 
     <path d="M 0 16 Q 0 0 16 0 L 504 0 Q 520 0 520 16 L 520 54 L 0 54 Z" fill="url(#engineGrad)" opacity="0.15" />
-    <rect x="20" y="14" width="300" height="26" rx="6" fill="#8957e5" />
-    <text x="170" y="32" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">⚡ ANALYTICS &amp; CLOUD ENGINES</text>
-    <text x="20" y="80" class="subheading" font-size="15" fill="#bc8cff">Programming Models &amp; Cloud</text>
-    <text x="20" y="100" class="body-text" font-size="13">Supported frameworks in <tspan class="mono" fill="#d2a8ff">examples/</tspan> &amp; <tspan class="mono" fill="#d2a8ff">scripts/gcp/</tspan></text>
+    <rect x="20" y="14" width="310" height="26" rx="6" fill="#8957e5" />
+    <text x="175" y="32" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">⚡ ANALYTICS &amp; PROCESSING</text>
+    <text x="20" y="80" class="subheading" font-size="15" fill="#bc8cff">Distributed Computing Engines</text>
+    <text x="20" y="100" class="body-text" font-size="13">Spark, Hive, MapReduce &amp; Streaming Frameworks</text>
 
-    <!-- Engine 1: Spark -->
-    <g transform="translate(20, 120)">
-      <rect x="0" y="0" width="480" height="160" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-      <text x="20" y="30" class="bold-text" font-size="15" fill="#f85149">🔥 Apache Spark &amp; PySpark</text>
-      <text x="20" y="52" class="body-text" font-size="12">In-memory distributed DataFrame processing on HDFS:</text>
+    <!-- Engine 1: Apache Spark / PySpark -->
+    <g transform="translate(20, 115)">
+      <rect x="0" y="0" width="480" height="185" rx="12" fill="#0d1117" stroke="#f43f5e" stroke-width="1.3" />
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#fb7185">🔥 Apache Spark &amp; PySpark</text>
+      <text x="20" y="48" class="body-text" font-size="12">In-Memory DataFrames, SQL &amp; Snappy Parquet:</text>
 
-      <rect x="18" y="65" width="444" height="48" rx="6" fill="#161b22" />
-      <text x="28" y="84" class="mono" font-size="11" fill="#79c0ff">df = spark.read.csv("hdfs://localhost:9000/data/emp.csv")</text>
-      <text x="28" y="102" class="mono" font-size="11" fill="#3fb950">df.groupBy("dept").count().write.parquet("hdfs://...")</text>
+      <rect x="18" y="60" width="444" height="48" rx="6" fill="#161b22" />
+      <text x="28" y="78" class="mono" font-size="11" fill="#fb7185">spark = SparkSession.builder.master("spark://...").getOrCreate()</text>
+      <text x="28" y="96" class="mono" font-size="11" fill="#34d399">df.write.mode("overwrite").parquet("hdfs://localhost:9000/...")</text>
 
-      <text x="20" y="140" class="mono" font-size="11" fill="#bc8cff">examples/spark-pyspark/pyspark_hdfs_read_write.py</text>
+      <text x="20" y="132" class="mono" font-size="11" fill="#fb7185">examples/spark-pyspark/pyspark_hdfs_read_write.py</text>
+      <text x="20" y="152" class="body-text" font-size="11.5">Predicate pushdown, column pruning &amp; 100x faster than MR</text>
     </g>
 
-    <!-- Engine 2: GCP Dataproc -->
-    <g transform="translate(20, 295)">
-      <rect x="0" y="0" width="480" height="165" rx="12" fill="#0d1117" stroke="#38bdf8" stroke-width="1.2" />
-      <text x="20" y="30" class="bold-text" font-size="15" fill="#38bdf8">☁️ Google Cloud Dataproc (GCP)</text>
-      <text x="20" y="52" class="body-text" font-size="12">Fully managed, auto-deleting cloud Hadoop clusters:</text>
+    <!-- Engine 2: Apache Hive Warehousing -->
+    <g transform="translate(20, 310)">
+      <rect x="0" y="0" width="480" height="175" rx="12" fill="#0d1117" stroke="#f59e0b" stroke-width="1.3" />
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#fcd34d">🐝 Apache Hive Data Warehouse</text>
+      <text x="20" y="48" class="body-text" font-size="12">SQL over HDFS Storage &amp; HiveServer2 JDBC:</text>
 
-      <rect x="18" y="65" width="444" height="50" rx="6" fill="#161b22" />
-      <text x="28" y="84" class="mono" font-size="11" fill="#79c0ff">gcloud dataproc clusters create hadoop-cluster-lab</text>
-      <text x="28" y="102" class="mono" font-size="11" fill="#56d364">--bucket=gs://my-bucket --enable-component-gateway</text>
+      <rect x="18" y="60" width="444" height="48" rx="6" fill="#161b22" />
+      <text x="28" y="78" class="mono" font-size="11" fill="#fcd34d">CREATE EXTERNAL TABLE ... LOCATION '/user/hive/warehouse'</text>
+      <text x="28" y="96" class="mono" font-size="11" fill="#38bdf8">beeline -u jdbc:hive2://localhost:10000 -n hduser</text>
 
-      <text x="20" y="142" class="mono" font-size="11" fill="#38bdf8">scripts/gcp/create-dataproc-cluster.sh • 30m idle</text>
+      <text x="20" y="132" class="mono" font-size="11" fill="#f59e0b">Metastore Thrift :9083 &bull; Web UI :10002</text>
+      <text x="20" y="152" class="body-text" font-size="11.5">Schemas, partitions, and relational analytics over Big Data</text>
     </g>
 
     <!-- Engine 3: Native Java MapReduce -->
-    <g transform="translate(20, 475)">
+    <g transform="translate(20, 495)">
       <rect x="0" y="0" width="480" height="160" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-      <text x="20" y="30" class="bold-text" font-size="15" fill="#bc8cff">☕ Native Java MapReduce</text>
-      <text x="20" y="52" class="body-text" font-size="12">Enterprise compiled JAR application execution:</text>
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#bc8cff">☕ Native Java MapReduce</text>
+      <text x="20" y="48" class="body-text" font-size="12">Enterprise compiled JAR application execution:</text>
 
-      <rect x="18" y="65" width="444" height="48" rx="6" fill="#161b22" />
-      <text x="28" y="84" class="mono" font-size="11" fill="#58a6ff">hadoop jar hadoop-mapreduce-examples-*.jar pi 2 10</text>
-      <text x="28" y="102" class="mono" font-size="11" fill="#7ee787">javac -cp $(hadoop classpath) -d . WordCount.java</text>
+      <rect x="18" y="60" width="444" height="48" rx="6" fill="#161b22" />
+      <text x="28" y="78" class="mono" font-size="11" fill="#58a6ff">hadoop jar hadoop-mapreduce-examples-*.jar pi 2 10</text>
+      <text x="28" y="96" class="mono" font-size="11" fill="#7ee787">javac -cp $(hadoop classpath) -d . WordCount.java</text>
 
-      <text x="20" y="140" class="mono" font-size="11" fill="#bc8cff">examples/mapreduce-java/compile-and-run.sh</text>
+      <text x="20" y="132" class="mono" font-size="11" fill="#bc8cff">examples/mapreduce-java/compile-and-run.sh</text>
     </g>
 
     <!-- Engine 4: Python Hadoop Streaming -->
-    <g transform="translate(20, 650)">
+    <g transform="translate(20, 665)">
       <rect x="0" y="0" width="480" height="155" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-      <text x="20" y="30" class="bold-text" font-size="15" fill="#58a6ff">🐍 Python Hadoop Streaming</text>
-      <text x="20" y="52" class="body-text" font-size="12">UNIX pipeline streaming mapper.py &amp; reducer.py:</text>
+      <text x="20" y="28" class="bold-text" font-size="15" fill="#58a6ff">🐍 Python Hadoop Streaming</text>
+      <text x="20" y="48" class="body-text" font-size="12">UNIX pipeline streaming mapper.py &amp; reducer.py:</text>
 
-      <rect x="18" y="65" width="444" height="45" rx="6" fill="#161b22" />
-      <text x="28" y="84" class="mono" font-size="11" fill="#79c0ff">cat data.txt | python mapper.py | sort |</text>
-      <text x="28" y="100" class="mono" font-size="11" fill="#7ee787">python reducer.py  (Packaged via hadoop-streaming)</text>
+      <rect x="18" y="60" width="444" height="45" rx="6" fill="#161b22" />
+      <text x="28" y="78" class="mono" font-size="11" fill="#79c0ff">cat data.txt | python mapper.py | sort |</text>
+      <text x="28" y="94" class="mono" font-size="11" fill="#7ee787">python reducer.py  (Packaged via hadoop-streaming)</text>
 
-      <text x="20" y="136" class="mono" font-size="11" fill="#bc8cff">examples/mapreduce-python/run.sh</text>
+      <text x="20" y="130" class="mono" font-size="11" fill="#bc8cff">examples/mapreduce-python/run.sh</text>
     </g>
 
     <!-- Step 4 & 5 Indicator Pill -->
-    <g transform="translate(20, 820)">
-      <rect x="0" y="0" width="480" height="260" rx="12" fill="#8957e5" fill-opacity="0.1" stroke="#8957e5" stroke-width="1.2" />
+    <g transform="translate(20, 830)">
+      <rect x="0" y="0" width="480" height="250" rx="12" fill="#8957e5" fill-opacity="0.1" stroke="#8957e5" stroke-width="1.2" />
       <circle cx="35" cy="35" r="16" fill="#8957e5" />
       <text x="35" y="35" class="step-num">4</text>
       <text x="65" y="35" class="bold-text" font-size="15" fill="#bc8cff">Task Execution &amp; Shuffling</text>
       
-      <text x="25" y="70" class="body-text" font-size="12.5">• Mapper containers execute code on local HDFS blocks.</text>
-      <text x="25" y="92" class="body-text" font-size="12.5">• Intermediate key-values partitioned and sorted in memory.</text>
-      <text x="25" y="114" class="body-text" font-size="12.5">• Network shuffle routes partitions to Reducer tasks.</text>
+      <text x="25" y="70" class="body-text" font-size="12.5">• Spark tasks run in executor memory (100x faster than disk).</text>
+      <text x="25" y="92" class="body-text" font-size="12.5">• Intermediate key-values partitioned and shuffled across network.</text>
+      <text x="25" y="114" class="body-text" font-size="12.5">• Reducers aggregate and sort grouped datasets.</text>
 
       <circle cx="35" cy="155" r="16" fill="#8957e5" />
       <text x="35" y="155" class="step-num">5</text>
       <text x="65" y="155" class="bold-text" font-size="15" fill="#bc8cff">Result Aggregation &amp; Output</text>
-      <text x="25" y="185" class="body-text" font-size="12.5">Reducers aggregate groups and write <tspan class="mono" fill="#d2a8ff">part-r-00000</tspan></text>
-      <text x="25" y="205" class="body-text" font-size="12.5">directly back to HDFS DataNode (or GCS <tspan class="mono" fill="#38bdf8">gs://</tspan> bucket).</text>
-      <text x="25" y="232" class="mono" font-size="11" fill="#3fb950">Status verified: SUCCESS across 54 MapReduce counters.</text>
+      <text x="25" y="185" class="body-text" font-size="12.5">Aggregated Parquet or CSV output written back to</text>
+      <text x="25" y="205" class="body-text" font-size="12.5">HDFS DataNode (or GCS <tspan class="mono" fill="#38bdf8">gs://</tspan> bucket on Dataproc).</text>
+      <text x="25" y="230" class="mono" font-size="11" fill="#3fb950">Status verified: SUCCESS across all pipeline stages.</text>
     </g>
   </g>
 
@@ -698,9 +723,9 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
     <rect x="0" y="0" width="2680" height="180" rx="16" fill="url(#cardGrad)" stroke="#da3633" stroke-width="1.5" filter="url(#shadow)" />
 
     <path d="M 0 16 Q 0 0 16 0 L 16 0 L 16 180 L 0 180 Z" fill="url(#volGrad)" />
-    <rect x="30" y="16" width="310" height="28" rx="6" fill="#da3633" fill-opacity="0.2" stroke="#da3633" stroke-width="1.2" />
-    <text x="185" y="35" class="heading" font-size="13" fill="#f85149" text-anchor="middle">💾 PERSISTENT DISTRIBUTED STORAGE</text>
-    <text x="360" y="35" class="body-text" font-size="13">Zero Data Loss: Named Docker Volumes &amp; Google Cloud Storage Buckets (gs://)</text>
+    <rect x="30" y="16" width="370" height="28" rx="6" fill="#da3633" fill-opacity="0.2" stroke="#da3633" stroke-width="1.2" />
+    <text x="215" y="35" class="heading" font-size="13" fill="#f85149" text-anchor="middle">💾 PERSISTENT DISTRIBUTED STORAGE &amp; VOLUMES</text>
+    <text x="420" y="35" class="body-text" font-size="13">Zero Data Loss: Named Docker Volumes, Spark Event Logs &amp; Cloud Storage (gs://)</text>
 
     <g transform="translate(2540, 20)">
       <circle cx="20" cy="20" r="18" fill="#da3633" />
@@ -709,31 +734,38 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
 
     <g transform="translate(30, 60)">
       <g transform="translate(0, 0)">
-        <rect x="0" y="0" width="635" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
         <text x="18" y="28" class="bold-text" font-size="13" fill="#58a6ff">📁 hadoop_namenode_data</text>
         <text x="18" y="50" class="mono" font-size="11.5" fill="#79c0ff">Container: /usr/local/hadoop/hdfs/namenode</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">Stores filesystem namespace tree, fsimage snapshots, and edits transaction logs</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Filesystem namespace tree, fsimage snapshots, and edits WAL</text>
       </g>
 
-      <g transform="translate(660, 0)">
-        <rect x="0" y="0" width="635" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+      <g transform="translate(535, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
         <text x="18" y="28" class="bold-text" font-size="13" fill="#58a6ff">🧱 hadoop_datanode_data</text>
         <text x="18" y="50" class="mono" font-size="11.5" fill="#79c0ff">Container: /usr/local/hadoop/hdfs/datanode</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">Stores actual raw 128MB replicated data blocks (blk_* and blk_*.meta checksums)</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Raw 128MB replicated data blocks (blk_* and blk_*.meta checksums)</text>
       </g>
 
-      <g transform="translate(1320, 0)">
-        <rect x="0" y="0" width="635" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#3fb950">📦 hadoop_tmp_data &amp; GCS Staging</text>
+      <g transform="translate(1070, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <text x="18" y="28" class="bold-text" font-size="13" fill="#fb7185">⚡ spark_event_logs_data</text>
+        <text x="18" y="50" class="mono" font-size="11.5" fill="#fb7185">Path: /spark-logs &bull; /opt/bitnami/spark/events</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Spark DAG event logs &bull; Picked up by Spark History Server (:18080)</text>
+      </g>
+
+      <g transform="translate(1605, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <text x="18" y="28" class="bold-text" font-size="13" fill="#3fb950">📦 hadoop_tmp_data &amp; GCS</text>
         <text x="18" y="50" class="mono" font-size="11.5" fill="#7ee787">Path: /app/hadoop/tmp | gs://bucket/staging</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">MapReduce spill buffers, intermediate shuffle partitions, and cloud staging data</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Shuffle spills, temporary intermediate buffers, and cloud staging</text>
       </g>
 
-      <g transform="translate(1980, 0)">
-        <rect x="0" y="0" width="640" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#bc8cff">📜 hadoop_logs_data</text>
-        <text x="18" y="50" class="mono" font-size="11.5" fill="#d2a8ff">Container: /usr/local/hadoop/logs</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">Daemon stdout/stderr logs for NameNode, DataNode, RM, NM, and JobHistoryServer</text>
+      <g transform="translate(2140, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <text x="18" y="28" class="bold-text" font-size="13" fill="#bc8cff">📜 jupyter_notebooks_data</text>
+        <text x="18" y="50" class="mono" font-size="11.5" fill="#d2a8ff">Container: /home/jovyan/work</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Persisted PySpark pipelines, Jupyter notebooks, and dataset artifacts</text>
       </g>
     </g>
   </g>
@@ -744,9 +776,9 @@ infographic_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800 
   <g id="footer-bar" transform="translate(60, 1720)">
     <rect x="0" y="0" width="2680" height="85" rx="12" fill="#151b28" stroke="#30363d" stroke-width="1.2" />
     
-    <text x="30" y="32" class="bold-text" font-size="13.5" fill="#ffffff">ENTERPRISE ARCHITECTURE SPECIFICATIONS SUMMARY:</text>
+    <text x="30" y="32" class="bold-text" font-size="13.5" fill="#ffffff">UNIFIED BIG DATA ARCHITECTURE SPECIFICATIONS SUMMARY:</text>
     <text x="30" y="58" class="body-text" font-size="12">
-      • <tspan fill="#58a6ff">HDFS Block Size:</tspan> 128 MB | <tspan fill="#3fb950">Replication Factor:</tspan> 1 (Dev) / 3 (Prod) | <tspan fill="#d2a8ff">YARN Alloc:</tspan> 512MB/task (3072MB pool) | <tspan fill="#f2cc60">JVM GC:</tspan> -XX:+UseG1GC Low-Pause | <tspan fill="#38bdf8">Cloud:</tspan> Dataproc 2.1
+      • <tspan fill="#58a6ff">HDFS Block Size:</tspan> 128 MB | <tspan fill="#fb7185">Spark Standalone:</tspan> 7077/8080 | <tspan fill="#f59e0b">Hive Warehouse:</tspan> /user/hive/warehouse | <tspan fill="#34d399">Control Hub:</tspan> Port 3030 | <tspan fill="#7ee787">JupyterLab:</tspan> Port 8888 | <tspan fill="#bc8cff">YARN Pool:</tspan> 3072MB | <tspan fill="#38bdf8">Cloud:</tspan> Dataproc 2.1
     </text>
 
     <text x="2650" y="34" class="mono" font-size="12" fill="#58a6ff" text-anchor="end">https://github.com/Sohila-Khaled-Abbas/docker-hadoop</text>
@@ -790,36 +822,40 @@ architecture_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800
     <rect x="0" y="0" width="2680" height="135" rx="16" fill="#151b28" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)" />
     <path d="M 0 16 Q 0 0 16 0 L 22 0 L 22 135 L 16 135 Q 0 135 0 119 Z" fill="url(#headerGrad)" />
 
-    <text x="48" y="54" class="title" font-size="31" letter-spacing="0.5">
-      🏛️ APACHE HADOOP 3.3.6 &amp; 3.1.2 INTERNAL SYSTEM ARCHITECTURE BLUEPRINT
+    <text x="48" y="54" class="title" font-size="30" letter-spacing="0.5">
+      🏛️ DISTRIBUTED BIG DATA ARCHITECTURE BLUEPRINT (HADOOP + SPARK + HIVE + SQOOP + OOZIE)
     </text>
-    <text x="48" y="90" class="subtitle" font-size="15">
-      Low-Level Protocol Architecture • Inode Memory Graphs • YARN Resource Pools • Pipeline Stages • Zero Data Corruption
+    <text x="48" y="90" class="subtitle" font-size="14.5">
+      Protobuf RPC Bus • Inode Memory Graph • Spark DAG Scheduling • Hive Warehousing • Sqoop Ingestion • Oozie Orchestration • Control Hub (:3030)
     </text>
 
     <!-- Architecture Badges Row -->
-    <g transform="translate(1380, 36)">
+    <g transform="translate(1340, 36)">
       <g transform="translate(0, 0)">
-        <rect x="0" y="0" width="180" height="34" rx="8" fill="#1f6feb" fill-opacity="0.2" stroke="#388bfd" stroke-width="1.2" />
-        <text x="90" y="22" class="badge" fill="#58a6ff" text-anchor="middle">PROTOBUF RPC :9000</text>
+        <rect x="0" y="0" width="165" height="34" rx="8" fill="#1f6feb" fill-opacity="0.2" stroke="#388bfd" stroke-width="1.2" />
+        <text x="82" y="22" class="badge" fill="#58a6ff" text-anchor="middle">PROTOBUF RPC :9000</text>
       </g>
-      <g transform="translate(195, 0)">
-        <rect x="0" y="0" width="185" height="34" rx="8" fill="#238636" fill-opacity="0.2" stroke="#3fb950" stroke-width="1.2" />
-        <text x="92" y="22" class="badge" fill="#56d364" text-anchor="middle">IPC SCHEDULER :8030</text>
+      <g transform="translate(175, 0)">
+        <rect x="0" y="0" width="165" height="34" rx="8" fill="#e11d48" fill-opacity="0.2" stroke="#f43f5e" stroke-width="1.2" />
+        <text x="82" y="22" class="badge" fill="#fb7185" text-anchor="middle">SPARK MASTER :7077</text>
       </g>
-      <g transform="translate(395, 0)">
-        <rect x="0" y="0" width="175" height="34" rx="8" fill="#8957e5" fill-opacity="0.2" stroke="#bc8cff" stroke-width="1.2" />
-        <text x="87" y="22" class="badge" fill="#d2a8ff" text-anchor="middle">SHUFFLE-SORT ENGINE</text>
+      <g transform="translate(350, 0)">
+        <rect x="0" y="0" width="165" height="34" rx="8" fill="#238636" fill-opacity="0.2" stroke="#3fb950" stroke-width="1.2" />
+        <text x="82" y="22" class="badge" fill="#56d364" text-anchor="middle">YARN SCHEDULER :8030</text>
       </g>
-      <g transform="translate(585, 0)">
-        <rect x="0" y="0" width="165" height="34" rx="8" fill="#0284c7" fill-opacity="0.2" stroke="#38bdf8" stroke-width="1.2" />
-        <text x="82" y="22" class="badge" fill="#38bdf8" text-anchor="middle">LOW-PAUSE G1GC</text>
+      <g transform="translate(525, 0)">
+        <rect x="0" y="0" width="165" height="34" rx="8" fill="#d97706" fill-opacity="0.2" stroke="#f59e0b" stroke-width="1.2" />
+        <text x="82" y="22" class="badge" fill="#fcd34d" text-anchor="middle">HIVE &amp; SQOOP</text>
       </g>
-      <g transform="translate(765, 0)">
-        <rect x="0" y="0" width="180" height="34" rx="8" fill="#da3633" fill-opacity="0.2" stroke="#f85149" stroke-width="1.2" />
-        <text x="90" y="22" class="badge" fill="#f85149" text-anchor="middle">128MB CRC32C BLOCKS</text>
+      <g transform="translate(700, 0)">
+        <rect x="0" y="0" width="165" height="34" rx="8" fill="#8957e5" fill-opacity="0.2" stroke="#bc8cff" stroke-width="1.2" />
+        <text x="82" y="22" class="badge" fill="#d2a8ff" text-anchor="middle">OOZIE &amp; PIG</text>
       </g>
-      <text x="945" y="72" class="body-text" font-size="12" fill="#8b949e" text-anchor="end">
+      <g transform="translate(875, 0)">
+        <rect x="0" y="0" width="155" height="34" rx="8" fill="#0284c7" fill-opacity="0.2" stroke="#38bdf8" stroke-width="1.2" />
+        <text x="77" y="22" class="badge" fill="#38bdf8" text-anchor="middle">HUB CONSOLE :3030</text>
+      </g>
+      <text x="1030" y="72" class="body-text" font-size="12" fill="#8b949e" text-anchor="end">
         Production-Ready Multi-Platform Reference Implementation
       </text>
     </g>
@@ -831,438 +867,368 @@ architecture_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800
   <g id="protocol-layer" transform="translate(60, 205)">
     <rect x="0" y="0" width="2680" height="165" rx="16" fill="url(#cardGrad)" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)" />
     
-    <rect x="25" y="16" width="340" height="28" rx="6" fill="#388bfd" fill-opacity="0.15" stroke="#388bfd" stroke-width="1" />
-    <text x="195" y="35" class="subheading" font-size="13" fill="#58a6ff" text-anchor="middle">🌐 4 CORE WIRE PROTOCOLS &amp; BUS TOPOLOGY</text>
+    <rect x="25" y="16" width="370" height="28" rx="6" fill="#388bfd" fill-opacity="0.15" stroke="#388bfd" stroke-width="1" />
+    <text x="210" y="35" class="subheading" font-size="13" fill="#58a6ff" text-anchor="middle">🌐 4 DISTRIBUTED PROTOCOLS &amp; BUS TOPOLOGY</text>
 
     <!-- Pillar 1: RPC Protocol -->
     <g transform="translate(25, 55)">
       <rect x="0" y="0" width="640" height="95" rx="10" fill="#0d1117" stroke="#388bfd" stroke-width="1.2" />
-      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#58a6ff">🔌 Hadoop RPC (Protobuf over TCP :9000)</text>
-      <text x="16" y="48" class="body-text" font-size="11.5">Client &amp; external frameworks (Spark/PySpark) send filesystem requests to NameNode.</text>
+      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#58a6ff">🔌 Hadoop RPC &amp; WebHDFS (:9000 / :9870)</text>
+      <text x="16" y="48" class="body-text" font-size="11.5">Protobuf over TCP for filesystem requests + WebHDFS REST API for Control Hub.</text>
       <rect x="16" y="60" width="608" height="22" rx="4" fill="#161b22" />
       <text x="24" y="75" class="mono" font-size="10.5" fill="#79c0ff">ClientProtocol.proto • SafeMode checks • Inodes lookup • Block allocation leases</text>
     </g>
 
-    <!-- Pillar 2: Data Transfer Protocol -->
+    <!-- Pillar 2: Spark Standalone RPC -->
     <g transform="translate(685, 55)">
+      <rect x="0" y="0" width="640" height="95" rx="10" fill="#0d1117" stroke="#f43f5e" stroke-width="1.2" />
+      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#fb7185">⚡ Spark Cluster Manager RPC (:7077)</text>
+      <text x="16" y="48" class="body-text" font-size="11.5">High-throughput Netty transport for driver-to-executor communication &amp; stage dispatch.</text>
+      <rect x="16" y="60" width="608" height="22" rx="4" fill="#161b22" />
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#fb7185">RegisterApplication • LaunchExecutor • HeartbeatReceiver • StatusUpdate</text>
+    </g>
+
+    <!-- Pillar 3: Data Transfer Protocol -->
+    <g transform="translate(1345, 55)">
       <rect x="0" y="0" width="640" height="95" rx="10" fill="#0d1117" stroke="#3fb950" stroke-width="1.2" />
       <text x="16" y="26" class="bold-text" font-size="13.5" fill="#56d364">🌊 Streaming Block Protocol (:9866 Data Transfer)</text>
       <text x="16" y="48" class="body-text" font-size="11.5">High-throughput TCP streaming pipeline with 64KB data packets and ACK back-propagation.</text>
       <rect x="16" y="60" width="608" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#7ee787">DataTransferProtocol.proto • OP_WRITE_BLOCK • OP_READ_BLOCK • CRC32C Checksums</text>
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#7ee787">OpWriteBlock • OpReadBlock • Checksum 512B CRC32C • Direct Linux zero-copy</text>
     </g>
 
-    <!-- Pillar 3: YARN Protocol -->
-    <g transform="translate(1345, 55)">
-      <rect x="0" y="0" width="640" height="95" rx="10" fill="#0d1117" stroke="#bc8cff" stroke-width="1.2" />
-      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#d2a8ff">⚙️ YARN ApplicationMaster Protocol (:8030 / :8032)</text>
-      <text x="16" y="48" class="body-text" font-size="11.5">ApplicationMaster heartbeats, resource slot negotiation, and container token grants.</text>
-      <rect x="16" y="60" width="608" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#bc8cff">ApplicationClientProtocol • ApplicationMasterProtocol • ContainerManagementProtocol</text>
-    </g>
-
-    <!-- Pillar 4: Web Consoles -->
+    <!-- Pillar 4: YARN IPC & Control Hub REST -->
     <g transform="translate(2005, 55)">
-      <rect x="0" y="0" width="650" height="95" rx="10" fill="#0d1117" stroke="#38bdf8" stroke-width="1.2" />
-      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#38bdf8">🌐 Administrative Web Consoles &amp; REST APIs</text>
-      <text x="16" y="48" class="body-text" font-size="11.5">WebHDFS REST API, JMX health metrics, and browser management consoles.</text>
+      <rect x="0" y="0" width="650" height="95" rx="10" fill="#0d1117" stroke="#f59e0b" stroke-width="1.2" />
+      <text x="16" y="26" class="bold-text" font-size="13.5" fill="#fcd34d">⚙️ YARN IPC (:8030-:8033) &amp; Hub REST (:3030)</text>
+      <text x="16" y="48" class="body-text" font-size="11.5">Heartbeats, slot claims, container allocations, and Unified Hub telemetry probes.</text>
       <rect x="16" y="60" width="618" height="22" rx="4" fill="#161b22" />
-      <text x="24" y="75" class="mono" font-size="10.5" fill="#38bdf8">NN :9870 • RM :8088 • JHS :19888 • DN :9864 • NM :8042 • GCP Component Gateway</text>
+      <text x="24" y="75" class="mono" font-size="10.5" fill="#fcd34d">ApplicationClientProtocol • ResourceTracker • ContainerManagement • Hub REST API</text>
     </g>
   </g>
 
   <!-- ========================================================================= -->
-  <!-- 3. DEEP ARCHITECTURAL SUBSYSTEMS (2 EQUAL COLUMNS: HDFS & YARN)           -->
+  <!-- 3. MAIN ARCHITECTURAL COLUMNS (HDFS STORAGE + YARN/SPARK COMPUTE)         -->
   <!-- ========================================================================= -->
 
-  <!-- LEFT COLUMN: HDFS STORAGE SUBSYSTEMS (Width: 1320) -->
-  <g id="hdfs-subsystems" transform="translate(60, 390)">
-    <rect x="0" y="0" width="1320" height="1100" rx="18" fill="url(#cardGrad)" stroke="#1f6feb" stroke-width="1.8" filter="url(#shadow)" />
+  <!-- LEFT HALF: DISTRIBUTED STORAGE LAYER (Width: 1320) -->
+  <g id="arch-hdfs" transform="translate(60, 390)">
+    <rect x="0" y="0" width="1320" height="1100" rx="18" fill="url(#cardGrad)" stroke="#1f6feb" stroke-width="2" filter="url(#shadow)" />
     
-    <path d="M 0 18 Q 0 0 18 0 L 1302 0 Q 1320 0 1320 18 L 1320 54 L 0 54 Z" fill="url(#hdfsGrad)" opacity="0.2" />
-    <rect x="25" y="14" width="370" height="28" rx="6" fill="#1f6feb" />
-    <text x="210" y="33" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">🗄️ HDFS INTERNALS &amp; METADATA SUBSYSTEMS</text>
-    <text x="415" y="34" class="subheading" font-size="13" fill="#58a6ff">Hadoop 3.3.6 / 3.1.2 Distributed Storage Engine</text>
+    <path d="M 0 18 Q 0 0 18 0 L 1302 0 Q 1320 0 1320 18 L 1320 50 L 0 50 Z" fill="#1f6feb" opacity="0.18" />
+    <rect x="25" y="12" width="370" height="28" rx="6" fill="#1f6feb" />
+    <text x="210" y="31" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">🗄️ HDFS INTERNALS &amp; METADATA ENGINE</text>
 
-    <!-- Subsystem 1: NameNode Memory & Journal (Height: 495) -->
-    <g transform="translate(25, 70)">
-      <rect x="0" y="0" width="1270" height="495" rx="14" fill="#0d1117" stroke="#388bfd" stroke-width="1.3" filter="url(#glowBlue)" />
+    <!-- NameNode Deep Dive -->
+    <g transform="translate(25, 60)">
+      <rect x="0" y="0" width="1270" height="420" rx="14" fill="#0d1117" stroke="#388bfd" stroke-width="1.3" />
       
-      <rect x="18" y="14" width="260" height="28" rx="6" fill="#1f6feb" />
-      <text x="148" y="32" class="heading" font-size="13.5" fill="#ffffff" text-anchor="middle">👑 NameNode Internal Architecture</text>
-      <text x="295" y="33" class="mono" font-size="12" fill="#79c0ff">Heap: -Xmx1024m (Low-Pause G1GC) • RPC :9000 • Web :9870</text>
+      <rect x="20" y="16" width="310" height="28" rx="6" fill="#1f6feb" />
+      <text x="175" y="35" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">👑 NameNode Architecture (:9870 / :9000)</text>
+      
+      <text x="350" y="35" class="bold-text" font-size="13" fill="#8b949e">Inode Memory Graph • FSImage Snapshots • WAL Journal • WebHDFS API</text>
 
-      <!-- In-Memory Inodes Tree (Left half, width 610) -->
-      <g transform="translate(18, 55)">
-        <rect x="0" y="0" width="610" height="255" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#58a6ff">🧠 In-Memory Namespace Graph (RAM)</text>
-        <text x="18" y="50" class="body-text" font-size="11.5">Direct pointer graph representation of directory hierarchy:</text>
+      <!-- Inode Tree Diagram Box -->
+      <g transform="translate(20, 60)">
+        <rect x="0" y="0" width="600" height="340" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="26" class="bold-text" font-size="13.5" fill="#58a6ff">🌳 In-Memory Inode Hierarchy (Zero-Disk Namespace)</text>
+        <text x="18" y="46" class="body-text" font-size="11.5">Every file &amp; folder occupies ~150 bytes of JVM heap memory:</text>
 
-        <rect x="16" y="62" width="578" height="30" rx="5" fill="#0d1117" stroke="#1f6feb" stroke-width="0.8" />
-        <text x="26" y="81" class="mono" font-size="11" fill="#79c0ff">INodeDirectory: /user/hduser/ (Permissions: 0755, Quotas)</text>
+        <!-- Inode Tree Mockup -->
+        <g transform="translate(20, 65)">
+          <rect x="0" y="0" width="150" height="36" rx="6" fill="#0d1117" stroke="#1f6feb" />
+          <text x="75" y="23" class="mono" font-size="11.5" fill="#79c0ff" text-anchor="middle">INodeDirectory ("/")</text>
 
-        <rect x="16" y="98" width="578" height="48" rx="5" fill="#0d1117" stroke="#1f6feb" stroke-width="0.8" />
-        <text x="26" y="117" class="mono" font-size="11" fill="#58a6ff">INodeFile: /data/wordcount-sample.txt</text>
-        <text x="26" y="135" class="body-text" font-size="10.5" fill="#8b949e">Replication: 1 • Size: 268MB • Block List: [blk_1073741825, blk_1073741826, ...]</text>
+          <line x1="75" y1="36" x2="75" y2="60" stroke="#388bfd" stroke-width="1.5" />
+          <line x1="75" y1="60" x2="250" y2="60" stroke="#388bfd" stroke-width="1.5" />
 
-        <rect x="16" y="152" width="578" height="52" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="171" class="bold-text" font-size="11" fill="#c9d1d9">Block-to-DataNode Mapping Table (Dynamic):</text>
-        <text x="26" y="190" class="mono" font-size="10.5" fill="#3fb950">blk_1073741825 ➔ [DataNode 192.168.13.128:9866 (Active, StorageID: DS-xxx)]</text>
+          <!-- Children -->
+          <g transform="translate(0, 75)">
+            <rect x="0" y="0" width="170" height="34" rx="6" fill="#0d1117" stroke="#21262d" />
+            <text x="85" y="22" class="mono" font-size="11" fill="#c9d1d9" text-anchor="middle">INodeDirectory ("/user")</text>
+          </g>
 
-        <text x="18" y="235" class="body-text" font-size="11" fill="#8b949e">
-          RAM cost: ~150 bytes per object. 1 GB Heap supports &gt; 7 million files and blocks without GC stutter.
-        </text>
+          <g transform="translate(190, 75)">
+            <rect x="0" y="0" width="180" height="34" rx="6" fill="#0d1117" stroke="#f43f5e" />
+            <text x="90" y="22" class="mono" font-size="11" fill="#fb7185" text-anchor="middle">INodeDirectory ("/spark-logs")</text>
+          </g>
+
+          <g transform="translate(390, 75)">
+            <rect x="0" y="0" width="165" height="34" rx="6" fill="#0d1117" stroke="#f59e0b" />
+            <text x="82" y="22" class="mono" font-size="11" fill="#fcd34d" text-anchor="middle">INode ("/user/hive/...")</text>
+          </g>
+
+          <!-- Grandchildren Files -->
+          <g transform="translate(0, 130)">
+            <rect x="0" y="0" width="555" height="50" rx="6" fill="#0d1117" stroke="#388bfd" stroke-width="1" />
+            <text x="14" y="22" class="mono" font-size="11" fill="#58a6ff">INodeFile: "spark_employees.parquet"</text>
+            <text x="14" y="38" class="body-text" font-size="10.5">Replication=1 • BlockID: blk_1073741825 (128MB) • Inode: 16384</text>
+          </g>
+
+          <g transform="translate(0, 190)">
+            <rect x="0" y="0" width="555" height="50" rx="6" fill="#0d1117" stroke="#388bfd" stroke-width="1" />
+            <text x="14" y="22" class="mono" font-size="11" fill="#58a6ff">INodeFile: "wordcount-sample.txt"</text>
+            <text x="14" y="38" class="body-text" font-size="10.5">Replication=1 • BlockID: blk_1073741826 (128MB) • Inode: 16385</text>
+          </g>
+        </g>
       </g>
 
-      <!-- Disk Journal & Checkpointing (Right half, width 610) -->
-      <g transform="translate(642, 55)">
-        <rect x="0" y="0" width="610" height="255" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#58a6ff">💾 Persistent Disk Metadata &amp; Journal</text>
-        <text x="18" y="50" class="body-text" font-size="11.5">ACID Write-Ahead Journal &amp; Periodic Snapshot Images:</text>
+      <!-- FSImage & Edits Box -->
+      <g transform="translate(640, 60)">
+        <rect x="0" y="0" width="610" height="340" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="26" class="bold-text" font-size="13.5" fill="#58a6ff">💾 Persistence Engine (fsimage + edits WAL)</text>
+        <text x="18" y="46" class="body-text" font-size="11.5">Non-volatile storage maintaining cluster state across restarts:</text>
 
-        <rect x="16" y="62" width="578" height="42" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="80" class="mono" font-size="11" fill="#79c0ff">fsimage_0000000000000000054 (Checkpoint Snapshot)</text>
-        <text x="26" y="96" class="body-text" font-size="10.5" fill="#8b949e">Complete frozen directory tree and block attributes serialized via Protobuf.</text>
-
-        <rect x="16" y="110" width="578" height="42" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="128" class="mono" font-size="11" fill="#e3b341">edits_inprogress_0000000000000000055 (Active WAL Journal)</text>
-        <text x="26" y="144" class="body-text" font-size="10.5" fill="#8b949e">Sequential stream recording every file creation, append, rename, and permission edit.</text>
-
-        <rect x="16" y="158" width="578" height="46" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="176" class="mono" font-size="11" fill="#3fb950">dfs.namenode.name.dir = file:///usr/local/hadoop/hdfs/namenode</text>
-        <text x="26" y="194" class="body-text" font-size="10.5" fill="#8b949e">Protected by non-root execution and backed into Docker volume / persistent virtual disk.</text>
-
-        <text x="18" y="235" class="body-text" font-size="11" fill="#8b949e">
-          Zero Data Loss: Edits committed to disk synchronously before acknowledging client writes.
-        </text>
-      </g>
-
-      <!-- SafeMode & SecondaryNameNode Checkpoint Pipeline (Bottom full width) -->
-      <g transform="translate(18, 320)">
-        <rect x="0" y="0" width="1234" height="155" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#ffffff">🔄 SecondaryNameNode 2-Way Checkpoint Pipeline &amp; SafeMode Guardian:</text>
-
-        <g transform="translate(18, 42)">
-          <rect x="0" y="0" width="285" height="95" rx="8" fill="#0d1117" stroke="#388bfd" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#58a6ff">1. HTTP Pull (Port :9868)</text>
-          <text x="14" y="44" class="body-text" font-size="11">Periodically downloads current</text>
-          <text x="14" y="60" class="mono" font-size="10.5" fill="#79c0ff">fsimage</text>
-          <text x="68" y="60" class="body-text" font-size="11">and</text>
-          <text x="96" y="60" class="mono" font-size="10.5" fill="#79c0ff">edits</text>
-          <text x="135" y="60" class="body-text" font-size="11">from Active NN.</text>
-          <text x="14" y="80" class="body-text" font-size="10.5" fill="#8b949e">Every 3600s or 1M txns.</text>
+        <g transform="translate(18, 65)">
+          <rect x="0" y="0" width="280" height="150" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#79c0ff">📄 fsimage_0000000000000000042</text>
+          <text x="14" y="46" class="body-text" font-size="11">• Serialized Protobuf snapshot</text>
+          <text x="14" y="66" class="body-text" font-size="11">• Fast sequential disk loading</text>
+          <text x="14" y="86" class="body-text" font-size="11">• Stored in <tspan class="mono" fill="#58a6ff">dfs.namenode.name.dir</tspan></text>
+          <text x="14" y="110" class="mono" font-size="10.5" fill="#3fb950">Status: Verified Clean Image</text>
         </g>
 
-        <g transform="translate(320, 42)">
-          <rect x="0" y="0" width="285" height="95" rx="8" fill="#0d1117" stroke="#bc8cff" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#bc8cff">2. In-Memory Replay</text>
-          <text x="14" y="44" class="body-text" font-size="11">Replays transactions into</text>
-          <text x="14" y="60" class="body-text" font-size="11">fresh in-memory namespace.</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#d2a8ff">Produces fsimage.ckpt</text>
+        <g transform="translate(315, 65)">
+          <rect x="0" y="0" width="280" height="150" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#79c0ff">📝 edits_inprogress_000000043</text>
+          <text x="14" y="46" class="body-text" font-size="11">• Write-Ahead Journal (WAL)</text>
+          <text x="14" y="66" class="body-text" font-size="11">• Flushed &amp; synced on client ACK</text>
+          <text x="14" y="86" class="body-text" font-size="11">• SecondaryNameNode checkpoints</text>
+          <text x="14" y="110" class="mono" font-size="10.5" fill="#f59e0b">Status: Active Journal Stream</text>
         </g>
 
-        <g transform="translate(620, 42)">
-          <rect x="0" y="0" width="285" height="95" rx="8" fill="#0d1117" stroke="#3fb950" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#3fb950">3. Push Back &amp; Roll</text>
-          <text x="14" y="44" class="body-text" font-size="11">Uploads merged checkpoint</text>
-          <text x="14" y="60" class="body-text" font-size="11">back to NameNode via HTTP.</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#7ee787">NN rolls edit log instantly.</text>
-        </g>
-
-        <g transform="translate(920, 42)">
-          <rect x="0" y="0" width="295" height="95" rx="8" fill="#0d1117" stroke="#d29922" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#e3b341">4. SafeMode Threshold</text>
-          <text x="14" y="44" class="body-text" font-size="11">Read-only state on boot until</text>
-          <text x="14" y="60" class="body-text" font-size="11">99.9% blocks are reported:</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#f2cc60">hdfs dfsadmin -safemode wait</text>
+        <g transform="translate(18, 230)">
+          <rect x="0" y="0" width="577" height="90" rx="8" fill="#0d1117" stroke="#1f6feb" stroke-dasharray="4,4" />
+          <text x="16" y="24" class="bold-text" font-size="12" fill="#58a6ff">🔄 Checkpointing Lifecycle (SecondaryNameNode :9868):</text>
+          <text x="16" y="46" class="body-text" font-size="11.5">1. SNN fetches fsimage &amp; edits via HTTP GET from NameNode.</text>
+          <text x="16" y="66" class="body-text" font-size="11.5">2. Merges transactions in SNN memory ➔ Ships fsimage.ckpt back via HTTP POST.</text>
         </g>
       </g>
     </g>
 
-    <!-- Subsystem 2: DataNode Storage & CRC32C Integrity (Height: 495) -->
-    <g transform="translate(25, 580)">
-      <rect x="0" y="0" width="1270" height="495" rx="14" fill="#0d1117" stroke="#388bfd" stroke-width="1.3" />
+    <!-- DataNode Deep Dive -->
+    <g transform="translate(25, 500)">
+      <rect x="0" y="0" width="1270" height="570" rx="14" fill="#0d1117" stroke="#388bfd" stroke-width="1.3" />
       
-      <rect x="18" y="14" width="260" height="28" rx="6" fill="#1f6feb" />
-      <text x="148" y="32" class="heading" font-size="13.5" fill="#ffffff" text-anchor="middle">📦 DataNode Physical Storage Engine</text>
-      <text x="295" y="33" class="mono" font-size="12" fill="#79c0ff">Transfer :9866 • Web UI :9864 • Block Size: 128MB • Non-Root hduser:1000</text>
+      <rect x="20" y="16" width="310" height="28" rx="6" fill="#1f6feb" />
+      <text x="175" y="35" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">📦 DataNode Storage &amp; Streaming Pipeline</text>
+      
+      <text x="350" y="35" class="bold-text" font-size="13" fill="#8b949e">128MB Chunks • Checksum Verification (CRC32C) • Zero-Copy Kernel Transfer</text>
 
-      <!-- 3 Physical Disk Blocks -->
-      <g transform="translate(18, 55)">
-        <g transform="translate(0, 0)">
-          <rect x="0" y="0" width="395" height="235" rx="10" fill="#161b22" stroke="#21262d" />
-          <text x="18" y="28" class="bold-text" font-size="13.5" fill="#58a6ff">🧱 Block 1 (128 MB Raw Chunk)</text>
-          <text x="18" y="50" class="mono" font-size="11" fill="#8b949e">File: blk_1073741825 (134,217,728 bytes)</text>
-          
-          <rect x="16" y="65" width="363" height="45" rx="6" fill="#0d1117" />
-          <text x="24" y="84" class="mono" font-size="10.5" fill="#3fb950">blk_1073741825_1001.meta</text>
-          <text x="24" y="100" class="body-text" font-size="10" fill="#8b949e">CRC32C Checksums (4 bytes per 512-byte slice)</text>
+      <!-- Chunk Pipeline Diagram -->
+      <g transform="translate(20, 60)">
+        <rect x="0" y="0" width="1230" height="220" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#58a6ff">🧱 3-Stage Client Write Pipeline (DataStreamer &amp; Packet ACKs)</text>
+        <text x="18" y="48" class="body-text" font-size="11.5">How Spark &amp; MapReduce applications stream data directly into HDFS DataNode storage:</text>
 
-          <text x="18" y="135" class="body-text" font-size="11.5">• Physical Path in volume:</text>
-          <text x="28" y="153" class="mono" font-size="10" fill="#79c0ff">current/BP-123/current/finalized/subdir0/subdir0/</text>
-
-          <text x="18" y="180" class="body-text" font-size="11.5">• Block Scanner Periodic Verification:</text>
-          <text x="28" y="198" class="body-text" font-size="11" fill="#3fb950">Validated every 504 hours (Zero bit-rot guarantee)</text>
-
-          <text x="18" y="222" class="mono" font-size="10.5" fill="#58a6ff">Status: HEALTHY • 0 Missing • 0 Corrupt</text>
+        <!-- Stage 1 -->
+        <g transform="translate(20, 65)">
+          <rect x="0" y="0" width="370" height="135" rx="8" fill="#0d1117" stroke="#1f6feb" />
+          <text x="16" y="24" class="bold-text" font-size="12" fill="#79c0ff">Stage 1: Leases &amp; Block Allocation</text>
+          <text x="16" y="46" class="body-text" font-size="11">• Client requests lease from NameNode</text>
+          <text x="16" y="66" class="body-text" font-size="11">• NameNode returns target DataNode list</text>
+          <text x="16" y="86" class="body-text" font-size="11">• Client connects to DataNode on port :9866</text>
+          <text x="16" y="112" class="mono" font-size="10.5" fill="#3fb950">RPC :9000 ➔ TCP Socket :9866</text>
         </g>
 
-        <g transform="translate(418, 0)">
-          <rect x="0" y="0" width="395" height="235" rx="10" fill="#161b22" stroke="#21262d" />
-          <text x="18" y="28" class="bold-text" font-size="13.5" fill="#58a6ff">🧱 Block 2 (128 MB Raw Chunk)</text>
-          <text x="18" y="50" class="mono" font-size="11" fill="#8b949e">File: blk_1073741826 (134,217,728 bytes)</text>
-          
-          <rect x="16" y="65" width="363" height="45" rx="6" fill="#0d1117" />
-          <text x="24" y="84" class="mono" font-size="10.5" fill="#3fb950">blk_1073741826_1002.meta</text>
-          <text x="24" y="100" class="body-text" font-size="10" fill="#8b949e">CRC32C Checksums (4 bytes per 512-byte slice)</text>
-
-          <text x="18" y="135" class="body-text" font-size="11.5">• Physical Path in volume:</text>
-          <text x="28" y="153" class="mono" font-size="10" fill="#79c0ff">current/BP-123/current/finalized/subdir0/subdir0/</text>
-
-          <text x="18" y="180" class="body-text" font-size="11.5">• Streaming Transfer Protocol (:9866):</text>
-          <text x="28" y="198" class="body-text" font-size="11" fill="#3fb950">Streams 64KB packets with zero-copy splicing</text>
-
-          <text x="18" y="222" class="mono" font-size="10.5" fill="#58a6ff">Status: HEALTHY • 0 Missing • 0 Corrupt</text>
+        <!-- Stage 2 -->
+        <g transform="translate(420, 65)">
+          <rect x="0" y="0" width="370" height="135" rx="8" fill="#0d1117" stroke="#1f6feb" />
+          <text x="16" y="24" class="bold-text" font-size="12" fill="#79c0ff">Stage 2: 64KB Packet Streaming</text>
+          <text x="16" y="46" class="body-text" font-size="11">• Client divides block into 64KB packets</text>
+          <text x="16" y="66" class="body-text" font-size="11">• Packets queued in dataQueue memory buffer</text>
+          <text x="16" y="86" class="body-text" font-size="11">• Streamed over TCP to DataNode 1</text>
+          <text x="16" y="112" class="mono" font-size="10.5" fill="#3fb950">DataStreamer Thread (64KB chunks)</text>
         </g>
 
-        <g transform="translate(836, 0)">
-          <rect x="0" y="0" width="395" height="235" rx="10" fill="#161b22" stroke="#21262d" />
-          <text x="18" y="28" class="bold-text" font-size="13.5" fill="#58a6ff">🧱 Block 3 (Remainder Partition)</text>
-          <text x="18" y="50" class="mono" font-size="11" fill="#8b949e">File: blk_1073741827 (12,410,210 bytes)</text>
-          
-          <rect x="16" y="65" width="363" height="45" rx="6" fill="#0d1117" />
-          <text x="24" y="84" class="mono" font-size="10.5" fill="#3fb950">blk_1073741827_1003.meta</text>
-          <text x="24" y="100" class="body-text" font-size="10" fill="#8b949e">Tail split partition checksummed to EOF</text>
-
-          <text x="18" y="135" class="body-text" font-size="11.5">• Space Efficiency:</text>
-          <text x="28" y="153" class="body-text" font-size="11" fill="#c9d1d9">Consumes only actual bytes used (12MB on disk)</text>
-
-          <text x="18" y="180" class="body-text" font-size="11.5">• Heartbeat &amp; Block Report Pipeline:</text>
-          <text x="28" y="198" class="body-text" font-size="11" fill="#58a6ff">Reports capacity &amp; block list to NameNode</text>
-
-          <text x="18" y="222" class="mono" font-size="10.5" fill="#58a6ff">Status: HEALTHY • 0 Missing • 0 Corrupt</text>
+        <!-- Stage 3 -->
+        <g transform="translate(820, 65)">
+          <rect x="0" y="0" width="390" height="135" rx="8" fill="#0d1117" stroke="#1f6feb" />
+          <text x="16" y="24" class="bold-text" font-size="12" fill="#79c0ff">Stage 3: Verification &amp; Commit</text>
+          <text x="16" y="46" class="body-text" font-size="11">• DataNode computes 512B CRC32C checksums</text>
+          <text x="16" y="66" class="body-text" font-size="11">• Flushes to disk (<tspan class="mono" fill="#58a6ff">blk_*</tspan> and <tspan class="mono" fill="#58a6ff">blk_*.meta</tspan>)</text>
+          <text x="16" y="86" class="body-text" font-size="11">• Sends ACK packet upstream to client</text>
+          <text x="16" y="112" class="mono" font-size="10.5" fill="#3fb950">ResponseProcessor ACK Verified ✓</text>
         </g>
       </g>
 
-      <!-- Storage Telemetry & Resilience Details -->
-      <g transform="translate(18, 305)">
-        <rect x="0" y="0" width="1234" height="170" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#ffffff">🛡️ DataNode Storage Guardrails &amp; Network Pipeline Mechanics:</text>
+      <!-- Block Layout Details -->
+      <g transform="translate(20, 300)">
+        <rect x="0" y="0" width="1230" height="245" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#ffffff">🧱 Physical Storage Directory Layout on Docker Volume (hadoop_datanode_data):</text>
         
         <text x="18" y="55" class="body-text" font-size="12">
-          • <tspan class="bold-text" fill="#58a6ff">Heartbeat Telemetry (3s Interval):</tspan> Reports node health, disk capacity (56.75 GB Free in Kali VM), and active transfer connections.
+          Inside container: <tspan class="mono" fill="#58a6ff">/usr/local/hadoop/yarn_data/hdfs/datanode/current/BP-*-*/current/finalized/subdir0/subdir0/</tspan>
         </text>
-        <text x="18" y="78" class="body-text" font-size="12">
-          • <tspan class="bold-text" fill="#58a6ff">Block Inventory Reports (6h Interval):</tspan> Sends full cryptographic hash inventory of all blocks to NameNode to verify replication quotas.
-        </text>
-        <text x="18" y="101" class="body-text" font-size="12">
-          • <tspan class="bold-text" fill="#3fb950">Pipeline Writing with ACKs:</tspan> Client streams 64KB packets to DataNode 1 ➔ DataNode 1 forwards to DataNode 2 ➔ ACKs return in reverse order.
-        </text>
-        <text x="18" y="124" class="body-text" font-size="12">
-          • <tspan class="bold-text" fill="#f85149">Legacy Typo Immunity:</tspan> Configured strictly via <tspan class="mono" fill="#7ee787">dfs.datanode.data.dir</tspan> (never the broken 2018 course typo <tspan class="mono" fill="#f85149">dfs.data.dir</tspan>).
-        </text>
-        <text x="18" y="148" class="mono" font-size="11" fill="#79c0ff">
-          Verified Active: hdfs dfsadmin -report ➔ 1 Live DataNode • 0 Dead • 0 Under-replicated • 0 Corrupt Blocks
-        </text>
+
+        <g transform="translate(18, 70)">
+          <rect x="0" y="0" width="585" height="155" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#79c0ff">📦 Raw Data Block File: blk_1073741825</text>
+          <text x="14" y="46" class="body-text" font-size="11">• Exact binary payload of Parquet / CSV records</text>
+          <text x="14" y="66" class="body-text" font-size="11">• Size on disk: Matches file size (not rounded to 128MB)</text>
+          <text x="14" y="86" class="body-text" font-size="11">• Linux ext4 / XFS block storage filesystem</text>
+          <text x="14" y="110" class="mono" font-size="10.5" fill="#3fb950">No padding waste • Zero storage bloat</text>
+        </g>
+
+        <g transform="translate(620, 70)">
+          <rect x="0" y="0" width="590" height="155" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#79c0ff">🛡️ Metadata Checksum File: blk_1073741825_1001.meta</text>
+          <text x="14" y="46" class="body-text" font-size="11">• CRC32C checksums stored for every 512 bytes</text>
+          <text x="14" y="66" class="body-text" font-size="11">• Background BlockScanner periodically audits integrity</text>
+          <text x="14" y="86" class="body-text" font-size="11">• Automatic silent corruption detection &amp; self-healing</text>
+          <text x="14" y="110" class="mono" font-size="10.5" fill="#3fb950">Bit rot protection • 100% data integrity</text>
+        </g>
       </g>
     </g>
   </g>
 
-  <!-- RIGHT COLUMN: YARN COMPUTE & SCHEDULING SUBSYSTEMS (Width: 1320) -->
-  <g id="yarn-subsystems" transform="translate(1420, 390)">
-    <rect x="0" y="0" width="1320" height="1100" rx="18" fill="url(#cardGrad)" stroke="#238636" stroke-width="1.8" filter="url(#shadow)" />
+  <!-- RIGHT HALF: SPARK & YARN COMPUTE & EXECUTION (Width: 1320) -->
+  <g id="arch-compute" transform="translate(1420, 390)">
+    <rect x="0" y="0" width="1320" height="1100" rx="18" fill="url(#cardGrad)" stroke="#f43f5e" stroke-width="2" filter="url(#shadow)" />
     
-    <path d="M 0 18 Q 0 0 18 0 L 1302 0 Q 1320 0 1320 18 L 1320 54 L 0 54 Z" fill="url(#yarnGrad)" opacity="0.2" />
-    <rect x="25" y="14" width="410" height="28" rx="6" fill="#238636" />
-    <text x="230" y="33" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">⚙️ YARN RESOURCE &amp; SCHEDULING SUBSYSTEMS</text>
-    <text x="455" y="34" class="subheading" font-size="13" fill="#56d364">Deadlock-Free 512MB Container Architecture</text>
+    <path d="M 0 18 Q 0 0 18 0 L 1302 0 Q 1320 0 1320 18 L 1320 50 L 0 50 Z" fill="#f43f5e" opacity="0.18" />
+    <rect x="25" y="12" width="370" height="28" rx="6" fill="#e11d48" />
+    <text x="210" y="31" class="heading" font-size="13" fill="#ffffff" text-anchor="middle">⚡ SPARK &amp; YARN DISTRIBUTED ENGINES</text>
 
-    <!-- Subsystem 3: ResourceManager Internals (Height: 495) -->
-    <g transform="translate(25, 70)">
-      <rect x="0" y="0" width="1270" height="495" rx="14" fill="#0d1117" stroke="#2ea043" stroke-width="1.3" filter="url(#glowGreen)" />
+    <!-- Spark Standalone Cluster Architecture -->
+    <g transform="translate(25, 60)">
+      <rect x="0" y="0" width="1270" height="420" rx="14" fill="#0d1117" stroke="#f43f5e" stroke-width="1.3" filter="url(#glowSpark)" />
       
-      <rect x="18" y="14" width="280" height="28" rx="6" fill="#238636" />
-      <text x="158" y="32" class="heading" font-size="13.5" fill="#ffffff" text-anchor="middle">🧠 ResourceManager Scheduling Engine</text>
-      <text x="315" y="33" class="mono" font-size="12" fill="#7ee787">Pool: 3072 MB • 4 vCPUs • Web UI :8088 • IPC :8032</text>
+      <rect x="20" y="16" width="340" height="28" rx="6" fill="#e11d48" />
+      <text x="190" y="35" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">⚡ Apache Spark 3.5 Standalone Master</text>
+      
+      <text x="380" y="35" class="bold-text" font-size="13" fill="#8b949e">DAG Scheduler • Task Sets • In-Memory RDD/DataFrame Cache • Port :8080</text>
 
-      <!-- Pluggable Capacity Scheduler (Left half, width 610) -->
-      <g transform="translate(18, 55)">
-        <rect x="0" y="0" width="610" height="255" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#56d364">📊 Pluggable Capacity Scheduler</text>
-        <text x="18" y="50" class="body-text" font-size="11.5">Hierarchical multi-tenant resource queues and isolation:</text>
+      <!-- Spark DAG Scheduling & Stages -->
+      <g transform="translate(20, 60)">
+        <rect x="0" y="0" width="600" height="340" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="26" class="bold-text" font-size="13.5" fill="#fb7185">📈 DAG Execution Pipeline &amp; Shuffle Boundary</text>
+        <text x="18" y="46" class="body-text" font-size="11.5">How Spark translates user queries into optimized physical stages:</text>
 
-        <rect x="16" y="62" width="578" height="42" rx="5" fill="#0d1117" stroke="#238636" stroke-width="0.8" />
-        <text x="26" y="80" class="bold-text" font-size="11" fill="#7ee787">root.default Queue (100% Cluster Memory = 3072 MB)</text>
-        <text x="26" y="96" class="body-text" font-size="10.5" fill="#8b949e">Minimum Allocation: 256 MB • Maximum Allocation: 3072 MB (1 vCore step)</text>
+        <!-- Stage 0 -->
+        <g transform="translate(20, 65)">
+          <rect x="0" y="0" width="555" height="75" rx="8" fill="#0d1117" stroke="#f43f5e" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#fb7185">Stage 0: Map / Partition Processing (Local to HDFS)</text>
+          <text x="14" y="44" class="body-text" font-size="11">• Read HDFS CSV/Parquet blocks via <tspan class="mono" fill="#79c0ff">hdfs://localhost:9000/...</tspan></text>
+          <text x="14" y="62" class="body-text" font-size="11">• Row filtering, projection &amp; map-side combine in RAM</text>
+        </g>
 
-        <rect x="16" y="110" width="578" height="52" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="128" class="bold-text" font-size="11" fill="#c9d1d9">Deadlock-Free Resource Sizing Formula:</text>
-        <text x="26" y="148" class="mono" font-size="10.5" fill="#56d364">AM (512MB) + Map (512MB) + Reduce (512MB) = 1536 MB &lt; 3072 MB Pool</text>
+        <!-- Shuffle Arrow -->
+        <g transform="translate(270, 150)">
+          <text x="30" y="15" class="mono" font-size="11" fill="#f59e0b" text-anchor="middle">⬇️ Shuffle-Sort Boundary (Hash Partitioning)</text>
+        </g>
 
-        <rect x="16" y="168" width="578" height="38" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="186" class="mono" font-size="10.5" fill="#8b949e">Scheduler IPC Protocol: Port 8030 • DominantResourceCalculator</text>
+        <!-- Stage 1 -->
+        <g transform="translate(20, 180)">
+          <rect x="0" y="0" width="555" height="75" rx="8" fill="#0d1117" stroke="#f43f5e" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#fb7185">Stage 1: Reduce / Aggregation &amp; Parquet Write</text>
+          <text x="14" y="44" class="body-text" font-size="11">• Group-by reductions (<tspan class="mono" fill="#fb7185">groupBy("Department").agg(...)</tspan>)</text>
+          <text x="14" y="62" class="body-text" font-size="11">• Write Snappy-compressed Parquet directly to HDFS</text>
+        </g>
 
-        <text x="18" y="235" class="body-text" font-size="11" fill="#8b949e">
-          Eliminates the single-node deadlock where AM (1536MB) + Reduce (2048MB) exceeded 3072MB.
-        </text>
+        <g transform="translate(20, 270)">
+          <rect x="0" y="0" width="555" height="50" rx="6" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="22" class="mono" font-size="11" fill="#34d399">spark.eventLog.dir = hdfs://hadoop:9000/spark-logs</text>
+          <text x="14" y="38" class="body-text" font-size="10.5">Event logs streamed to HDFS and surfaced on Spark History Server (:18080)</text>
+        </g>
       </g>
 
-      <!-- ApplicationsManager & State Machine (Right half, width 610) -->
-      <g transform="translate(642, 55)">
-        <rect x="0" y="0" width="610" height="255" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#56d364">🎯 ApplicationsManager (ASM)</text>
-        <text x="18" y="50" class="body-text" font-size="11.5">Client application intake, verification &amp; AM supervisor:</text>
+      <!-- Spark Worker Executors Box -->
+      <g transform="translate(640, 60)">
+        <rect x="0" y="0" width="610" height="340" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="26" class="bold-text" font-size="13.5" fill="#fb7185">🔨 Spark Worker &amp; JVM Executor Architecture</text>
+        <text x="18" y="46" class="body-text" font-size="11.5">Standalone worker container connected via <tspan class="mono" fill="#fb7185">spark://spark-master:7077</tspan>:</text>
 
-        <rect x="16" y="62" width="578" height="42" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="80" class="bold-text" font-size="11" fill="#7ee787">1. Job Submission Verification (IPC :8032)</text>
-        <text x="26" y="96" class="body-text" font-size="10.5" fill="#8b949e">Validates user permissions, tokens, queue limits, and resource availability.</text>
-
-        <rect x="16" y="110" width="578" height="42" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="128" class="bold-text" font-size="11" fill="#7ee787">2. ApplicationMaster Slot Negotiation</text>
-        <text x="26" y="144" class="body-text" font-size="10.5" fill="#8b949e">Negotiates 1st container with NodeManager and generates ContainerToken.</text>
-
-        <rect x="16" y="158" width="578" height="42" rx="5" fill="#0d1117" stroke="#21262d" />
-        <text x="26" y="176" class="bold-text" font-size="11" fill="#7ee787">3. Failure Recovery State Machine</text>
-        <text x="26" y="192" class="body-text" font-size="10.5" fill="#8b949e">Monitors AM liveness. If AM crashes, ASM automatically restarts it up to 2 times.</text>
-
-        <text x="18" y="235" class="body-text" font-size="11" fill="#8b949e">
-          Application States: NEW ➔ SUBMITTED ➔ ACCEPTED ➔ RUNNING ➔ FINISHED / FAILED.
-        </text>
-      </g>
-
-      <!-- ResourceTracker & Heartbeat Pipeline (Bottom full width) -->
-      <g transform="translate(18, 320)">
-        <rect x="0" y="0" width="1234" height="155" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#ffffff">⚡ ResourceTracker &amp; Node Liveness Protocol (Port :8031):</text>
-
-        <g transform="translate(18, 42)">
-          <rect x="0" y="0" width="285" height="95" rx="8" fill="#0d1117" stroke="#238636" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#56d364">1. Node Registration</text>
-          <text x="14" y="44" class="body-text" font-size="11">NodeManager connects on boot,</text>
-          <text x="14" y="60" class="body-text" font-size="11">advertises 3072 MB RAM and</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#7ee787">4 vCores capacity.</text>
+        <g transform="translate(18, 65)">
+          <rect x="0" y="0" width="280" height="150" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#fb7185">🔨 Executor Slot #1</text>
+          <text x="14" y="46" class="body-text" font-size="11">• 1 CPU Core allocated</text>
+          <text x="14" y="66" class="body-text" font-size="11">• 512MB Execution RAM</text>
+          <text x="14" y="86" class="body-text" font-size="11">• In-Memory DataFrame blocks</text>
+          <text x="14" y="110" class="mono" font-size="10.5" fill="#3fb950">Status: Active Executor</text>
         </g>
 
-        <g transform="translate(320, 42)">
-          <rect x="0" y="0" width="285" height="95" rx="8" fill="#0d1117" stroke="#3fb950" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#3fb950">2. Node Heartbeats (1s)</text>
-          <text x="14" y="44" class="body-text" font-size="11">Reports running containers,</text>
-          <text x="14" y="60" class="body-text" font-size="11">completed tasks, CPU load,</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#7ee787">and memory utilization.</text>
+        <g transform="translate(315, 65)">
+          <rect x="0" y="0" width="280" height="150" rx="8" fill="#0d1117" stroke="#21262d" />
+          <text x="14" y="24" class="bold-text" font-size="12" fill="#fb7185">🔨 Executor Slot #2</text>
+          <text x="14" y="46" class="body-text" font-size="11">• 1 CPU Core allocated</text>
+          <text x="14" y="66" class="body-text" font-size="11">• 512MB Execution RAM</text>
+          <text x="14" y="86" class="body-text" font-size="11">• In-Memory DataFrame blocks</text>
+          <text x="14" y="110" class="mono" font-size="10.5" fill="#3fb950">Status: Active Executor</text>
         </g>
 
-        <g transform="translate(620, 42)">
-          <rect x="0" y="0" width="285" height="95" rx="8" fill="#0d1117" stroke="#bc8cff" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#bc8cff">3. Container Token Security</text>
-          <text x="14" y="44" class="body-text" font-size="11">Issues HMAC-SHA256 tokens</text>
-          <text x="14" y="60" class="body-text" font-size="11">authorizing AM to launch</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#d2a8ff">tasks on NodeManagers.</text>
-        </g>
-
-        <g transform="translate(920, 42)">
-          <rect x="0" y="0" width="295" height="95" rx="8" fill="#0d1117" stroke="#38bdf8" />
-          <text x="14" y="24" class="bold-text" font-size="12" fill="#38bdf8">4. Health Checker Service</text>
-          <text x="14" y="44" class="body-text" font-size="11">Marks node UNHEALTHY if</text>
-          <text x="14" y="60" class="body-text" font-size="11">local disks fill &gt; 90% or</text>
-          <text x="14" y="80" class="mono" font-size="10.5" fill="#38bdf8">heartbeat drops &gt; 10 mins.</text>
+        <g transform="translate(18, 230)">
+          <rect x="0" y="0" width="577" height="90" rx="8" fill="#0d1117" stroke="#f43f5e" stroke-dasharray="4,4" />
+          <text x="16" y="24" class="bold-text" font-size="12" fill="#fb7185">⚡ High-Performance Kryo Serialization &amp; Off-Heap Memory:</text>
+          <text x="16" y="46" class="body-text" font-size="11.5">Tuned with <tspan class="mono" fill="#fb7185">org.apache.spark.serializer.KryoSerializer</tspan> for 10x faster serialization.</text>
+          <text x="16" y="66" class="body-text" font-size="11.5">Zero Java GC overhead during large departmental aggregations.</text>
         </g>
       </g>
     </g>
 
-    <!-- Subsystem 4: NodeManager & Shuffle-Sort Pipeline (Height: 495) -->
-    <g transform="translate(25, 580)">
-      <rect x="0" y="0" width="1270" height="495" rx="14" fill="#0d1117" stroke="#2ea043" stroke-width="1.3" />
+    <!-- YARN Architecture & Scheduling -->
+    <g transform="translate(25, 500)">
+      <rect x="0" y="0" width="1270" height="570" rx="14" fill="#0d1117" stroke="#2ea043" stroke-width="1.3" />
       
-      <rect x="18" y="14" width="280" height="28" rx="6" fill="#238636" />
-      <text x="158" y="32" class="heading" font-size="13.5" fill="#ffffff" text-anchor="middle">👷 NodeManager &amp; Compute Pipeline</text>
-      <text x="315" y="33" class="mono" font-size="12" fill="#7ee787">IPC :8040 • Web UI :8042 • cgroups Isolation • JobHistoryServer :19888</text>
+      <rect x="20" y="16" width="340" height="28" rx="6" fill="#238636" />
+      <text x="190" y="35" class="heading" font-size="14" fill="#ffffff" text-anchor="middle">⚙️ YARN Resource Negotiation &amp; Scheduling</text>
+      
+      <text x="380" y="35" class="bold-text" font-size="13" fill="#8b949e">Dynamic 3072MB Memory Pool • CapacityScheduler • NodeManager Slot Isolation</text>
 
-      <!-- 3 Containers Execution Cards -->
-      <g transform="translate(18, 55)">
-        <!-- AM Container -->
-        <g transform="translate(0, 0)">
-          <rect x="0" y="0" width="395" height="235" rx="10" fill="#161b22" stroke="#2ea043" stroke-width="1.2" />
-          <rect x="14" y="12" width="367" height="26" rx="5" fill="#238636" fill-opacity="0.3" />
-          <text x="197" y="29" class="badge" fill="#56d364" text-anchor="middle">Container #001: ApplicationMaster (512 MB)</text>
+      <!-- YARN Memory Allocation Chart -->
+      <g transform="translate(20, 60)">
+        <rect x="0" y="0" width="1230" height="220" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#3fb950">🧠 YARN Dynamic Container Scheduling Pool (3,072 MB Total)</text>
+        <text x="18" y="48" class="body-text" font-size="11.5">512MB slot isolation ensures zero memory deadlocks across multi-tenant workloads:</text>
 
-          <text x="18" y="60" class="bold-text" font-size="12" fill="#e6edf3">• JVM Heap:</text>
-          <text x="100" y="60" class="mono" font-size="11" fill="#7ee787">-Xmx400m -XX:+UseG1GC</text>
+        <!-- Slots Visualizer -->
+        <g transform="translate(20, 65)">
+          <g transform="translate(0, 0)">
+            <rect x="0" y="0" width="190" height="135" rx="8" fill="#0d1117" stroke="#2ea043" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#3fb950">Container 1 (512 MB)</text>
+            <text x="14" y="46" class="body-text" font-size="11">AppMaster</text>
+            <text x="14" y="66" class="body-text" font-size="11">YARN LifeCycle Mgr</text>
+            <text x="14" y="112" class="mono" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
 
-          <text x="18" y="82" class="bold-text" font-size="12" fill="#e6edf3">• Lifecycle:</text>
-          <text x="90" y="82" class="body-text" font-size="11.5">Per-job coordinator spawned by RM</text>
+          <g transform="translate(205, 0)">
+            <rect x="0" y="0" width="190" height="135" rx="8" fill="#0d1117" stroke="#2ea043" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#3fb950">Container 2 (512 MB)</text>
+            <text x="14" y="46" class="body-text" font-size="11">Map Task 1</text>
+            <text x="14" y="66" class="body-text" font-size="11">HDFS Data Locality</text>
+            <text x="14" y="112" class="mono" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
 
-          <text x="18" y="104" class="bold-text" font-size="12" fill="#e6edf3">• Splits:</text>
-          <text x="75" y="104" class="body-text" font-size="11.5">Reads InputSplits from HDFS (:9000)</text>
+          <g transform="translate(410, 0)">
+            <rect x="0" y="0" width="190" height="135" rx="8" fill="#0d1117" stroke="#2ea043" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#3fb950">Container 3 (512 MB)</text>
+            <text x="14" y="46" class="body-text" font-size="11">Map Task 2</text>
+            <text x="14" y="66" class="body-text" font-size="11">HDFS Data Locality</text>
+            <text x="14" y="112" class="mono" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
 
-          <text x="18" y="126" class="bold-text" font-size="12" fill="#e6edf3">• Negotiation:</text>
-          <text x="110" y="126" class="body-text" font-size="11.5">Requests 1 Map + 1 Reduce slot</text>
+          <g transform="translate(615, 0)">
+            <rect x="0" y="0" width="190" height="135" rx="8" fill="#0d1117" stroke="#2ea043" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#3fb950">Container 4 (512 MB)</text>
+            <text x="14" y="46" class="body-text" font-size="11">Reduce Task</text>
+            <text x="14" y="66" class="body-text" font-size="11">Shuffle Aggregator</text>
+            <text x="14" y="112" class="mono" font-size="10" fill="#7ee787">Alloc: 512 MB</text>
+          </g>
 
-          <text x="18" y="148" class="bold-text" font-size="12" fill="#e6edf3">• Data Locality:</text>
-          <text x="115" y="148" class="body-text" font-size="11.5" fill="#3fb950">NODE_LOCAL preferred</text>
-
-          <rect x="14" y="165" width="367" height="52" rx="5" fill="#0d1117" />
-          <text x="24" y="184" class="mono" font-size="10.5" fill="#7ee787">yarn.app.mapreduce.am.resource.mb = 512</text>
-          <text x="24" y="202" class="body-text" font-size="10.5" fill="#8b949e">Prevents starvation of worker task containers.</text>
-        </g>
-
-        <!-- Map Container -->
-        <g transform="translate(418, 0)">
-          <rect x="0" y="0" width="395" height="235" rx="10" fill="#161b22" stroke="#8957e5" stroke-width="1.2" />
-          <rect x="14" y="12" width="367" height="26" rx="5" fill="#8957e5" fill-opacity="0.3" />
-          <text x="197" y="29" class="badge" fill="#d2a8ff" text-anchor="middle">Container #002: MapTask (512 MB)</text>
-
-          <text x="18" y="60" class="bold-text" font-size="12" fill="#e6edf3">• Input:</text>
-          <text x="70" y="60" class="body-text" font-size="11.5">Reads local Block 1 from DataNode</text>
-
-          <text x="18" y="82" class="bold-text" font-size="12" fill="#e6edf3">• RecordReader:</text>
-          <text x="120" y="82" class="body-text" font-size="11.5">Parses lines ➔ (Key, Value)</text>
-
-          <text x="18" y="104" class="bold-text" font-size="12" fill="#e6edf3">• In-Memory Spill:</text>
-          <text x="135" y="104" class="body-text" font-size="11.5">100MB ring buffer (80% thresh)</text>
-
-          <text x="18" y="126" class="bold-text" font-size="12" fill="#e6edf3">• Partitioner:</text>
-          <text x="105" y="126" class="body-text" font-size="11.5">HashPartitioner routes by reducer ID</text>
-
-          <text x="18" y="148" class="bold-text" font-size="12" fill="#e6edf3">• Spill Sort:</text>
-          <text x="95" y="148" class="body-text" font-size="11.5">QuickSort by key ➔ merged to disk</text>
-
-          <rect x="14" y="165" width="367" height="52" rx="5" fill="#0d1117" />
-          <text x="24" y="184" class="mono" font-size="10.5" fill="#bc8cff">mapreduce.map.memory.mb = 512</text>
-          <text x="24" y="202" class="body-text" font-size="10.5" fill="#8b949e">Execution verified: 100% complete in seconds.</text>
-        </g>
-
-        <!-- Reduce Container -->
-        <g transform="translate(836, 0)">
-          <rect x="0" y="0" width="395" height="235" rx="10" fill="#161b22" stroke="#8957e5" stroke-width="1.2" />
-          <rect x="14" y="12" width="367" height="26" rx="5" fill="#8957e5" fill-opacity="0.3" />
-          <text x="197" y="29" class="badge" fill="#d2a8ff" text-anchor="middle">Container #003: ReduceTask (512 MB)</text>
-
-          <text x="18" y="60" class="bold-text" font-size="12" fill="#e6edf3">• Shuffle:</text>
-          <text x="80" y="60" class="body-text" font-size="11.5">Fetches partition spills via HTTP</text>
-
-          <text x="18" y="82" class="bold-text" font-size="12" fill="#e6edf3">• Merge-Sort:</text>
-          <text x="110" y="82" class="body-text" font-size="11.5">Merges sorted runs into single stream</text>
-
-          <text x="18" y="104" class="bold-text" font-size="12" fill="#e6edf3">• Aggregation:</text>
-          <text x="115" y="104" class="body-text" font-size="11.5">reduce(K, Iterator&lt;V&gt;) logic</text>
-
-          <text x="18" y="126" class="bold-text" font-size="12" fill="#e6edf3">• Output:</text>
-          <text x="80" y="126" class="mono" font-size="11" fill="#d2a8ff">part-r-00000</text>
-          <text x="180" y="126" class="body-text" font-size="11.5">written back to HDFS</text>
-
-          <text x="18" y="148" class="bold-text" font-size="12" fill="#e6edf3">• JobHistory:</text>
-          <text x="105" y="148" class="body-text" font-size="11.5">Audit metrics aggregated on :19888</text>
-
-          <rect x="14" y="165" width="367" height="52" rx="5" fill="#0d1117" />
-          <text x="24" y="184" class="mono" font-size="10.5" fill="#bc8cff">mapreduce.reduce.memory.mb = 512</text>
-          <text x="24" y="202" class="body-text" font-size="10.5" fill="#8b949e">Benchmarked Pi task: 42.8s total runtime.</text>
+          <g transform="translate(820, 0)">
+            <rect x="0" y="0" width="370" height="135" rx="8" fill="#0d1117" stroke="#30363d" stroke-dasharray="4,4" />
+            <text x="14" y="24" class="bold-text" font-size="12" fill="#8b949e">Available Headroom (1,024 MB)</text>
+            <text x="14" y="46" class="body-text" font-size="11">• Reserved for incoming dynamic jobs</text>
+            <text x="14" y="66" class="body-text" font-size="11">• Spark on YARN executor allocation</text>
+            <text x="14" y="112" class="mono" font-size="10" fill="#8b949e">yarn.nodemanager.resource.memory-mb</text>
+          </g>
         </g>
       </g>
 
-      <!-- Memory Stability & Tuning Details -->
-      <g transform="translate(18, 305)">
-        <rect x="0" y="0" width="1234" height="170" rx="10" fill="#161b22" stroke="#21262d" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#ffffff">🧠 NodeManager Enterprise Virtual Memory &amp; GC Stability Tuning:</text>
+      <!-- Stability Details -->
+      <g transform="translate(20, 300)">
+        <rect x="0" y="0" width="1230" height="245" rx="10" fill="#161b22" stroke="#21262d" />
+        <text x="18" y="28" class="bold-text" font-size="13.5" fill="#ffffff">🧠 NodeManager Enterprise Virtual Memory &amp; GC Stability Tuning:</text>
         
         <text x="18" y="55" class="body-text" font-size="12">
           • <tspan class="bold-text" fill="#7ee787">vmem-check-enabled=false:</tspan> Java 11/17 glibc threads allocate 64MB virtual memory arenas. Disabling vmem check prevents NodeManager from killing healthy containers.
@@ -1277,7 +1243,7 @@ architecture_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800
           • <tspan class="bold-text" fill="#38bdf8">Cloud Storage Connector (CloudStorageFileSystem):</tspan> On GCP Dataproc, containers stream directly to <tspan class="mono" fill="#38bdf8">gs://</tspan> buckets with 11 9s durability and zero disk bottlenecks.
         </text>
         <text x="18" y="148" class="mono" font-size="11" fill="#7ee787">
-          Verified Execution: Monte Carlo Pi Benchmark finished in 42.8s • 100% Map and 100% Reduce completion across all containers.
+          Verified Execution: Spark Monte Carlo Pi + PySpark HDFS Parquet ETL + MapReduce Pi Benchmark running in harmony.
         </text>
       </g>
     </g>
@@ -1292,35 +1258,42 @@ architecture_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800
     <path d="M 0 16 Q 0 0 16 0 L 16 0 L 16 180 L 0 180 Z" fill="url(#volGrad)" />
     <rect x="30" y="16" width="370" height="28" rx="6" fill="#da3633" fill-opacity="0.2" stroke="#da3633" stroke-width="1.2" />
     <text x="215" y="35" class="heading" font-size="13" fill="#f85149" text-anchor="middle">💾 MULTI-PLATFORM PERSISTENCE &amp; CLOUD STORAGE TIER</text>
-    <text x="420" y="35" class="body-text" font-size="13">Zero Data Loss: Named Docker Volumes, VMware Virtual Disks &amp; Google Cloud Storage Buckets (gs://)</text>
+    <text x="420" y="35" class="body-text" font-size="13">Zero Data Loss: Named Docker Volumes, Spark Event Logs &amp; Google Cloud Storage Buckets (gs://)</text>
 
     <g transform="translate(30, 60)">
       <g transform="translate(0, 0)">
-        <rect x="0" y="0" width="635" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
         <text x="18" y="28" class="bold-text" font-size="13" fill="#58a6ff">📁 NameNode Volume (fsimage + edits)</text>
         <text x="18" y="50" class="mono" font-size="11.5" fill="#79c0ff">hadoop_namenode_data ➔ /usr/local/hadoop/hdfs/namenode</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">Stores filesystem namespace tree, fsimage snapshots, and edits transaction logs</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Filesystem namespace tree, fsimage snapshots, and edits WAL</text>
       </g>
 
-      <g transform="translate(660, 0)">
-        <rect x="0" y="0" width="635" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+      <g transform="translate(535, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
         <text x="18" y="28" class="bold-text" font-size="13" fill="#58a6ff">🧱 DataNode Volume (Raw 128MB Blocks)</text>
         <text x="18" y="50" class="mono" font-size="11.5" fill="#79c0ff">hadoop_datanode_data ➔ /usr/local/hadoop/hdfs/datanode</text>
         <text x="18" y="74" class="body-text" font-size="11.5">Stores actual raw 128MB replicated data blocks (blk_* and blk_*.meta checksums)</text>
       </g>
 
-      <g transform="translate(1320, 0)">
-        <rect x="0" y="0" width="635" height="95" rx="10" fill="#0d1117" stroke="#3fb950" stroke-width="1.2" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#3fb950">📦 Temporary Workspace &amp; GCS Staging</text>
-        <text x="18" y="50" class="mono" font-size="11.5" fill="#7ee787">hadoop_tmp_data ➔ /app/hadoop/tmp | gs://bucket/staging</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">MapReduce spill buffers, intermediate shuffle partitions, and cloud staging data</text>
+      <g transform="translate(1070, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <text x="18" y="28" class="bold-text" font-size="13" fill="#fb7185">⚡ Spark Events Volume</text>
+        <text x="18" y="50" class="mono" font-size="11.5" fill="#fb7185">spark_event_logs_data ➔ /spark-logs &bull; :18080</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Spark DAG event logs picked up by Spark History Server</text>
       </g>
 
-      <g transform="translate(1980, 0)">
-        <rect x="0" y="0" width="640" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
-        <text x="18" y="28" class="bold-text" font-size="13" fill="#bc8cff">📜 Cluster Daemon Logs &amp; Audit Trail</text>
-        <text x="18" y="50" class="mono" font-size="11.5" fill="#d2a8ff">hadoop_logs_data ➔ /usr/local/hadoop/logs</text>
-        <text x="18" y="74" class="body-text" font-size="11.5">Daemon stdout/stderr logs for NameNode, DataNode, RM, NM, and JobHistoryServer</text>
+      <g transform="translate(1605, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <text x="18" y="28" class="bold-text" font-size="13" fill="#3fb950">📦 Temporary Workspace &amp; GCS Staging</text>
+        <text x="18" y="50" class="mono" font-size="11.5" fill="#7ee787">hadoop_tmp_data ➔ /app/hadoop/tmp | gs://bucket/staging</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">MapReduce shuffle spills, intermediate buffers, and cloud staging</text>
+      </g>
+
+      <g transform="translate(2140, 0)">
+        <rect x="0" y="0" width="510" height="95" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="1.2" />
+        <text x="18" y="28" class="bold-text" font-size="13" fill="#bc8cff">📜 Jupyter Notebooks &amp; Logs</text>
+        <text x="18" y="50" class="mono" font-size="11.5" fill="#d2a8ff">jupyter_notebooks_data ➔ /home/jovyan/work</text>
+        <text x="18" y="74" class="body-text" font-size="11.5">Durable PySpark notebooks, ETL pipelines, and dataset artifacts</text>
       </g>
     </g>
   </g>
@@ -1333,7 +1306,7 @@ architecture_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2800
     
     <text x="30" y="32" class="bold-text" font-size="13.5" fill="#ffffff">SYSTEM ARCHITECTURE SPECIFICATIONS SUMMARY:</text>
     <text x="30" y="58" class="body-text" font-size="12">
-      • <tspan fill="#58a6ff">HDFS Block Size:</tspan> 128 MB | <tspan fill="#3fb950">Replication Factor:</tspan> 1 (Dev) / 3 (Prod) | <tspan fill="#d2a8ff">YARN Alloc:</tspan> 512MB/task (3072MB pool) | <tspan fill="#f2cc60">JVM GC:</tspan> -XX:+UseG1GC Low-Pause | <tspan fill="#38bdf8">Cloud:</tspan> Dataproc 2.1
+      • <tspan fill="#58a6ff">HDFS Block Size:</tspan> 128 MB | <tspan fill="#fb7185">Spark Standalone:</tspan> 7077/8080 | <tspan fill="#f59e0b">Hive Warehouse:</tspan> /user/hive/warehouse | <tspan fill="#34d399">Control Hub:</tspan> Port 3030 | <tspan fill="#7ee787">JupyterLab:</tspan> Port 8888 | <tspan fill="#bc8cff">YARN Pool:</tspan> 3072MB | <tspan fill="#38bdf8">Cloud:</tspan> Dataproc 2.1
     </text>
 
     <text x="2650" y="34" class="mono" font-size="12" fill="#58a6ff" text-anchor="end">https://github.com/Sohila-Khaled-Abbas/docker-hadoop</text>
@@ -1368,24 +1341,35 @@ if os.path.exists(msedge_path):
     
     cmd_1 = [
         msedge_path,
-        "--headless",
+        "--headless=new",
+        "--disable-gpu",
+        "--no-sandbox",
         "--hide-scrollbars",
         f"--screenshot={png_file_1}",
         "--window-size=2800,1920",
-        str(svg_file_1)
+        f"file:///{svg_file_1.as_posix()}"
     ]
-    subprocess.run(cmd_1, check=True)
-    print(f"[OK] Rendered {png_file_1} ({os.path.getsize(png_file_1)} bytes)")
+    try:
+        subprocess.run(cmd_1, check=True)
+        print(f"[OK] Rendered {png_file_1} ({os.path.getsize(png_file_1)} bytes)")
+    except Exception as e:
+        print(f"[WARN] Error rendering PNG 1: {e}")
 
     cmd_2 = [
         msedge_path,
-        "--headless",
+        "--headless=new",
+        "--disable-gpu",
+        "--no-sandbox",
         "--hide-scrollbars",
         f"--screenshot={png_file_2}",
         "--window-size=2800,1920",
-        str(svg_file_2)
+        f"file:///{svg_file_2.as_posix()}"
     ]
-    subprocess.run(cmd_2, check=True)
-    print(f"[OK] Rendered {png_file_2} ({os.path.getsize(png_file_2)} bytes)")
+    try:
+        subprocess.run(cmd_2, check=True)
+        print(f"[OK] Rendered {png_file_2} ({os.path.getsize(png_file_2)} bytes)")
+    except Exception as e:
+        print(f"[WARN] Error rendering PNG 2: {e}")
 else:
     print("[WARN] msedge.exe not found at default path, skipping PNG rendering")
+

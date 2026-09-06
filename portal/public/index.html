@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unified Big Data Engineering Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%3E<text y=%2226%22 font-size=%2226%22>🐘</text></svg>">
+</head>
+<body>
+  <div class="platform-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="platform-sidebar">
+      <div class="brand-header">
+        <div class="brand-icon">🐘</div>
+        <div class="brand-text">
+          <h1>ARA BIG DATA</h1>
+          <span class="brand-sub">Unified Engineering Platform</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">CORE PLATFORM</div>
+        <button class="nav-tab active" data-studio="overview">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Overview & Health</span>
+          <span class="nav-badge live-badge" id="navHealthBadge">LIVE</span>
+        </button>
+        <button class="nav-tab" data-studio="hdfs">
+          <span class="nav-icon">🗄️</span>
+          <span class="nav-label">HDFS DataLake</span>
+        </button>
+        <button class="nav-tab" data-studio="spark">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">Spark Compute</span>
+        </button>
+        <button class="nav-tab" data-studio="hive">
+          <span class="nav-icon">🐝</span>
+          <span class="nav-label">Hive SQL Studio</span>
+        </button>
+
+        <div class="nav-section-title">INGESTION & PIPELINES</div>
+        <button class="nav-tab" data-studio="sqoop">
+          <span class="nav-icon">🔄</span>
+          <span class="nav-label">Sqoop Ingestion</span>
+        </button>
+        <button class="nav-tab" data-studio="oozie">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Oozie Orchestrator</span>
+        </button>
+        <button class="nav-tab" data-studio="pig">
+          <span class="nav-icon">🐷</span>
+          <span class="nav-label">Pig Latin Sandbox</span>
+        </button>
+
+        <div class="nav-section-title">DEVELOPMENT & INSIGHTS</div>
+        <button class="nav-tab" data-studio="jupyter">
+          <span class="nav-icon">🪐</span>
+          <span class="nav-label">JupyterLab IDE</span>
+        </button>
+        <button class="nav-tab" data-studio="terminal">
+          <span class="nav-icon">📜</span>
+          <span class="nav-label">Cluster Terminal</span>
+        </button>
+        <button class="nav-tab" data-studio="diagrams">
+          <span class="nav-icon">🗺️</span>
+          <span class="nav-label">Blueprints & Maps</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="cluster-pill">
+          <span class="pulse-dot"></span>
+          <span id="clusterStatusText">Cluster Syncing...</span>
+        </div>
+        <div class="cluster-subtext">Hadoop 3.1 &bull; Spark 3.5 &bull; Hive 3</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Stage -->
+    <main class="platform-main">
+      <!-- Top Global Bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <h2 id="currentStudioTitle">Cluster Overview & Telemetry</h2>
+          <p id="currentStudioSubtitle">Real-time status monitoring, metrics, and multi-engine service matrix</p>
+        </div>
+        <div class="top-bar-right">
+          <div class="auto-refresh-indicator">
+            <span class="refresh-spinner"></span>
+            <span>Auto-refresh: <b>5s</b></span>
+          </div>
+          <button id="btnManualRefresh" class="btn-icon" title="Refresh Now">🔄</button>
+          <a href="http://localhost:3030" target="_blank" class="btn-primary-sm">🌐 Hub :3030</a>
+        </div>
+      </header>
+
+      <!-- Dynamic Studio Views Container -->
+      <div class="studio-viewport">
+
+        <!-- ===================================================================
+             STUDIO 1: OVERVIEW & HEALTH
+             =================================================================== -->
+        <section id="studio-overview" class="studio-view active">
+          <!-- Executive KPI Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">TOTAL COMPUTE</span>
+                <span class="kpi-icon">⚡</span>
+              </div>
+              <div class="kpi-value" id="kpiCores">6 Cores</div>
+              <div class="kpi-sub">4 YARN vCores &bull; 2 Spark Cores</div>
+              <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width: 65%;"></div></div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">DYNAMIC MEMORY</span>
+                <span class="kpi-icon">🧠</span>
+              </div>
+              <div class="kpi-value" id="kpiMemory">5.0 GB</div>
+              <div class="kpi-sub">3GB YARN &bull; 2GB Spark Pool</div>
+              <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width: 40%;"></div></div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">HDFS STORAGE POOL</span>
+                <span class="kpi-icon">🗄️</span>
+              </div>
+              <div class="kpi-value" id="kpiStorage">100 GB</div>
+              <div class="kpi-sub">4% Utilized &bull; 1 Live DataNode</div>
+              <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width: 4%;"></div></div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">ECOSYSTEM SERVICES</span>
+                <span class="kpi-icon">🌐</span>
+              </div>
+              <div class="kpi-value" id="kpiServices">12 / 12</div>
+              <div class="kpi-sub" id="kpiServicesSub">All Core Daemons Active</div>
+              <div class="kpi-bar-track"><div class="kpi-bar-fill success" style="width: 100%;"></div></div>
+            </div>
+          </div>
+
+          <!-- Quick Action Bar -->
+          <div class="section-box quick-actions-panel">
+            <div class="panel-header">
+              <h3>⚡ 1-Click Interactive Launchers</h3>
+              <span class="tag-pill">Quick Access</span>
+            </div>
+            <div class="quick-buttons-row">
+              <a href="http://localhost:9870" target="_blank" class="quick-btn">
+                <span class="btn-emoji">👑</span>
+                <span>NameNode Web UI</span>
+                <span class="port-tag">:9870</span>
+              </a>
+              <a href="http://localhost:8088" target="_blank" class="quick-btn">
+                <span class="btn-emoji">🧠</span>
+                <span>YARN ResourceManager</span>
+                <span class="port-tag">:8088</span>
+              </a>
+              <a href="http://localhost:8080" target="_blank" class="quick-btn">
+                <span class="btn-emoji">⚡</span>
+                <span>Spark Master UI</span>
+                <span class="port-tag">:8080</span>
+              </a>
+              <a href="http://localhost:18080" target="_blank" class="quick-btn">
+                <span class="btn-emoji">⏱️</span>
+                <span>Spark History Server</span>
+                <span class="port-tag">:18080</span>
+              </a>
+              <a href="http://localhost:8888" target="_blank" class="quick-btn">
+                <span class="btn-emoji">🪐</span>
+                <span>JupyterLab Studio</span>
+                <span class="port-tag">:8888</span>
+              </a>
+              <a href="http://localhost:19888" target="_blank" class="quick-btn">
+                <span class="btn-emoji">📜</span>
+                <span>MapReduce History</span>
+                <span class="port-tag">:19888</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Service Matrix Grid -->
+          <div class="section-box">
+            <div class="panel-header">
+              <h3>🌐 Complete Big Data Service Matrix</h3>
+              <span class="panel-counter" id="matrixCounter">12 Services Active</span>
+            </div>
+            <div class="service-grid" id="serviceGrid">
+              <!-- Rendered via JavaScript -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 2: HDFS DATALAKE
+             =================================================================== -->
+        <section id="studio-hdfs" class="studio-view">
+          <div class="section-box">
+            <div class="panel-header">
+              <div class="header-left">
+                <h3>🗄️ WebHDFS Distributed File Explorer</h3>
+                <span class="tag-pill" id="hdfsSourceBadge">WebHDFS REST API</span>
+              </div>
+              <div class="header-right">
+                <button class="btn-secondary" id="btnHdfsRefresh">🔄 Refresh Directory</button>
+              </div>
+            </div>
+
+            <!-- Breadcrumbs -->
+            <div class="hdfs-breadcrumb-bar" id="hdfsBreadcrumbs">
+              <span class="crumb root" data-path="/">hdfs://root/</span>
+            </div>
+
+            <!-- HDFS Table -->
+            <div class="table-responsive">
+              <table class="modern-table" id="hdfsTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Permissions</th>
+                    <th>Owner</th>
+                    <th>Size</th>
+                    <th>Modified Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="hdfsTableBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- File Preview Drawer -->
+          <div class="section-box" id="filePreviewBox" style="display:none;">
+            <div class="panel-header">
+              <h4 id="previewFileName">File Preview</h4>
+              <button class="btn-close" id="btnClosePreview">&times;</button>
+            </div>
+            <pre class="code-terminal" id="filePreviewContent"></pre>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 3: SPARK COMPUTE
+             =================================================================== -->
+        <section id="studio-spark" class="studio-view">
+          <div class="grid-2col">
+            <div class="section-box">
+              <div class="panel-header">
+                <h3>⚡ Spark Standalone Cluster Status</h3>
+                <span class="status-pill status-online">RUNNING</span>
+              </div>
+              <div class="spark-cluster-stats">
+                <div class="stat-row">
+                  <span class="stat-label">Spark Master RPC</span>
+                  <span class="stat-val code-font">spark://spark-master:7077</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Master Web Console</span>
+                  <span class="stat-val"><a href="http://localhost:8080" target="_blank">http://localhost:8080</a></span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Worker Nodes</span>
+                  <span class="stat-val">1 Worker (2 Cores, 1024 MB RAM)</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">History Server</span>
+                  <span class="stat-val"><a href="http://localhost:18080" target="_blank">http://localhost:18080</a></span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Event Log Directory</span>
+                  <span class="stat-val code-font">hdfs://hadoop:9000/spark-logs</span>
+                </div>
+              </div>
+              <div class="spark-actions-row">
+                <button class="btn-primary" id="btnRunSparkPi">⚡ Run Spark Pi (10 Tasks)</button>
+                <button class="btn-secondary" id="btnRunPySparkETL">🐍 Run PySpark ETL Job</button>
+              </div>
+            </div>
+
+            <div class="section-box">
+              <div class="panel-header">
+                <h3>📜 Spark Submit Command Reference</h3>
+                <span class="tag-pill">CLI Snippet</span>
+              </div>
+              <pre class="code-terminal"><code># Submit Standalone Application to Master:
+docker compose exec spark-master spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master spark://spark-master:7077 \
+  /opt/bitnami/spark/examples/jars/spark-examples_2.12-3.5.1.jar 10
+
+# Launch Interactive PySpark Shell:
+docker compose exec -it spark-master pyspark \
+  --master spark://spark-master:7077</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 4: HIVE SQL STUDIO
+             =================================================================== -->
+        <section id="studio-hive" class="studio-view">
+          <div class="grid-layout-studio">
+            <!-- Schema Explorer Sidebar -->
+            <div class="section-box studio-left-sidebar">
+              <div class="panel-header">
+                <h4>🐝 Warehouse Catalog</h4>
+              </div>
+              <div class="schema-tree">
+                <div class="db-item">
+                  <div class="db-title">📁 retail_warehouse</div>
+                  <div class="table-item" data-table="customer_analytics">📊 customer_analytics <span class="badge-parquet">PARQUET</span></div>
+                  <div class="table-item" data-table="raw_customers">📄 raw_customers <span class="badge-csv">CSV</span></div>
+                </div>
+                <div class="db-item">
+                  <div class="db-title">📁 default</div>
+                  <div class="table-item" data-table="employees">📄 employees <span class="badge-csv">CSV</span></div>
+                </div>
+              </div>
+              <div class="schema-templates">
+                <h5>Query Presets</h5>
+                <button class="btn-preset" data-query="SELECT * FROM retail_warehouse.customer_analytics LIMIT 10;">Select All</button>
+                <button class="btn-preset" data-query="SELECT country, COUNT(*) as total_customers, SUM(credit_limit) as total_credit FROM retail_warehouse.customer_analytics GROUP BY country;">Country Aggregates</button>
+                <button class="btn-preset" data-query="SELECT country, credit_tier, full_name, credit_limit, DENSE_RANK() OVER (PARTITION BY country ORDER BY credit_limit DESC) as country_rank FROM retail_warehouse.customer_analytics;">Window Ranking</button>
+              </div>
+            </div>
+
+            <!-- Query Console & Results -->
+            <div class="studio-right-content">
+              <div class="section-box">
+                <div class="panel-header">
+                  <h3>Interactive Hive SQL Query Console</h3>
+                  <button class="btn-primary" id="btnExecuteHiveQuery">▶ Run Query</button>
+                </div>
+                <textarea id="hiveSqlEditor" class="code-editor" rows="5">SELECT country, credit_tier, full_name, credit_limit, DENSE_RANK() OVER (PARTITION BY country ORDER BY credit_limit DESC) as country_rank FROM retail_warehouse.customer_analytics;</textarea>
+              </div>
+
+              <!-- Results Table -->
+              <div class="section-box">
+                <div class="panel-header">
+                  <h4>Query Results</h4>
+                  <span class="panel-counter" id="hiveQueryStats">Ready to execute</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="modern-table" id="hiveResultsTable">
+                    <thead id="hiveResultsHead"></thead>
+                    <tbody id="hiveResultsBody">
+                      <tr><td class="text-muted" colspan="6">Execute a query above to inspect live tabular results.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 5: SQOOP INGESTION
+             =================================================================== -->
+        <section id="studio-sqoop" class="studio-view">
+          <div class="grid-2col">
+            <div class="section-box">
+              <div class="panel-header">
+                <h3>🔄 Apache Sqoop Job Builder</h3>
+                <span class="tag-pill">RDBMS &harr; HDFS</span>
+              </div>
+              <form id="sqoopForm" class="modern-form">
+                <div class="form-group">
+                  <label>Data Transfer Direction</label>
+                  <select id="sqoopDirection" class="form-input">
+                    <option value="import">Import (RDBMS -> HDFS/Hive)</option>
+                    <option value="export">Export (HDFS -> RDBMS)</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Database Type</label>
+                    <select id="sqoopDbType" class="form-input">
+                      <option value="mysql">MySQL</option>
+                      <option value="postgresql">PostgreSQL</option>
+                      <option value="oracle">Oracle</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Host & Port</label>
+                    <input type="text" id="sqoopHostPort" class="form-input" value="mysql:3306">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Database Name</label>
+                    <input type="text" id="sqoopDbName" class="form-input" value="retail_db">
+                  </div>
+                  <div class="form-group">
+                    <label>Table Name</label>
+                    <input type="text" id="sqoopTable" class="form-input" value="customers">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Target HDFS Path</label>
+                    <input type="text" id="sqoopHdfsPath" class="form-input" value="/data/sqoop/customers">
+                  </div>
+                  <div class="form-group">
+                    <label>Parallel Mappers</label>
+                    <input type="number" id="sqoopMappers" class="form-input" value="2" min="1" max="8">
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="button" class="btn-primary" id="btnGenerateSqoop">Generate CLI Command</button>
+                  <button type="button" class="btn-accent" id="btnRunSqoopSim">⚡ Simulate Ingestion</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="section-box">
+              <div class="panel-header">
+                <h3>Generated Sqoop Command</h3>
+                <button class="btn-secondary" id="btnCopySqoop">📋 Copy</button>
+              </div>
+              <pre class="code-terminal" id="sqoopCmdOutput"><code>sqoop import \
+  --connect "jdbc:mysql://mysql:3306/retail_db" \
+  --username "root" \
+  --password "${DB_PASS}" \
+  --table customers \
+  --target-dir "/data/sqoop/customers" \
+  --split-by customer_id \
+  --num-mappers 2 \
+  --fields-terminated-by ',' \
+  --delete-target-dir</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 6: OOZIE ORCHESTRATOR
+             =================================================================== -->
+        <section id="studio-oozie" class="studio-view">
+          <div class="section-box">
+            <div class="panel-header">
+              <div class="header-left">
+                <h3>📋 Apache Oozie Visual Workflow DAG</h3>
+                <span class="tag-pill">enterprise-bigdata-etl-pipeline</span>
+              </div>
+              <div class="header-right">
+                <button class="btn-primary" id="btnTriggerOozie">🚀 Trigger Workflow</button>
+              </div>
+            </div>
+
+            <!-- Visual Pipeline Flowchart -->
+            <div class="pipeline-dag-container">
+              <div class="dag-node control-node">
+                <span class="node-icon">🟢</span>
+                <span class="node-title">Start</span>
+              </div>
+              <div class="dag-arrow">&rarr;</div>
+              <div class="dag-node action-node">
+                <span class="node-badge sqoop-badge">Sqoop</span>
+                <span class="node-title">1. Ingest Data</span>
+                <span class="node-sub">RDBMS -> HDFS</span>
+              </div>
+              <div class="dag-arrow">&rarr;</div>
+              <div class="dag-node action-node">
+                <span class="node-badge spark-badge">Spark</span>
+                <span class="node-title">2. Transform</span>
+                <span class="node-sub">Parquet & Validation</span>
+              </div>
+              <div class="dag-arrow">&rarr;</div>
+              <div class="dag-node action-node">
+                <span class="node-badge pig-badge">Pig</span>
+                <span class="node-title">3. Aggregations</span>
+                <span class="node-sub">Country Grouping</span>
+              </div>
+              <div class="dag-arrow">&rarr;</div>
+              <div class="dag-node action-node">
+                <span class="node-badge hive-badge">Hive</span>
+                <span class="node-title">4. Table Load</span>
+                <span class="node-sub">Retail Warehouse</span>
+              </div>
+              <div class="dag-arrow">&rarr;</div>
+              <div class="dag-node control-node">
+                <span class="node-icon">🏁</span>
+                <span class="node-title">End</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- XML Definition Tabs -->
+          <div class="section-box">
+            <div class="tab-header-row">
+              <button class="subtab-btn active" data-xml="workflow">workflow.xml</button>
+              <button class="subtab-btn" data-xml="coordinator">coordinator.xml</button>
+              <button class="subtab-btn" data-xml="properties">job.properties</button>
+            </div>
+            <pre class="code-terminal" id="oozieXmlPreview"><code>&lt;workflow-app name="enterprise-bigdata-etl-pipeline" xmlns="uri:oozie:workflow:0.5"&gt;
+  &lt;start to="sqoop-ingestion-node"/&gt;
+  &lt;action name="sqoop-ingestion-node"&gt;
+    &lt;sqoop xmlns="uri:oozie:sqoop-action:0.2"&gt;
+      &lt;job-tracker&gt;${jobTracker}&lt;/job-tracker&gt;
+      &lt;name-node&gt;${nameNode}&lt;/name-node&gt;
+      &lt;command&gt;import --connect jdbc:mysql://mysql:3306/retail_db --table customers --target-dir /data/sqoop&lt;/command&gt;
+    &lt;/sqoop&gt;
+    &lt;ok to="spark-etl-node"/&gt;
+    &lt;error to="fail-notification"/&gt;
+  &lt;/action&gt;
+  ...
+&lt;/workflow-app&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 7: PIG LATIN SANDBOX
+             =================================================================== -->
+        <section id="studio-pig" class="studio-view">
+          <div class="grid-2col">
+            <div class="section-box">
+              <div class="panel-header">
+                <h3>🐷 Apache Pig Latin Script Editor</h3>
+                <button class="btn-primary" id="btnExecutePig">▶ Run Pig Script</button>
+              </div>
+              <textarea id="pigScriptEditor" class="code-editor" rows="12">-- Load CSV Dataset
+customers = LOAD '/data/sqoop/customers.csv' USING PigStorage(',') AS (
+    id:int, first_name:chararray, last_name:chararray, email:chararray,
+    city:chararray, country:chararray, reg_date:chararray, credit_limit:double
+);
+
+-- Filter & Group
+high_value = FILTER customers BY credit_limit >= 5000.0;
+grouped = GROUP high_value BY country;
+
+-- Aggregate & Store
+summary = FOREACH grouped GENERATE group AS country, COUNT(high_value) AS count, SUM(high_value.credit_limit) AS total;
+STORE summary INTO '/data/pig_output' USING PigStorage('\t');</textarea>
+            </div>
+
+            <div class="section-box">
+              <div class="panel-header">
+                <h3>Pig Execution Plan & Output</h3>
+                <span class="tag-pill" id="pigStatusPill">Idle</span>
+              </div>
+              <pre class="code-terminal" id="pigTerminalOutput"><code>// Ready to execute Pig Latin script.
+// Output will stream MapReduce DAG compilation and reduced HDFS records.</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 8: JUPYTERLAB IDE
+             =================================================================== -->
+        <section id="studio-jupyter" class="studio-view">
+          <div class="section-box">
+            <div class="panel-header">
+              <h3>🪐 JupyterLab PySpark Interactive Studio</h3>
+              <a href="http://localhost:8888" target="_blank" class="btn-primary">🚀 Launch JupyterLab (:8888)</a>
+            </div>
+            <p class="section-description">Interactive data engineering workbench with PySpark 3.5, PyArrow, DuckDB, and Pandas pre-installed.</p>
+            <div class="notebooks-grid">
+              <div class="notebook-card">
+                <div class="notebook-icon">📓</div>
+                <div class="notebook-info">
+                  <h4>01-pyspark-hdfs-pipeline.ipynb</h4>
+                  <p>End-to-end ingestion, schema casting, and partitioned Parquet write to HDFS.</p>
+                  <a href="http://localhost:8888/lab/tree/01-pyspark-hdfs-pipeline.ipynb" target="_blank" class="btn-secondary-sm">Open Notebook &rarr;</a>
+                </div>
+              </div>
+              <div class="notebook-card">
+                <div class="notebook-icon">📓</div>
+                <div class="notebook-info">
+                  <h4>02-spark-sql-hive-analytics.ipynb</h4>
+                  <p>Relational queries, window functions, and external Hive catalog queries.</p>
+                  <a href="http://localhost:8888/lab/tree/02-spark-sql-hive-analytics.ipynb" target="_blank" class="btn-secondary-sm">Open Notebook &rarr;</a>
+                </div>
+              </div>
+              <div class="notebook-card">
+                <div class="notebook-icon">📓</div>
+                <div class="notebook-info">
+                  <h4>03-realtime-streaming-simulation.ipynb</h4>
+                  <p>Structured Streaming micro-batch window aggregations over real-time events.</p>
+                  <a href="http://localhost:8888/lab/tree/03-realtime-streaming-simulation.ipynb" target="_blank" class="btn-secondary-sm">Open Notebook &rarr;</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 9: LIVE CLUSTER TERMINAL
+             =================================================================== -->
+        <section id="studio-terminal" class="studio-view">
+          <div class="section-box terminal-container-box">
+            <div class="panel-header">
+              <div class="header-left">
+                <h3>📜 Live Cluster Terminal & Unified Log Streamer</h3>
+                <span class="tag-pill live-pill">Streaming</span>
+              </div>
+              <div class="header-right">
+                <button class="btn-secondary" id="btnClearTerminal">🧹 Clear</button>
+                <button class="btn-secondary" id="btnCopyTerminal">📋 Copy Output</button>
+              </div>
+            </div>
+            <pre class="code-terminal main-terminal" id="mainTerminalConsole"><code id="mainTerminalCode">// Unified Cluster Terminal Initialized.
+// Logs, MapReduce shuffles, Spark stages, Sqoop imports, and Pig DAGs will stream here.
+[SYSTEM] Ready for job execution.</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             STUDIO 10: ARCHITECTURAL BLUEPRINTS
+             =================================================================== -->
+        <section id="studio-diagrams" class="studio-view">
+          <div class="section-box">
+            <div class="panel-header">
+              <h3>🗺️ High-Definition Architectural Blueprints & Infographics</h3>
+              <div class="header-right">
+                <a href="/images/hadoop-data-engineering-system-architecture.svg" target="_blank" class="btn-secondary">Open SVG</a>
+                <a href="/images/hadoop-data-engineering-infographic.png" target="_blank" class="btn-secondary">Open PNG</a>
+              </div>
+            </div>
+            <div class="diagram-viewport-container">
+              <img src="/images/hadoop-data-engineering-system-architecture.svg" alt="Enterprise Architecture" class="blueprint-image" id="blueprintImage">
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
