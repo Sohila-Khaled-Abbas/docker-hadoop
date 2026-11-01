@@ -39,9 +39,10 @@ jobs:
         run: |
           docker build -t hadoop-cluster:3.1.2 -f Dockerfile .
 
-      - name: 🚀 Launch Hadoop Cluster with Docker Compose
+      # CI validates the Hadoop image only; avoid pulling optional Spark/Jupyter/portal images.
+      - name: 🚀 Launch Hadoop Service with Docker Compose
         run: |
-          docker compose up -d
+          docker compose up -d --no-deps hadoop
 
       - name: ⏳ Wait for Cluster Health Check (Healthy State)
         run: |
