@@ -77,6 +77,9 @@
 
 ---
 
+> [!CAUTION]
+> **Local training lab, not an internet-facing production stack.** The current example configuration uses fixed container passwords, a permissive SSH setup and exposed service ports, including Jupyter without token authentication. Keep the stack on a trusted local/isolated network, never publish its ports publicly, and replace or disable those defaults before any shared deployment. CI covers the Hadoop service independently from optional Spark, Jupyter and portal components.
+
 ## 📖 Overview
 
 Welcome to the **Apache Hadoop Enterprise Multi-Platform Lab** — a unified, production-grade Big Data engineering workspace designed for distributed computing research, university courses, ETL prototyping, and performance benchmarking.
